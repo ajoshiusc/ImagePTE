@@ -15,7 +15,7 @@ def main():
     print(subIds)
     ''' If fMRI data exists for some subjects, then store their cognitive scores '''
     for subid in self.subids:
-        self.cog_scores.append(self.get_cog_score_subid(subid))
+        cog_scores.append(self.get_cog_score_subid(subid))
 
 
 if __name__ == "__main__":
