@@ -1,16 +1,22 @@
-%||AUM||
-%||Shree Ganeshaya Namaha||
+#||AUM||
+#||Shree Ganeshaya Namaha||
 
 import pandas as pd
 
 
 def main():
 
-    med_hist_csv = 
+    print('hi')
 
+    med_hist_csv = '/big_disk/ajoshi/fitbir/tracktbi_pilot/Baseline Med History_246/TrackTBI_MedicalHx.csv'
 
-subIds = pd.read_csv(cogscore_file, index_col=0)
-    
+    print(med_hist_csv)
+    subIds = pd.read_csv(med_hist_csv, index_col=1)
+    print(subIds)
     ''' If fMRI data exists for some subjects, then store their cognitive scores '''
     for subid in self.subids:
         self.cog_scores.append(self.get_cog_score_subid(subid))
+
+
+if __name__ == "__main__":
+    main()
