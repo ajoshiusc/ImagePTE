@@ -11,7 +11,7 @@ def main():
     med_hist_csv = '/big_disk/ajoshi/fitbir/tracktbi_pilot/Baseline Med History_246/TrackTBI_MedicalHx.csv'
 
     print(med_hist_csv)
-    subIds = pd.read_csv(med_hist_csv, index_col=1)
+    subIds = pd.read_csv(med_hist_csv) #, index_col=1)
     print(subIds)
     ''' If fMRI data exists for some subjects, then store their cognitive scores '''
     for subid in self.subids:
