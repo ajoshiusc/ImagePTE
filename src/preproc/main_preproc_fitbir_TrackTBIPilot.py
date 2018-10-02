@@ -13,7 +13,10 @@ def main():
 
     study_name = 'tracktbi_pilot'
     med_hist_csv = '/big_disk/ajoshi/fitbir/tracktbi_pilot/Baseline Med History_246/TrackTBI_MedicalHx.csv'
-    study_dir = '/big_disk/ajoshi/fitbir/tracktbi_pilot/TRACK TBI Pilot - MR data - BR site_246'
+    study_dir = '/big_disk/ajoshi/fitbir/tracktbi_pilot/TRACK TBI Pilot - MR data -'# BR site_246'
+#    study_dir2 = '/big_disk/ajoshi/fitbir/tracktbi_pilot/TRACK TBI Pilot - MR data - PI site_246'
+#    study_dir3 = '/big_disk/ajoshi/fitbir/tracktbi_pilot/TRACK TBI Pilot - MR data - SF site__246'
+
     preproc_dir = '/big_disk/ajoshi/fitbir/preproc'
 
     dirlst = glob.glob(study_dir + '/*.zip')
@@ -24,8 +27,11 @@ def main():
     ''' If fMRI data exists for some subjects, then store their cognitive scores '''
     for subid in subIds.index:
         print(subid)
+        if not isinstance(subid, str):
+            continue
+
         os.path.join(preproc_dir, study_name, subid)
-        dirlist = glob.glob(study_dir + '/' + subid + '*.zip')
+        dirlist = glob.glob(study_dir + '*/' + subid + '*.zip')
         print(dirlist)
         if len(dirlist) > 0:
             subdir = os.path.join(preproc_dir, study_name, subid)
