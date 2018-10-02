@@ -23,7 +23,7 @@ def zip2nii(zipfname, outdir):
             converter.inputs.source_dir = tmpdir
             converter.inputs.compression = 5
             converter.inputs.output_dir = outtmpdir
-            converter.output_files = '%p_%t_%s'
+            converter.inputs.out_filename = '%p_%t_%s'
             print(converter.cmdline)
             #'dcm2niix -b y -z y -5 -x n -t n -m n -o ds005 -s n -v n tmpdir'
             converter.run()
