@@ -7,15 +7,16 @@ import os
 import shutil
 from fitbirpre import zip2nii
 
+
 def main():
 
     print('hi')
 
     study_name = 'tracktbi_pilot'
     med_hist_csv = '/big_disk/ajoshi/fitbir/tracktbi_pilot/Baseline Med History_246/TrackTBI_MedicalHx.csv'
-    study_dir = '/big_disk/ajoshi/fitbir/tracktbi_pilot/TRACK TBI Pilot - MR data -'# BR site_246'
-#    study_dir2 = '/big_disk/ajoshi/fitbir/tracktbi_pilot/TRACK TBI Pilot - MR data - PI site_246'
-#    study_dir3 = '/big_disk/ajoshi/fitbir/tracktbi_pilot/TRACK TBI Pilot - MR data - SF site__246'
+    study_dir = '/big_disk/ajoshi/fitbir/tracktbi_pilot/TRACK TBI Pilot - MR data -'  # BR site_246'
+    #    study_dir2 = '/big_disk/ajoshi/fitbir/tracktbi_pilot/TRACK TBI Pilot - MR data - PI site_246'
+    #    study_dir3 = '/big_disk/ajoshi/fitbir/tracktbi_pilot/TRACK TBI Pilot - MR data - SF site__246'
 
     preproc_dir = '/big_disk/ajoshi/fitbir/preproc'
 
@@ -44,18 +45,17 @@ def main():
             for file_name in dirlist:
                 if (os.path.isfile(file_name)):
                     zip2nii(file_name, subdir)
+
+
 #                    shutil.copy(file_name, subdir)
 
-            # Normalize all images to standard MNI space.
+# Normalize all images to standard MNI space.
             imgfiles = glob.glob(sub_dir + '*/' + subid + '*.nii.gz')
 
-                for infile in imgfiles:                   
-
-                    reg2mni(infile=infile, outfile=outfile)
-
-
-
-
+            for infile in imgfiles:
+                reg2mni(
+                    infile=infile,
+                    outfile=os.path.splitext(outfile)[0] + '_mni')
 
 if __name__ == "__main__":
     main()

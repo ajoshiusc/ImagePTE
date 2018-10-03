@@ -6,10 +6,13 @@ import shutil
 import glob
 import os
 
+
 def reg2mni(infile, outfile):
-    
+
     # Use first_flirt command from fsl to coregister to MNI space
     os.system('first_flirt ' + infile + ' ' + outfile)
+
+
 #    # resample to 1mm isotropic resolution
 #    os.system('flirt -in ' + outfile + ' -ref ' + outfile + ' -out ' + outfile + ' -applyisoxfm 1')
 
