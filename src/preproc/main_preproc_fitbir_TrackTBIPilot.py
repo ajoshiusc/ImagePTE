@@ -5,7 +5,7 @@ import pandas as pd
 import glob
 import os
 import shutil
-from fitbirpre import zip2nii
+from fitbirpre import zip2nii, reg2mni
 
 
 def main():
