@@ -46,6 +46,16 @@ def main():
                     zip2nii(file_name, subdir)
 #                    shutil.copy(file_name, subdir)
 
+            # Normalize all images to standard MNI space.
+            imgfiles = glob.glob(sub_dir + '*/' + subid + '*.nii.gz')
+
+                for infile in imgfiles:                   
+
+                    reg2mni(infile=infile, outfile=outfile)
+
+
+
+
 
 if __name__ == "__main__":
     main()
