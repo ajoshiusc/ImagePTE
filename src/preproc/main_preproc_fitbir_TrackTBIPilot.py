@@ -5,7 +5,7 @@ import pandas as pd
 import glob
 import os
 import shutil
-from fitbirpre import zip2nii, reg2mni
+from fitbirpre import zip2nii, reg2mni, name2modality
 
 
 def main():
@@ -51,9 +51,9 @@ def main():
             imgfiles = glob.glob(subdir + '/*.nii.gz')
 
             for infile in imgfiles:
-                reg2mni(
-                    infile=infile,
-                    outfile=os.path.splitext(infile)[0] + '_mni')
+                outfname = os.path.join(subdir,name2modality(infile))
+                if outfname is not None:
+                    reg2mni(infile=infile, outfile=outfname)
 
 if __name__ == "__main__":
     main()

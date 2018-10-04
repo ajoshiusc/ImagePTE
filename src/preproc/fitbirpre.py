@@ -7,7 +7,7 @@ import glob
 import os
 
 
-def nii2modality(fname=''):
+def name2modality(fname=''):
     fname = fname.lower()
 
     if ('flair' in fname) and ('t1_' not in fname):
