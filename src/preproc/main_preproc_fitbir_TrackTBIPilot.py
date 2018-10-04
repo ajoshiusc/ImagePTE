@@ -43,8 +43,9 @@ def main():
             imgfiles = glob.glob(img_subdir + '/*.nii.gz')
 
             for infile in imgfiles:
-                outfname = os.path.join(subdir, name2modality(infile))
-                if outfname is not None:
+                modname = name2modality(infile)
+                if modname is not None:
+                    outfname = os.path.join(subdir, modname)
                     reg2mni(infile=infile, outfile=outfname)
 
 
