@@ -47,14 +47,14 @@ def main():
                 if (os.path.isfile(file_name)):
                     zip2nii(file_name, img_subdir)
 
-
-# Normalize all images to standard MNI space.
+            # Normalize all images to standard MNI space.
             imgfiles = glob.glob(img_subdir + '/*.nii.gz')
 
             for infile in imgfiles:
                 outfname = os.path.join(subdir, name2modality(infile))
                 if outfname is not None:
                     reg2mni(infile=infile, outfile=outfname)
+
 
 if __name__ == "__main__":
     main()
