@@ -37,7 +37,7 @@ def main():
         if len(dirlist) > 0:
             subdir = os.path.join(preproc_dir, study_name, subid)
             print('hi' + subdir)
-            img_subdir = os.join(subdir, 'orig')
+            img_subdir = os.path.join(subdir, 'orig')
 
             # Create subject directory
             if not os.path.exists(img_subdir):
