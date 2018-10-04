@@ -7,6 +7,25 @@ import glob
 import os
 
 
+def nii2modality(fname=''):
+    fname = fname.lower()
+
+    if ('flair' in fname) and ('t1_' not in fname):
+        return 'FLAIR'
+
+    if ('flair' in fname) and ('t1_' in fname):
+        return 'T1_FLAIR'
+
+    if ('mprage' in fname) or ('adni' in fname) or ('t1' in fname):
+        return 'T1'
+
+    if ('t2_' in fname) and ('fluid' not in fname) and ('hemo' not in fname):
+        return 'T2'
+
+    if ('fse_' in fname):
+        return 'fse'
+
+
 def reg2mni(infile, outfile):
 
     # Use first_flirt command from fsl to coregister to MNI space
