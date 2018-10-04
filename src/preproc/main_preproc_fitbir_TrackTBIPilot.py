@@ -20,8 +20,6 @@ def main():
 
     preproc_dir = '/big_disk/ajoshi/fitbir/preproc'
 
-    dirlst = glob.glob(study_dir + '/*.zip')
-
     # print(med_hist_csv)
     subIds = pd.read_csv(med_hist_csv, index_col=1)
     # print(subIds)

@@ -41,7 +41,7 @@ def zip2nii(zipfname, outdir):
     with tempfile.TemporaryDirectory() as tmpdir:
         with tempfile.TemporaryDirectory() as outtmpdir:
             shutil.copy(zipfname, tmpdir)
-            pth, fname = os.path.split(zipfname)
+            _, fname = os.path.split(zipfname)
             fname = os.path.join(tmpdir, fname)
 
             zip_ref = zipfile.ZipFile(fname, 'r')
