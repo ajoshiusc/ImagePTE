@@ -37,21 +37,22 @@ def main():
         if len(dirlist) > 0:
             subdir = os.path.join(preproc_dir, study_name, subid)
             print('hi' + subdir)
+            img_subdir = os.join(subdir, 'orig')
 
             # Create subject directory
-            if not os.path.exists(subdir):
-                os.makedirs(subdir)
+            if not os.path.exists(img_subdir):
+                os.makedirs(img_subdir)
             # copy all zip files to the subject directory
             for file_name in dirlist:
                 if (os.path.isfile(file_name)):
-                    zip2nii(file_name, subdir)
+                    zip2nii(file_name, img_subdir)
 
 
 # Normalize all images to standard MNI space.
-            imgfiles = glob.glob(subdir + '/*.nii.gz')
+            imgfiles = glob.glob(img_subdir + '/*.nii.gz')
 
             for infile in imgfiles:
-                outfname = os.path.join(subdir,name2modality(infile))
+                outfname = os.path.join(subdir, name2modality(infile))
                 if outfname is not None:
                     reg2mni(infile=infile, outfile=outfname)
 
