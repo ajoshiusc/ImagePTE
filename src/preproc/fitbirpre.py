@@ -1,7 +1,7 @@
 import zipfile
 import tempfile
 from nipype.interfaces.dcm2nii import Dcm2niix
-from nipype.interfaces.fsl import first_flirt
+#from nipype.interfaces.fsl import first_flirt
 import shutil
 import glob
 import os
