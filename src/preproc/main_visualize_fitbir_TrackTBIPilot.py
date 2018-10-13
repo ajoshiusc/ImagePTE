@@ -35,38 +35,17 @@ def main():
 
         print('+++++++++++' + subid + '++++++++++++++')
 
-        if os.path.isfile(fnamet1):
+        if os.path.isfile(fnamet1) and os.path.isfile(
+                fnamet2) and os.path.isfile(fnameflair):
             imgt1 = ni.load_img(fnamet1)
 
             t1 = imgt1.get_data()
             t1img = t1[91, :, :].squeeze()
 
-#           plt.imshow(t1img)
-# plotting.plot_anat(
-#     imgt1,
-#     title="plot_anat",
-#     cut_coords=(0, 0, 0),
-#     output_file=subid + '_T1.png',
-#     vmin=0,
-#     vmax=np.percentile(imgt1.get_data().flatten(), 95))
-
-        if os.path.isfile(fnamet2):
             imgt2 = ni.load_img(fnamet2)
             t2 = imgt2.get_data()
             t2img = t2[91, :, :].squeeze()
 
-
-#            plt.imshow(np.hstack((t1img, t2img)))
-
-# plotting.plot_anat(
-#     imgt2,
-#     title="plot_anat",
-#     cut_coords=(0, 0, 0),
-#     output_file=subid + '_T2.png',
-#     vmin=0,
-#     vmax=np.percentile(imgt2.get_data().flatten(), 95))
-
-        if os.path.isfile(fnameflair):
             imgflair = ni.load_img(fnameflair)
             imgflair = imgflair.get_data()
             flairimg = imgflair[91, :, :].squeeze()
@@ -77,13 +56,6 @@ def main():
             plt.imsave(
                 subid + '_sag.png', imgfull, cmap='gray', vmin=0, vmax=vmax1)
 
-            # plotting.plot_anat(
-            #     imgflair,
-            #     title="plot_anat",
-            #     cut_coords=(0, 0, 0),
-            #     output_file=subid + '_FLAIR.png',
-            #     vmin=0,
-            #     vmax=np.percentile(imgflair.get_data().flatten(), 95))
 
 if __name__ == "__main__":
     main()
