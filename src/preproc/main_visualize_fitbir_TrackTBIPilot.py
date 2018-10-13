@@ -9,6 +9,8 @@ from fitbirpre import zip2nii, reg2mni, name2modality
 import nilearn.image as ni
 from nilearn import plotting
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 def main():
     #Set subject dirs
@@ -35,34 +37,53 @@ def main():
 
         if os.path.isfile(fnamet1):
             imgt1 = ni.load_img(fnamet1)
-            plotting.plot_anat(
-                imgt1,
-                title="plot_anat",
-                cut_coords=(0, 0, 0),
-                output_file=subid + '_T1.png',
-                vmin=0,
-                vmax=np.percentile(imgt1.get_data().flatten(), 95))
+
+            t1 = imgt1.get_data()
+            t1img = t1[91, :, :].squeeze()
+
+#           plt.imshow(t1img)
+# plotting.plot_anat(
+#     imgt1,
+#     title="plot_anat",
+#     cut_coords=(0, 0, 0),
+#     output_file=subid + '_T1.png',
+#     vmin=0,
+#     vmax=np.percentile(imgt1.get_data().flatten(), 95))
 
         if os.path.isfile(fnamet2):
             imgt2 = ni.load_img(fnamet2)
-            plotting.plot_anat(
-                imgt2,
-                title="plot_anat",
-                cut_coords=(0, 0, 0),
-                output_file=subid + '_T2.png',
-                vmin=0,
-                vmax=np.percentile(imgt2.get_data().flatten(), 95))
+            t2 = imgt2.get_data()
+            t2img = t2[91, :, :].squeeze()
+
+
+#            plt.imshow(np.hstack((t1img, t2img)))
+
+# plotting.plot_anat(
+#     imgt2,
+#     title="plot_anat",
+#     cut_coords=(0, 0, 0),
+#     output_file=subid + '_T2.png',
+#     vmin=0,
+#     vmax=np.percentile(imgt2.get_data().flatten(), 95))
 
         if os.path.isfile(fnameflair):
             imgflair = ni.load_img(fnameflair)
-            plotting.plot_anat(
-                imgflair,
-                title="plot_anat",
-                cut_coords=(0, 0, 0),
-                output_file=subid + '_FLAIR.png',
-                vmin=0,
-                vmax=np.percentile(imgflair.get_data().flatten(), 95))
+            imgflair = imgflair.get_data()
+            flairimg = imgflair[91, :, :].squeeze()
+            vmin = 0
+            imgfull = np.hstack((t1img.T, t2img.T, flairimg.T))
+            vmax1 = np.percentile(imgfull.flatten(), 95)
+            # plt.imshow(imgfull, cmap='gray', vmin=0, vmax=vmax1)
+            plt.imsave(
+                subid + '_sag.png', imgfull, cmap='gray', vmin=0, vmax=vmax1)
 
+            # plotting.plot_anat(
+            #     imgflair,
+            #     title="plot_anat",
+            #     cut_coords=(0, 0, 0),
+            #     output_file=subid + '_FLAIR.png',
+            #     vmin=0,
+            #     vmax=np.percentile(imgflair.get_data().flatten(), 95))
 
 if __name__ == "__main__":
     main()
