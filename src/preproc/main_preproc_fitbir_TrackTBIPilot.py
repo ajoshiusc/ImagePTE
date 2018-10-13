@@ -36,7 +36,8 @@ def main():
                 os.makedirs(img_subdir)
             # copy all zip files to the subject directory
             for file_name in dirlist:
-                if (os.path.isfile(file_name)):
+                if (os.path.isfile(file_name)
+                    ) and not (os.path.isdir(img_subdir)):
                     zip2nii(file_name, img_subdir)
 
             # Normalize all images to standard MNI space.
@@ -46,7 +47,8 @@ def main():
                 modname = name2modality(infile)
                 if modname is not None:
                     outfname = os.path.join(subdir, modname)
-                    reg2mni(infile=infile, outfile=outfname)
+                    if not os.path.isfile(outfname + '.nii.gz'):
+                        reg2mni(infile=infile, outfile=outfname)
 
 
 if __name__ == "__main__":
