@@ -10,6 +10,7 @@ import nilearn.image as ni
 from nilearn import plotting
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.misc import imrotate
 
 
 def main():
@@ -49,7 +50,9 @@ def main():
             imgflair = ni.load_img(fnameflair)
             imgflair = imgflair.get_data()
             flairimg = imgflair[91, :, :].squeeze()
-            imgfull = np.hstack((t1img.T, t2img.T, flairimg.T))
+            imgfull = np.hstack((imrotate(t1img, 90), imrotate(t2img, 90),
+                                 imrotate(flairimg, 90)))
+
             vmax1 = np.percentile(imgfull.flatten(), 95)
 
             plt.imsave(
