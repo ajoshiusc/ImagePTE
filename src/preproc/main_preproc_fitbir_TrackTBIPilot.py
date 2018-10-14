@@ -24,10 +24,10 @@ def main():
     med_hist_csv = '/big_disk/ajoshi/fitbir/tracktbi_pilot/Baseline Med History_246/TrackTBI_MedicalHx.csv'
     study_dir = '/big_disk/ajoshi/fitbir/tracktbi_pilot/TRACK TBI Pilot - MR data -'
 
+    # List of subjects that are done
     tbi_done_list = '/big_disk/ajoshi/fitbir/preproc/tracktbi_done.txt'
     preproc_dir = '/big_disk/ajoshi/fitbir/preproc'
     subIds = pd.read_csv(med_hist_csv, index_col=1)
-    #    tbidoneIds = pd.read_csv(csv_tbi, index_col=1)
 
     # This contains a list of TBI subjects that are done
     with open(tbi_done_list) as f:
