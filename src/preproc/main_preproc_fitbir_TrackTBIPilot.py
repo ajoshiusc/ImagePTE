@@ -9,6 +9,7 @@ from fitbirpre import zip2nii, reg2mni, name2modality
 from multiprocessing import Pool
 from itertools import product, repeat
 
+
 def regparfun(subdir, infile):
     modname = name2modality(infile)
     if modname is not None:
@@ -16,20 +17,35 @@ def regparfun(subdir, infile):
         if not os.path.isfile(outfname + '.nii.gz'):
             reg2mni(infile=infile, outfile=outfname)
 
+
 def main():
     #Set subject dirs
     study_name = 'tracktbi_pilot'
     med_hist_csv = '/big_disk/ajoshi/fitbir/tracktbi_pilot/Baseline Med History_246/TrackTBI_MedicalHx.csv'
     study_dir = '/big_disk/ajoshi/fitbir/tracktbi_pilot/TRACK TBI Pilot - MR data -'
 
+    tbi_done_list = '/big_disk/ajoshi/fitbir/preproc/tracktbi_done.txt'
     preproc_dir = '/big_disk/ajoshi/fitbir/preproc'
     subIds = pd.read_csv(med_hist_csv, index_col=1)
+    #    tbidoneIds = pd.read_csv(csv_tbi, index_col=1)
+
+    # This contains a list of TBI subjects that are done
+    with open(tbi_done_list) as f:
+        tbidoneIds = f.readlines()
+
+    # Get the list of subjects that are correctly registered
+    tbidoneIds = [l.strip('\n\r') for l in tbidoneIds]
     # print(subIds)
     ''' If fMRI data exists for some subjects, then store their cognitive scores '''
     pool = Pool(processes=12)
 
     for subid in subIds.index:
         print(subid)
+
+        if any(subid in s for s in tbidoneIds):
+            print(subid + 'is already done')
+            continue
+
         if not isinstance(subid, str):
             continue
 
@@ -51,10 +67,12 @@ def main():
 
             # Normalize all images to standard MNI space.
             imgfiles = glob.glob(img_subdir + '/*.nii.gz')
-            pool.starmap(regparfun, zip(repeat(subdir),imgfiles))
+            pool.starmap(regparfun, zip(repeat(subdir), imgfiles))
 
     pool.close()
-    pool.join()   
+    pool.join()
+
+
 """            for infile in imgfiles:
                 modname = name2modality(infile)
                 if modname is not None:

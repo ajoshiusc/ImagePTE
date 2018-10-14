@@ -20,6 +20,7 @@ def main():
     #    study_dir = '/big_disk/ajoshi/fitbir/tracktbi_pilot/TRACK TBI Pilot - MR data -'
 
     preproc_dir = '/big_disk/ajoshi/fitbir/preproc'
+    pngdir = '/big_disk/ajoshi/fitbir/preproc/tracktbi_pilot/pngout/'
     subIds = pd.read_csv(med_hist_csv, index_col=1)
     # print(subIds)
     ''' If fMRI data exists for some subjects, then store their cognitive scores '''
@@ -54,7 +55,7 @@ def main():
             vmax1 = np.percentile(imgfull.flatten(), 95)
 
             plt.imsave(
-                subid + '_sag2.png', imgfull, cmap='gray', vmin=0, vmax=vmax1)
+                pngdir+subid + '_sag.png', imgfull, cmap='gray', vmin=0, vmax=vmax1)
         else:
             print('some files do not exist for:' + subid)
 
