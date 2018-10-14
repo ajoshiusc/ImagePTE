@@ -54,7 +54,7 @@ def main():
             vmax1 = np.percentile(imgfull.flatten(), 95)
 
             plt.imsave(
-                subid + '_sag.png', imgfull, cmap='gray', vmin=0, vmax=vmax1)
+                subid + '_sag2.png', imgfull, cmap='gray', vmin=0, vmax=vmax1)
         else:
             print('some files do not exist for:' + subid)
 

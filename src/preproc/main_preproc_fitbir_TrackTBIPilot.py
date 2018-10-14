@@ -26,7 +26,7 @@ def main():
     subIds = pd.read_csv(med_hist_csv, index_col=1)
     # print(subIds)
     ''' If fMRI data exists for some subjects, then store their cognitive scores '''
-    pool = Pool(processes=4)
+    pool = Pool(processes=12)
 
     for subid in subIds.index:
         print(subid)
