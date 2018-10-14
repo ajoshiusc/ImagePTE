@@ -43,7 +43,7 @@ def main():
         print(subid)
 
         if any(subid in s for s in tbidoneIds):
-            print(subid + 'is already done')
+            print(subid + ' is already done')
             continue
 
         if not isinstance(subid, str):
