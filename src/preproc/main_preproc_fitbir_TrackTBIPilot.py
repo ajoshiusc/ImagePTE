@@ -29,7 +29,7 @@ def main():
     preproc_dir = '/big_disk/ajoshi/fitbir/preproc'
     subIds = pd.read_csv(med_hist_csv, index_col=1)
 
-    # This contains a list of TBI subjects that are done
+    # This contains a list of TBI subjects that are done correctly
     with open(tbi_done_list) as f:
         tbidoneIds = f.readlines()
 
