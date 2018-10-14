@@ -17,7 +17,7 @@ def main():
     #Set subject dirs
     study_name = 'tracktbi_pilot'
     med_hist_csv = '/big_disk/ajoshi/fitbir/tracktbi_pilot/Baseline Med History_246/TrackTBI_MedicalHx.csv'
-    study_dir = '/big_disk/ajoshi/fitbir/tracktbi_pilot/TRACK TBI Pilot - MR data -'
+    #    study_dir = '/big_disk/ajoshi/fitbir/tracktbi_pilot/TRACK TBI Pilot - MR data -'
 
     preproc_dir = '/big_disk/ajoshi/fitbir/preproc'
     subIds = pd.read_csv(med_hist_csv, index_col=1)

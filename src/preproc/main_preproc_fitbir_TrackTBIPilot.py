@@ -6,7 +6,15 @@ import glob
 import os
 import shutil
 from fitbirpre import zip2nii, reg2mni, name2modality
+from multiprocessing import Pool
+from itertools import product, repeat
 
+def regparfun(subdir, infile):
+    modname = name2modality(infile)
+    if modname is not None:
+        outfname = os.path.join(subdir, modname)
+        if not os.path.isfile(outfname + '.nii.gz'):
+            reg2mni(infile=infile, outfile=outfname)
 
 def main():
     #Set subject dirs
@@ -18,6 +26,8 @@ def main():
     subIds = pd.read_csv(med_hist_csv, index_col=1)
     # print(subIds)
     ''' If fMRI data exists for some subjects, then store their cognitive scores '''
+    pool = Pool(processes=4)
+
     for subid in subIds.index:
         print(subid)
         if not isinstance(subid, str):
@@ -36,20 +46,22 @@ def main():
                 os.makedirs(img_subdir)
             # copy all zip files to the subject directory
             for file_name in dirlist:
-                if (os.path.isfile(file_name)
-                    ) and not (os.path.isdir(img_subdir)):
+                if (os.path.isfile(file_name)) and (os.path.isdir(img_subdir)):
                     zip2nii(file_name, img_subdir)
 
             # Normalize all images to standard MNI space.
             imgfiles = glob.glob(img_subdir + '/*.nii.gz')
+            pool.starmap(regparfun, zip(repeat(subdir),imgfiles))
 
-            for infile in imgfiles:
+    pool.close()
+    pool.join()   
+"""            for infile in imgfiles:
                 modname = name2modality(infile)
                 if modname is not None:
                     outfname = os.path.join(subdir, modname)
                     if not os.path.isfile(outfname + '.nii.gz'):
                         reg2mni(infile=infile, outfile=outfname)
-
+"""
 
 if __name__ == "__main__":
     main()
