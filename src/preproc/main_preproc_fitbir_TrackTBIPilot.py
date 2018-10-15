@@ -16,8 +16,8 @@ def regparfun(subdir, infile):
     modname = name2modality(infile)
     if modname is not None:
         outfname = os.path.join(subdir, modname)
-        if not os.path.isfile(outfname + '.nii.gz'):
-            reg2mni(infile=infile, outfile=outfname)
+#        if not os.path.isfile(outfname + '.nii.gz'):
+        reg2mni(infile=infile, outfile=outfname)
 
 
 def main():
@@ -71,6 +71,9 @@ def main():
 
             # Normalize all images to standard MNI space.
             imgfiles = glob.glob(img_subdir + '/*.nii.gz')
+            print('running proc func')
+#            regparfun(subdir,imgfiles[0])
+            print('done proc func')
             pool.starmap(regparfun, zip(repeat(subdir), imgfiles))
 
     pool.close()
