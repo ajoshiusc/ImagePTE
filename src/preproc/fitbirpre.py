@@ -29,7 +29,7 @@ def name2modality(fname=''):
 def reg2mni(infile, outfile):
 
     # Use first_flirt command from fsl to coregister to MNI space
-    os.system('/home/ajoshi/bin/first_flirt_rigid ' + infile + ' ' + outfile)
+    os.system('./first_flirt_rigid ' + infile + ' ' + outfile)
 
 
 #    # resample to 1mm isotropic resolution
