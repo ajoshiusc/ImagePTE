@@ -8,6 +8,8 @@ import shutil
 from fitbirpre import zip2nii, reg2mni, name2modality
 from multiprocessing import Pool
 from itertools import product, repeat
+import numpy as np
+import numbers
 
 
 def regparfun(subdir, infile):
@@ -35,12 +37,14 @@ def main():
 
     # Get the list of subjects that are correctly registered
     tbidoneIds = [l.strip('\n\r') for l in tbidoneIds]
-    # print(subIds)
     ''' If fMRI data exists for some subjects, then store their cognitive scores '''
     pool = Pool(processes=12)
 
     for subid in subIds.index:
         print(subid)
+
+        if isinstance(subid, numbers.Number):
+            continue
 
         if any(subid in s for s in tbidoneIds):
             print(subid + ' is already done')

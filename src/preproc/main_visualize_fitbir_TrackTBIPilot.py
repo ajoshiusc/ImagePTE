@@ -22,11 +22,25 @@ def main():
     preproc_dir = '/big_disk/ajoshi/fitbir/preproc'
     pngdir = '/big_disk/ajoshi/fitbir/preproc/tracktbi_pilot/pngout/'
     subIds = pd.read_csv(med_hist_csv, index_col=1)
+
+   # This contains a list of TBI subjects that are done correctly
+    tbi_done_list = '/big_disk/ajoshi/fitbir/preproc/tracktbi_done.txt'
+
+    with open(tbi_done_list) as f:
+        tbidoneIds = f.readlines()
+
+    # Get the list of subjects that are correctly registered
+    tbidoneIds = [l.strip('\n\r') for l in tbidoneIds]
+
     # print(subIds)
     ''' If fMRI data exists for some subjects, then store their cognitive scores '''
     for subid in subIds.index[2:]:
 
         if not isinstance(subid, str):
+            continue
+
+        if any(subid in s for s in tbidoneIds):
+            print(subid + ' is already done')
             continue
 
         dirname = os.path.join(preproc_dir, study_name, subid)
