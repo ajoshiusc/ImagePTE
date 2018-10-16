@@ -120,28 +120,28 @@ while [ _$1 != _ ] ; do
 done
 
 echo "initial registration $doCortAlignment"
-${FSLDIR}/bin/flirt -in $A -out ${B}_tmp_stage1 -ref ${FSLDIR}/data/standard/${refim} -omat ${B}_tmp_stage1.mat $inweightCom $costCom -dof 6 -cost mutualinfo
+${FSLDIR}/bin/flirt -in $A -out ${B}_tmp_stage1 -ref ${FSLDIR}/data/standard/${refim} -omat ${B}_tmp_stage1.mat $inweightCom $costCom -dof 6 -cost normmi
 
 echo "Stage 2: use subcortical mask"
 #do subcortical alignment
-${FSLDIR}/bin/flirt -in ${B}_tmp_stage1 -out ${B}_tmp_stage2 -ref ${FSLDIR}/data/standard/${refim} -omat ${B}_tmp_stage2.mat -nosearch -refweight ${FSLDIR}/data/standard/MNI152lin_T1_1mm_subbr_mask $costCom -dof 6 -cost mutualinfo
+${FSLDIR}/bin/flirt -in ${B}_tmp_stage1 -out ${B}_tmp_stage2 -ref ${FSLDIR}/data/standard/${refim} -omat ${B}_tmp_stage2.mat -nosearch -refweight ${FSLDIR}/data/standard/MNI152lin_T1_1mm_subbr_mask $costCom -dof 6 -cost normmi
 ${FSLDIR}/bin/convert_xfm -omat ${B}.mat -concat ${B}_tmp_stage2.mat ${B}_tmp_stage1.mat 
 
 
 #generate registered images
-${FSLDIR}/bin/flirt -in ${A} -out ${B} -ref ${FSLDIR}/data/standard/${refim} -applyxfm -init ${B}.mat -dof 6 -cost mutualinfo
+${FSLDIR}/bin/flirt -in ${A} -out ${B} -ref ${FSLDIR}/data/standard/${refim} -applyxfm -init ${B}.mat -dof 6 -cost normmi
 
 if [ $doCortAlignment -eq 1 ] ; then 
     #do hemisphere/cerebellum alignment
     echo "Alternate Stage 2: Use brain mask"
-    ${FSLDIR}/bin/flirt -in ${B}_tmp_stage1 -out ${B}_tmp_cort_stage2 -ref ${FSLDIR}/data/standard/${refim} -omat ${B}_tmp_cort_stage2.mat -nosearch -refweight ${FSLDIR}/data/standard/MNI152_T1_1mm_first_brain_mask.nii.gz $costCom -dof 6 -cost mutualinfo
+    ${FSLDIR}/bin/flirt -in ${B}_tmp_stage1 -out ${B}_tmp_cort_stage2 -ref ${FSLDIR}/data/standard/${refim} -omat ${B}_tmp_cort_stage2.mat -nosearch -refweight ${FSLDIR}/data/standard/MNI152_T1_1mm_first_brain_mask.nii.gz $costCom -dof 6 -cost normmi
     ${FSLDIR}/bin/convert_xfm -omat ${B}_cort.mat -concat ${B}_tmp_cort_stage2.mat ${B}_tmp_stage1.mat 
     
-    ${FSLDIR}/bin/flirt -in ${A} -out ${B}_cort -ref ${FSLDIR}/data/standard/${refim} -applyxfm -init ${B}_cort.mat -dof 6 -cost mutualinfo
+    ${FSLDIR}/bin/flirt -in ${A} -out ${B}_cort -ref ${FSLDIR}/data/standard/${refim} -applyxfm -init ${B}_cort.mat -dof 6 -cost normmi
 fi
 
 if [ X$strucweight != X ] ; then
-    ${FSLDIR}/bin/flirt -in ${A} -ref ${FSLDIR}/data/standard/${refim} -init ${B}.mat -out ${B} -omat ${B}_tmp_stage3.mat -refweight ${strucweight} -nosearch $costCom -dof 6 -cost mutualinfo
+    ${FSLDIR}/bin/flirt -in ${A} -ref ${FSLDIR}/data/standard/${refim} -init ${B}.mat -out ${B} -omat ${B}_tmp_stage3.mat -refweight ${strucweight} -nosearch $costCom -dof 6 -cost normmi
     cp ${B}_tmp_stage3.mat ${B}.mat
 fi
 
