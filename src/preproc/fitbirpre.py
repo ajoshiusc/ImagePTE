@@ -25,6 +25,13 @@ def name2modality(fname=''):
     if ('fse_' in fname):
         return 'fse'
 
+    if ('_rest' in fname):
+        return 'rest'
+
+    if ('_SWI' in fname):
+        return 'SWI'
+
+
 
 def reg2mni(infile, outfile):
 
