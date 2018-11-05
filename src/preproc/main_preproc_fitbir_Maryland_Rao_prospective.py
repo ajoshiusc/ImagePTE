@@ -14,13 +14,18 @@ from shutil import copyfile
 
 def regparfun(subdir, infile):
     modname = name2modality(infile)
-    if (modname is not None) and (modname is not 'rest'):
+    if modname is not None:
         outfname = os.path.join(subdir, modname)
+    else:
+        outfname = ''
+
+
+    if (modname is not None) and (modname is not 'rest'):
         if not os.path.isfile(outfname + '.nii.gz'):
             reg2mni(infile=infile, outfile=outfname)
         
     if modname is 'rest':
-        copyfile(infile, outfname)
+        copyfile(infile, outfname + '.nii.gz')
 
 
 def main():
@@ -59,7 +64,7 @@ def main():
             continue
 
         #os.path.join(preproc_dir, study_name, subid)
-        dirlist = glob.glob(study_dir + '*/' + subid + '*v1*.nii')
+        dirlist = glob.glob(study_dir + '*/' + subid + '*_mrtbi_*v1*.nii')
         print(dirlist)
         if len(dirlist) > 0:
             subdir = os.path.join(preproc_dir, study_name, subid)
@@ -77,7 +82,7 @@ def main():
             # Normalize all images to standard MNI space.
             imgfiles = dirlist #glob.glob(img_subdir + '/*.nii.gz')
             print('running proc func')
-#            regparfun(subdir,imgfiles[0])
+            regparfun(subdir,imgfiles[0])
             print('done proc func')
             pool.starmap(regparfun, zip(repeat(subdir), imgfiles))
 
