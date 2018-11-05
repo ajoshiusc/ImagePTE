@@ -10,14 +10,17 @@ from multiprocessing import Pool
 from itertools import product, repeat
 import numpy as np
 import numbers
-
+from shutil import copyfile
 
 def regparfun(subdir, infile):
     modname = name2modality(infile)
-    if modname is not None or modname is not 'rest':
+    if (modname is not None) and (modname is not 'rest'):
         outfname = os.path.join(subdir, modname)
         if not os.path.isfile(outfname + '.nii.gz'):
             reg2mni(infile=infile, outfile=outfname)
+        
+    if modname is 'rest':
+        copyfile(infile, outfname)
 
 
 def main():
@@ -38,7 +41,7 @@ def main():
     # Get the list of subjects that are correctly registered
    # tbidoneIds = [l.strip('\n\r') for l in tbidoneIds]
     ''' If fMRI data exists for some subjects, then store their cognitive scores '''
-    pool = Pool(processes=12)
+    pool = Pool(processes=4)
 
     for subid in subIds.index:
         print(subid)
@@ -78,8 +81,8 @@ def main():
             print('done proc func')
             pool.starmap(regparfun, zip(repeat(subdir), imgfiles))
 
-#    pool.close()
-#    pool.join()
+    pool.close()
+    pool.join()
 
 
 """            for infile in imgfiles:
