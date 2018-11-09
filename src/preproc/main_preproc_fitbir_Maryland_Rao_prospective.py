@@ -5,7 +5,7 @@ import pandas as pd
 import glob
 import os
 import shutil
-from fitbirpre import zip2nii, reg2mni, name2modality
+from fitbirpre import zip2nii, reg2mni_re, name2modality
 from multiprocessing import Pool
 from itertools import product, repeat
 import numpy as np
@@ -22,7 +22,7 @@ def regparfun(subdir, infile):
 
     if (modname is not None) and (modname is not 'rest'):
         if not os.path.isfile(outfname + '.nii.gz'):
-            reg2mni(infile=infile, outfile=outfname)
+            reg2mni_re(infile=infile, outfile=outfname)
         
     if modname is 'rest':
         copyfile(infile, outfname + '.nii.gz')
