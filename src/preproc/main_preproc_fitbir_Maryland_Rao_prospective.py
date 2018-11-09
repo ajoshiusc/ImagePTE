@@ -82,7 +82,7 @@ def main():
             # Normalize all images to standard MNI space.
             imgfiles = dirlist #glob.glob(img_subdir + '/*.nii.gz')
             print('running proc func')
-            regparfun(subdir,imgfiles[0])
+#            regparfun(subdir,imgfiles[0])
             print('done proc func')
             pool.starmap(regparfun, zip(repeat(subdir), imgfiles))
 
