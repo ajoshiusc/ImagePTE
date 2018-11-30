@@ -27,6 +27,7 @@ def regparfun(subid):
         imgfiles = dirlist
 
         t1 = os.path.join(subdir, 'T1.nii.gz')
+        t1r = os.path.join(subdir, 'T1r.nii.gz')
         t1mni = os.path.join(subdir, 'T1mni.nii.gz')
         t1mnimat = os.path.join(subdir, 'T1mni.mat')
         if not os.path.isfile(t1):
@@ -41,7 +42,7 @@ def regparfun(subid):
         if os.path.isfile(t2):
             # Register T2 to T1
             os.system('flirt -in ' + t2 + ' -nosearch -out ' + t2r + ' -ref ' +
-                      t1 + ' -dof 6')
+                      t1r + ' -dof 6')
             # Apply the same transform (T1->MNI) to registered T2 to take it to mni space
             os.system('flirt -in ' + t2r + ' -ref ' + t1mni +
                       ' -applyxfm -init ' + t1mnimat + ' -out ' + t2mni)
@@ -52,7 +53,7 @@ def regparfun(subid):
         if os.path.isfile(flair):
             # Register FLAIR to T1
             os.system('flirt -in ' + flair + ' -nosearch -out ' + flairr +
-                      ' -ref ' + t1 + ' -dof 6')
+                      ' -ref ' + t1r + ' -dof 6')
             # Apply the same transform (T1->MNI) to registered FLAIR to take it to mni space
             os.system('flirt -in ' + flairr + ' -ref ' + t1mni +
                       ' -applyxfm -init ' + t1mnimat + ' -out ' + flairmni)
