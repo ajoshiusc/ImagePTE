@@ -17,7 +17,10 @@ def regparfun(subdir, infile):
     else:
         outfname = ''
 
-    if (modname is not None) and (modname is not 'rest'):
+    copyfile(infile, outfname + '.nii.gz')
+
+
+"""     if (modname is not None) and (modname is not 'rest'):
         if not os.path.isfile(outfname + '.nii.gz'):
             os.system('flirt -in ' + infile + ' -ref ' + infile + ' -out ' +
                       outfname + '.nii.gz' + ' -applyisoxfm 1')
@@ -27,6 +30,7 @@ def regparfun(subdir, infile):
 
     if modname is 'rest':
         copyfile(infile, outfname + '.nii.gz')
+ """
 
 
 def main():
