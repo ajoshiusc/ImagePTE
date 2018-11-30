@@ -61,7 +61,7 @@ def main():
                 continue
 
             # register T1 image to MNI space
-            os.system('../first_flirt_rigid ' + t1 + ' ' + t1mni)
+            os.system('./first_flirt_rigid ' + t1 + ' ' + t1mni)
 
             t2 = os.path.join(subdir, 'T2.nii.gz')
             t2r = os.path.join(subdir, 'T2r.nii.gz')
