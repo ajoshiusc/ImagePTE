@@ -50,21 +50,22 @@ def main():
         print(dirlist)
         if len(dirlist) > 0:
             subdir = os.path.join(preproc_dir, study_name, subid)
-            os.makedirs(subdir)
 
             # Normalize all images to standard MNI space.
             imgfiles = dirlist
 
-            t1 = os.path.join(study_name, 'T1.nii.gz')
-            t1mni = os.path.join(study_name, 'T1_mni.nii.gz')
-            t1mnimat = os.path.join(study_name, 'T1mni.mat')
+            t1 = os.path.join(subdir, 'T1.nii.gz')
+            t1mni = os.path.join(subdir, 'T1_mni.nii.gz')
+            t1mnimat = os.path.join(subdir, 'T1mni.mat')
+            if not os.path.isfile(t1):
+                continue
 
             # register T1 image to MNI space
             os.system('../first_flirt_rigid ' + t1 + ' ' + t1mni)
 
-            t2 = os.path.join(study_name, 'T2.nii.gz')
-            t2r = os.path.join(study_name, 'T2r.nii.gz')
-            t2mni = os.path.join(study_name, 'T2mni.nii.gz')
+            t2 = os.path.join(subdir, 'T2.nii.gz')
+            t2r = os.path.join(subdir, 'T2r.nii.gz')
+            t2mni = os.path.join(subdir, 'T2mni.nii.gz')
             if os.path.isfile(t2):
                 # Register T2 to T1
                 os.system('flirt -in ' + t2 + ' -nosearch -out ' + t2r +
@@ -73,9 +74,9 @@ def main():
                 os.system('flirt -in ' + t2r + ' -ref ' + t1mni +
                           '-applyxfm -init ' + t1mnimat + ' -out ' + t2mni)
 
-            flair = os.path.join(study_name, 'FLAIR.nii.gz')
-            flairr = os.path.join(study_name, 'FLAIRr.nii.gz')
-            flairmni = os.path.join(study_name, 'FLAIRmni.nii.gz')
+            flair = os.path.join(subdir, 'FLAIR.nii.gz')
+            flairr = os.path.join(subdir, 'FLAIRr.nii.gz')
+            flairmni = os.path.join(subdir, 'FLAIRmni.nii.gz')
             if os.path.isfile(flair):
                 # Register FLAIR to T1
                 os.system('flirt -in ' + flair + ' -nosearch -out ' + flairr +
