@@ -33,7 +33,7 @@ def regparfun(subid):
             return
 
         # register T1 image to MNI space
-        os.system('./first_flirt_rigid ' + t1 + ' ' + t1mni)
+        os.system('./first_flirt_rigid_reorient_mi ' + t1 + ' ' + t1mni)
 
         t2 = os.path.join(subdir, 'T2.nii.gz')
         t2r = os.path.join(subdir, 'T2r.nii.gz')
@@ -62,17 +62,18 @@ def main():
     #Set subject dirs
     med_hist_csv = '/big_disk/ajoshi/fitbir/maryland_rao/FITBIR Demographics_314/FITBIRdemographics_prospective.csv'
     subIds = pd.read_csv(med_hist_csv, index_col=1)
-   # pool = Pool(processes=12)
-    for subid in subIds.index:
-        print(subid)
-        if not isinstance(subid, str):
-            continue
+    pool = Pool(processes=12)
+#    for subid in subIds.index:
+#        print(subid)
 
-        regparfun(subid)
-        #pool.starmap(regparfun, subid)
+#        regparfun(subid)
+#    print(subIds.index)
+
+    pool.starmap(regparfun, zip(subIds.index))
 
     pool.close()
     pool.join()
+
 
 
 if __name__ == "__main__":
