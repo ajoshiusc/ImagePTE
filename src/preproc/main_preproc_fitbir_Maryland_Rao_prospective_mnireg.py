@@ -72,7 +72,7 @@ def main():
                           '-ref ' + t1 + ' -dof 6')
                 # Apply the same transform (T1->MNI) to registered T2 to take it to mni space
                 os.system('flirt -in ' + t2r + ' -ref ' + t1mni +
-                          '-applyxfm -init ' + t1mnimat + ' -out ' + t2mni)
+                          ' -applyxfm -init ' + t1mnimat + ' -out ' + t2mni)
 
             flair = os.path.join(subdir, 'FLAIR.nii.gz')
             flairr = os.path.join(subdir, 'FLAIRr.nii.gz')
@@ -83,7 +83,7 @@ def main():
                           '-ref ' + t1 + ' -dof 6')
                 # Apply the same transform (T1->MNI) to registered FLAIR to take it to mni space
                 os.system('flirt -in ' + flairr + ' -ref ' + t1mni +
-                          '-applyxfm -init ' + t1mnimat + ' -out ' + flairmni)
+                          ' -applyxfm -init ' + t1mnimat + ' -out ' + flairmni)
 
 
 if __name__ == "__main__":
