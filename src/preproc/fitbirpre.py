@@ -45,7 +45,7 @@ def reg2mni_re(infile, outfile):
     os.system('./first_flirt_rigid_reorient_mi ' + infile + ' ' + outfile)
 
 #    # resample to 1mm isotropic resolution
-#    os.system('flirt -in ' + outfile + ' -ref ' + outfile + ' -out ' + outfile + ' -applyisoxfm 1')
+    os.system('flirt -in ' + infile + ' -ref ' + infile + ' -out ' + outfile + ' -applyisoxfm 1')
 
 
 def zip2nii(zipfname, outdir):

@@ -16,10 +16,10 @@ def regparfun(subdir, infile):
     else:
         outfname = ''
 
-
     if (modname is not None) and (modname is not 'rest'):
         if not os.path.isfile(outfname + '.nii.gz'):
-            reg2mni_re(infile=infile, outfile=outfname)
+            os.system('flirt -in ' + infile + ' -ref ' + infile + ' -out ' + outfname + '.nii.gz' + ' -applyisoxfm 1')
+#            reg2mni_re(infile=infile, outfile=outfname)
         
     if modname is 'rest':
         copyfile(infile, outfname + '.nii.gz')
@@ -48,12 +48,7 @@ def main():
         print(dirlist)
         if len(dirlist) > 0:
             subdir = os.path.join(preproc_dir, study_name, subid)
-            print('hi' + subdir)
-            img_subdir = os.path.join(subdir, 'orig')
-
-            # Create subject directory
-            if not os.path.exists(img_subdir):
-                os.makedirs(img_subdir)
+            os.makedirs(subdir)
 
             # Normalize all images to standard MNI space.
             imgfiles = dirlist #glob.glob(img_subdir + '/*.nii.gz')
