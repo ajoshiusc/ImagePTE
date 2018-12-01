@@ -50,7 +50,7 @@ def regparfun(subid):
                       t1r + ' -dof 6 -cost normmi')
             # Apply the same transform (T1->MNI) to registered T2 to take it to mni space
             os.system('flirt -in ' + t2r + ' -ref ' + t1mni +
-                      ' -applyxfm -init ' + t1mnimat + ' -out ' + t2mni)
+                      ' -dof 6 -cost normmi -init ' + t1mnimat + ' -out ' + t2mni)
 
         flair = os.path.join(subdir, 'FLAIR.nii.gz')
         flairr = os.path.join(subdir, 'FLAIRr.nii.gz')
@@ -61,7 +61,7 @@ def regparfun(subid):
                       ' -ref ' + t1r + ' -dof 6 -cost normmi')
             # Apply the same transform (T1->MNI) to registered FLAIR to take it to mni space
             os.system('flirt -in ' + flairr + ' -ref ' + t1mni +
-                      ' -applyxfm -init ' + t1mnimat + ' -out ' + flairmni)
+                      ' -dof 6 -cost normmi -init ' + t1mnimat + ' -out ' + flairmni)
 
 
 def main():
