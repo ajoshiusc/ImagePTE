@@ -68,7 +68,7 @@ def main():
     #Set subject dirs
     med_hist_csv = '/big_disk/ajoshi/fitbir/maryland_rao/FITBIR Demographics_314/FITBIRdemographics_prospective.csv'
     subIds = pd.read_csv(med_hist_csv, index_col=1)
-    pool = Pool(processes=12)
+    pool = Pool(processes=16)
     #    for subid in subIds.index:
     #        print(subid)
 

@@ -44,7 +44,7 @@ def main():
     preproc_dir = '/big_disk/ajoshi/fitbir/preproc'
     subIds = pd.read_csv(med_hist_csv, index_col=1)
 
-    pool = Pool(processes=4)
+    pool = Pool(processes=12)
 
     for subid in subIds.index:
         print(subid)
