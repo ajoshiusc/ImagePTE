@@ -8,6 +8,7 @@ from itertools import product, repeat
 import numpy as np
 import numbers
 from shutil import copyfile
+import time
 
 
 def regparfun(subid):
@@ -20,6 +21,8 @@ def regparfun(subid):
 
     dirlist = glob.glob(study_dir + '*/' + subid + '*_mrtbi_*v1*.nii')
     print(dirlist)
+    #    time.sleep(5)
+
     if len(dirlist) > 0:
         subdir = os.path.join(preproc_dir, study_name, subid)
 
@@ -30,6 +33,8 @@ def regparfun(subid):
         t1r = os.path.join(subdir, 'T1r.nii.gz')
         t1mni = os.path.join(subdir, 'T1mni.nii.gz')
         t1mnimat = os.path.join(subdir, 'T1mni.mat')
+        print(subid)
+
         if not os.path.isfile(t1):
             return
 
@@ -41,8 +46,8 @@ def regparfun(subid):
         t2mni = os.path.join(subdir, 'T2mni.nii.gz')
         if os.path.isfile(t2):
             # Register T2 to T1
-            os.system('flirt -in ' + t2 + ' -nosearch -out ' + t2r + ' -ref ' +
-                      t1r + ' -dof 6')
+            os.system('flirt -in ' + t2 + ' -out ' + t2r + ' -ref ' +
+                      t1r + ' -dof 6 -cost normmi')
             # Apply the same transform (T1->MNI) to registered T2 to take it to mni space
             os.system('flirt -in ' + t2r + ' -ref ' + t1mni +
                       ' -applyxfm -init ' + t1mnimat + ' -out ' + t2mni)
@@ -52,8 +57,8 @@ def regparfun(subid):
         flairmni = os.path.join(subdir, 'FLAIRmni.nii.gz')
         if os.path.isfile(flair):
             # Register FLAIR to T1
-            os.system('flirt -in ' + flair + ' -nosearch -out ' + flairr +
-                      ' -ref ' + t1r + ' -dof 6')
+            os.system('flirt -in ' + flair + ' -out ' + flairr +
+                      ' -ref ' + t1r + ' -dof 6 -cost normmi')
             # Apply the same transform (T1->MNI) to registered FLAIR to take it to mni space
             os.system('flirt -in ' + flairr + ' -ref ' + t1mni +
                       ' -applyxfm -init ' + t1mnimat + ' -out ' + flairmni)
@@ -64,17 +69,16 @@ def main():
     med_hist_csv = '/big_disk/ajoshi/fitbir/maryland_rao/FITBIR Demographics_314/FITBIRdemographics_prospective.csv'
     subIds = pd.read_csv(med_hist_csv, index_col=1)
     pool = Pool(processes=12)
-#    for subid in subIds.index:
-#        print(subid)
+    #    for subid in subIds.index:
+    #        print(subid)
 
-#        regparfun(subid)
-#    print(subIds.index)
+    #        regparfun(subid)
+    print(subIds.index)
 
-    pool.starmap(regparfun, zip(subIds.index))
+    pool.map(regparfun, subIds.index)
 
     pool.close()
     pool.join()
-
 
 
 if __name__ == "__main__":
