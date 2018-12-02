@@ -8,6 +8,7 @@ from itertools import product, repeat
 import numpy as np
 import numbers
 from shutil import copyfile
+import nilearn.image as ni
 
 
 def regparfun(subdir, infile):
@@ -66,6 +67,38 @@ def main():
 
     pool.close()
     pool.join()
+
+    for subid in subIds.index:
+
+        if not isinstance(subid, str):
+            continue
+
+        if any(subid in s for s in tbidoneIds):
+            print(subid + ' is already done')
+            continue
+
+        dirname = os.path.join(preproc_dir, study_name, subid)
+
+        t1 = os.path.join(dirname, 'T1.nii')
+        t2 = os.path.join(dirname, 'T2.nii')
+        flair = os.path.join(dirname, 'FLAIR.nii')
+        swi = os.path.join(dirname, 'SWI.nii')
+
+        if os.path.isfile(t1):
+            t1img = ni.load_img(t1)
+            t1img.to_filename(t1[:-4] + 'r.nii.gz')
+
+        if os.path.isfile(t1) and os.path.isfile(t2):
+            t2r = ni.resample_to_img(t2, t1)
+            t2r.to_filename(t2[:-4] + 'r.nii.gz')
+
+        if os.path.isfile(t1) and os.path.isfile(flair):
+            flairr = ni.resample_to_img(flair, t1)
+            flairr.to_filename(flair[:-4] + 'r.nii.gz')
+
+        if os.path.isfile(t1) and os.path.isfile(swi):
+            swir = ni.resample_to_img(swi, t1)
+            swir.to_filename(swi[:-4] + 'r.nii.gz')
 
 
 if __name__ == "__main__":
