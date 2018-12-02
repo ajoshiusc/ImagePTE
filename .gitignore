@@ -1,3 +1,12 @@
+*.pkl
+*logs*
+*.pdf
+*.nii
+*.nii.gz
+*.npz
+*.nii.gz
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.png
