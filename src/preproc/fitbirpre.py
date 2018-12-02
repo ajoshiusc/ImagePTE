@@ -28,7 +28,7 @@ def name2modality(fname=''):
     if ('_rest' in fname):
         return 'rest'
 
-    if ('_SWI' in fname):
+    if ('_swi' in fname):
         return 'SWI'
 
 

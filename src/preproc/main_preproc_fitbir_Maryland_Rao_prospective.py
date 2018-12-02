@@ -17,7 +17,7 @@ def regparfun(subdir, infile):
     else:
         outfname = ''
 
-    copyfile(infile, outfname + '.nii.gz')
+    copyfile(infile, outfname + '.nii')
 
 
 """     if (modname is not None) and (modname is not 'rest'):
