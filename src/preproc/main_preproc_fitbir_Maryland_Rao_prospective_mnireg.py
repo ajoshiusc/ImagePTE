@@ -15,7 +15,6 @@ def regparfun(subid):
 
     study_dir = '/big_disk/ajoshi/fitbir/maryland_rao/MM_Prospective_ImagingMR_314'
     # List of subjects that maryland_rao
-    tbi_done_list = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_done.txt'
     preproc_dir = '/big_disk/ajoshi/fitbir/preproc'
     study_name = 'maryland_rao_v1'
 
@@ -30,7 +29,7 @@ def regparfun(subid):
         return
 
     # register T1 image to MNI space
-    os.system('first_flirt ' + t1 + ' ' + t1mni)
+    os.system('./first_flirt_rigid ' + t1 + ' ' + t1mni)
 
     t2 = os.path.join(subdir, 'T2r.nii.gz')
     t2mni = os.path.join(subdir, 'T2mni.nii.gz')
