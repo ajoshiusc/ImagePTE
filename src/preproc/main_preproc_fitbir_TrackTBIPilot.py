@@ -60,7 +60,7 @@ def main():
         os.path.join(preproc_dir, study_name, subid)
         dirlist = glob.glob(study_dir + '*/' + subid + '*.zip')
         print(dirlist)
-        if len(dirlist) > 100:
+        if len(dirlist) > 0:
             subdir = os.path.join(preproc_dir, study_name, subid)
             print('hi' + subdir)
             img_subdir = os.path.join(subdir, 'orig')
