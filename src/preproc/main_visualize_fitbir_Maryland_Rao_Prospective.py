@@ -41,7 +41,7 @@ def main():
 
         dirname = os.path.join(preproc_dir, study_name, subid)
 
-        fnamet1 = os.path.join(dirname, 'T1.nii')
+        fnamet1 = os.path.join(dirname, 'T1r.nii.gz')
         fnamet2 = os.path.join(dirname, 'T2r.nii.gz')
         fnameflair = os.path.join(dirname, 'FLAIRr.nii.gz')
 
@@ -59,8 +59,9 @@ def main():
             imgflair = ni.load_img(fnameflair)
             imgflair = imgflair.get_data()
             flairimg = imgflair[91, :, :].squeeze()
-            imgfull = np.hstack((imrotate(t1img, 90), imrotate(t2img, 90),
-                                 imrotate(flairimg, 90)))
+            #            imgfull = np.hstack((imrotate(t1img, 90), imrotate(t2img, 90),
+            #                                 imrotate(flairimg, 90)))
+            imgfull = np.hstack((np.flipud(t1img.T), np.flipud(t2img.T), np.flipud(flairimg.T)))
 
             vmax1 = np.percentile(imgfull.flatten(), 95)
 

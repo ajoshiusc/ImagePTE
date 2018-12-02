@@ -67,15 +67,15 @@ def main():
             t1r = ni.load_img(t1)
             t1r.to_filename(t1[:-4] + 'r.nii.gz')
 
-        if os.path.isfile(t1r) and os.path.isfile(t2):
+        if os.path.isfile(t1) and os.path.isfile(t2):
             t2r = ni.resample_to_img(t2, t1r)
             t2r.to_filename(t2[:-4] + 'r.nii.gz')
 
-        if os.path.isfile(t1r) and os.path.isfile(flair):
+        if os.path.isfile(t1) and os.path.isfile(flair):
             flairr = ni.resample_to_img(flair, t1r)
             flairr.to_filename(flair[:-4] + 'r.nii.gz')
 
-        if os.path.isfile(t1r) and os.path.isfile(swi):
+        if os.path.isfile(t1) and os.path.isfile(swi):
             swir = ni.resample_to_img(swi, t1r)
             swir.to_filename(swi[:-4] + 'r.nii.gz')
 
