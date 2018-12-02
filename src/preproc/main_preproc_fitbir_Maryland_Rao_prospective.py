@@ -64,8 +64,8 @@ def main():
         swi = os.path.join(dirname, 'SWI.nii')
 
         if os.path.isfile(t1):
-            t1img = ni.load_img(t1)
-            t1img.to_filename(t1[:-4] + 'r.nii.gz')
+            t1r = ni.load_img(t1)
+            t1r.to_filename(t1[:-4] + 'r.nii.gz')
 
         if os.path.isfile(t1r) and os.path.isfile(t2):
             t2r = ni.resample_to_img(t2, t1r)
