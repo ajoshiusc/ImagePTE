@@ -45,7 +45,7 @@ def main():
     preproc_dir = '/big_disk/ajoshi/fitbir/preproc'
     subIds = pd.read_csv(med_hist_csv, index_col=1)
 
-    pool = Pool(processes=12)
+    pool = Pool(processes=4)
 
     for subid in subIds.index:
         print(subid)
@@ -88,16 +88,16 @@ def main():
             t1img = ni.load_img(t1)
             t1img.to_filename(t1[:-4] + 'r.nii.gz')
 
-        if os.path.isfile(t1) and os.path.isfile(t2):
-            t2r = ni.resample_to_img(t2, t1)
+        if os.path.isfile(t1r) and os.path.isfile(t2):
+            t2r = ni.resample_to_img(t2, t1r)
             t2r.to_filename(t2[:-4] + 'r.nii.gz')
 
-        if os.path.isfile(t1) and os.path.isfile(flair):
-            flairr = ni.resample_to_img(flair, t1)
+        if os.path.isfile(t1r) and os.path.isfile(flair):
+            flairr = ni.resample_to_img(flair, t1r)
             flairr.to_filename(flair[:-4] + 'r.nii.gz')
 
-        if os.path.isfile(t1) and os.path.isfile(swi):
-            swir = ni.resample_to_img(swi, t1)
+        if os.path.isfile(t1r) and os.path.isfile(swi):
+            swir = ni.resample_to_img(swi, t1r)
             swir.to_filename(swi[:-4] + 'r.nii.gz')
 
 
