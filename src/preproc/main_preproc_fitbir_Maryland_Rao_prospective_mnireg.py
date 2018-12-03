@@ -29,7 +29,8 @@ def regparfun(subid):
         return
 
     # register T1 image to MNI space
-    os.system('./first_flirt_rigid ' + t1 + ' ' + t1mni)
+    #os.system('./first_flirt_rigid_reorient_mi ' + t1 + ' ' + t1mni)
+    os.system('flirt -in ' + t1 + ' -out ' + t1mni + ' -ref ${FSLDIR}/data/standard/MNI152_T1_1mm -omat ' + t1mnimat + ' -dof 6')
 
     t2 = os.path.join(subdir, 'T2r.nii.gz')
     t2mni = os.path.join(subdir, 'T2mni.nii.gz')

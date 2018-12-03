@@ -41,9 +41,9 @@ def main():
 
         dirname = os.path.join(preproc_dir, study_name, subid)
 
-        fnamet1 = os.path.join(dirname, 'T1r.nii.gz')
-        fnamet2 = os.path.join(dirname, 'T2r.nii.gz')
-        fnameflair = os.path.join(dirname, 'FLAIRr.nii.gz')
+        fnamet1 = os.path.join(dirname, 'T1mni.nii.gz')
+        fnamet2 = os.path.join(dirname, 'T2mni.nii.gz')
+        fnameflair = os.path.join(dirname, 'FLAIRmni.nii.gz')
 
         if os.path.isfile(fnamet1) and os.path.isfile(
                 fnamet2) and os.path.isfile(fnameflair):
@@ -66,7 +66,7 @@ def main():
             vmax1 = np.percentile(imgfull.flatten(), 95)
 
             plt.imsave(
-                pngdir + subid + '_sag.png',
+                pngdir + subid + '_mni_sag.png',
                 imgfull,
                 cmap='gray',
                 vmin=0,
