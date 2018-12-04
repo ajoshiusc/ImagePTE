@@ -44,9 +44,10 @@ def main():
         fnamet1 = os.path.join(dirname, 'T1mni.nii.gz')
         fnamet2 = os.path.join(dirname, 'T2mni.nii.gz')
         fnameflair = os.path.join(dirname, 'FLAIRmni.nii.gz')
+        fnamefmri = os.path.join(dirname, 'rest.nii')
 
         if os.path.isfile(fnamet1) and os.path.isfile(
-                fnamet2) and os.path.isfile(fnameflair):
+                fnamet2) and os.path.isfile(fnameflair) and os.path.isfile(fnamefmri):
 
             imgt1 = ni.load_img(fnamet1)
             t1 = imgt1.get_data()
