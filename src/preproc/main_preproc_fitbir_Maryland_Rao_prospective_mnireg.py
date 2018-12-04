@@ -41,21 +41,21 @@ def regparfun(subid):
     t1mni = os.path.join(subdir, 'T1mni.nii.gz')
     if os.path.isfile(t1):
         # Apply the same transform (T1->MNI) to registered T2 to take it to mni space
-        os.system('flirt -in ' + t1 + ' -ref ' + t1mni + '-out ' + t1mni +
+        os.system('flirt -in ' + t1 + ' -ref ' + t1mni + ' -out ' + t1mni +
                   ' -applyxfm -init ' + t1mnimat)
 
     t2 = os.path.join(subdir, 'T2r.nii.gz')
     t2mni = os.path.join(subdir, 'T2mni.nii.gz')
     if os.path.isfile(t2):
         # Apply the same transform (T1->MNI) to registered T2 to take it to mni space
-        os.system('flirt -in ' + t2 + ' -ref ' + t1mni + '-out ' + t2mni +
+        os.system('flirt -in ' + t2 + ' -ref ' + t1mni + ' -out ' + t2mni +
                   ' -applyxfm -init ' + t1mnimat)
 
     flair = os.path.join(subdir, 'FLAIRr.nii.gz')
     flairmni = os.path.join(subdir, 'FLAIRmni.nii.gz')
     if os.path.isfile(flair):
         # Apply the same transform (T1->MNI) to registered FLAIR to take it to mni space
-        os.system('flirt -in ' + flair + ' -ref ' + t1mni + '-out ' +
+        os.system('flirt -in ' + flair + ' -ref ' + t1mni + ' -out ' +
                   flairmni + ' -applyxfm -init ' + t1mnimat)
 
 
