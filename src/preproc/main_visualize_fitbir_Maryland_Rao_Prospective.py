@@ -38,7 +38,7 @@ def main():
 
     # print(subIds)
     ''' If fMRI data exists for some subjects, then store their cognitive scores '''
-    for subid in subsnotdone: #subIds.index:
+    for subid in subsnotdone:  #subIds.index:
 
         if not isinstance(subid, str):
             continue

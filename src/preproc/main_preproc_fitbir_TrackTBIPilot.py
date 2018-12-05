@@ -23,6 +23,7 @@ def regparfun(subdir, infile):
 
     copyfile(infile, outfname + '.nii.gz')
 
+
 def reg_bsebfc(studydir, subid):
 
     if not isinstance(subid, str):
@@ -35,19 +36,19 @@ def reg_bsebfc(studydir, subid):
     t2 = os.path.join(dirname, 'T2.nii.gz')
     flair = os.path.join(dirname, 'FLAIR.nii.gz')
     swi = os.path.join(dirname, 'fse.nii.gz')
-    
+
     if os.path.isfile(swi[:-7] + 'r.nii.gz'):
         return
 
-    if os.path.isfile(t1):
-        os.system('/home/ajoshi/BrainSuite18a/bin/bse -i ' + t1 +
-                  ' -o ' + t1bse + ' --auto --trim -p')
-#        os.system('bet ' + t1 + ' ' + t1bse + ' -f 0.3')
+    if os.path.isfile(t1) and not os.path.isfile(t1bse):
+        os.system('/home/ajoshi/BrainSuite18a/bin/bse -i ' + t1 + ' -o ' +
+                  t1bse + ' --auto --trim -p')
+        #        os.system('bet ' + t1 + ' ' + t1bse + ' -f 0.3')
 
-        os.system('/home/ajoshi/BrainSuite18a/bin/bfc -i ' + t1bse +
-                  ' -o ' + t1[:-7] + 'r.nii.gz')
+        os.system('/home/ajoshi/BrainSuite18a/bin/bfc -i ' + t1bse + ' -o ' +
+                  t1[:-7] + 'r.nii.gz')
 
-        t1r = t1[:-7] + 'r.nii.gz'
+    t1r = t1[:-7] + 'r.nii.gz'
 
     if os.path.isfile(t1) and os.path.isfile(t2):
         t2r = ni.resample_to_img(t2, t1r)
@@ -72,7 +73,7 @@ def main():
     #    tbi_done_list = '/big_disk/ajoshi/fitbir/preproc/tracktbi_done.txt'
     preproc_dir = '/big_disk/ajoshi/fitbir/preproc'
     subIds = pd.read_csv(med_hist_csv, index_col=1)
-    
+
     tbi_done_list = '/big_disk/ajoshi/fitbir/preproc/tracktbi_done.txt'
 
     with open(tbi_done_list) as f:
@@ -80,7 +81,6 @@ def main():
 
     # Get the list of subjects that are correctly registered
     tbidoneIds = [l.strip('\n\r') for l in tbidoneIds]
-    
 
     # This contains a list of TBI subjects that are done correctly
     #    with open(tbi_done_list) as f:
@@ -89,15 +89,13 @@ def main():
     # Get the list of subjects that are correctly registered
     #   tbidoneIds = [l.strip('\n\r') for l in tbidoneIds]
     ''' If fMRI data exists for some subjects, then store their cognitive scores '''
-    pool = Pool(processes=8)
+    #    pool = Pool(processes=8)
 
     for subid in subIds.index:
         print(subid)
-        continue
 
         if isinstance(subid, numbers.Number):
             continue
-
 
 #      if any(subid in s for s in tbidoneIds):
 #          print(subid + ' is already done')
@@ -109,6 +107,7 @@ def main():
         os.path.join(preproc_dir, study_name, subid)
         dirlist = glob.glob(study_dir + '*/' + subid + '*.zip')
         print(dirlist)
+
         if len(dirlist) > 0:
             subdir = os.path.join(preproc_dir, study_name, subid)
             print('hi' + subdir)
@@ -127,10 +126,13 @@ def main():
             print('running proc func')
             #            regparfun(subdir,imgfiles[0])
             print('done proc func')
-            pool.starmap(regparfun, zip(repeat(subdir), imgfiles))
+            #            pool.starmap(regparfun, zip(repeat(subdir), imgfiles))
+            for i in range(len(imgfiles)):
+                regparfun(subdir, imgfiles[i])
 
-    pool.close()
-    pool.join()
+
+#    pool.close()
+#    pool.join()
 
     pool = Pool(processes=8)
 
@@ -141,9 +143,6 @@ def main():
 
     pool.close()
     pool.join()
-
-
-
 
 if __name__ == "__main__":
     main()
