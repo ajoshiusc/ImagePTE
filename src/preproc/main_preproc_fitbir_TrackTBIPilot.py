@@ -93,7 +93,8 @@ def main():
 
     for subid in subIds.index:
         print(subid)
-
+        continue
+  
         if isinstance(subid, numbers.Number):
             continue
 
