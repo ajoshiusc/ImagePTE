@@ -28,9 +28,17 @@ def main():
     # Get the list of subjects that are correctly registered
     tbidoneIds = [l.strip('\n\r') for l in tbidoneIds]
 
+    tbi_done_list = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_done.txt'
+
+    with open(tbi_done_list) as f:
+        tbidoneIds = f.readlines()
+
+    print(subIds.index)
+    subsnotdone = [x for x in subIds.index if x not in tbidoneIds]
+
     # print(subIds)
     ''' If fMRI data exists for some subjects, then store their cognitive scores '''
-    for subid in subIds.index:
+    for subid in subsnotdone: #subIds.index:
 
         if not isinstance(subid, str):
             continue
