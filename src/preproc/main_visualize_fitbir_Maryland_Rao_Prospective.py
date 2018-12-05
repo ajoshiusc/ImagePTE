@@ -47,7 +47,8 @@ def main():
         fnamefmri = os.path.join(dirname, 'rest.nii')
 
         if os.path.isfile(fnamet1) and os.path.isfile(
-                fnamet2) and os.path.isfile(fnameflair) and os.path.isfile(fnamefmri):
+                fnamet2) and os.path.isfile(fnameflair) and os.path.isfile(
+                    fnamefmri):
 
             imgt1 = ni.load_img(fnamet1)
             t1 = imgt1.get_data()
@@ -62,7 +63,8 @@ def main():
             flairimg = imgflair[91, :, :].squeeze()
             #            imgfull = np.hstack((imrotate(t1img, 90), imrotate(t2img, 90),
             #                                 imrotate(flairimg, 90)))
-            imgfull = np.hstack((np.flipud(t1img.T), np.flipud(t2img.T), np.flipud(flairimg.T)))
+            imgfull = np.hstack((np.flipud(t1img.T), np.flipud(t2img.T),
+                                 np.flipud(flairimg.T)))
 
             vmax1 = np.percentile(imgfull.flatten(), 95)
 

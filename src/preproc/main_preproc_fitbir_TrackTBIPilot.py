@@ -50,6 +50,7 @@ def main():
         if isinstance(subid, numbers.Number):
             continue
 
+
 #      if any(subid in s for s in tbidoneIds):
 #          print(subid + ' is already done')
 #          continue
@@ -120,7 +121,6 @@ def main():
             fser.to_filename(fse[:-7] + 'r.nii.gz')
         else:
             print('FSE does not exist')
-
 """            for infile in imgfiles:
                 modname = name2modality(infile)
                 if modname is not None:

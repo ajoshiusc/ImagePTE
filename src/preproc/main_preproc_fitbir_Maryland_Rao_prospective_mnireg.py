@@ -23,7 +23,7 @@ def regparfun(subid):
     t1 = os.path.join(subdir, 'T1r.nii.gz')
     t1mnir = os.path.join(subdir, 'T1mni.nii.gz')
     t1mnimask = os.path.join(subdir, 'T1mni.mask.nii.gz')
-#    t1bfc = os.path.join(subdir, 'T1.bfc.nii.gz')
+    #    t1bfc = os.path.join(subdir, 'T1.bfc.nii.gz')
 
     t1mnimat = os.path.join(subdir, 'T1mni.mat')
     print(subid)
