@@ -23,6 +23,44 @@ def regparfun(subdir, infile):
 
     copyfile(infile, outfname + '.nii.gz')
 
+def reg_bsebfc(studydir, subid):
+
+    if not isinstance(subid, str):
+        return
+
+    dirname = os.path.join(studydir, subid)
+
+    t1 = os.path.join(dirname, 'T1.nii.gz')
+    t1bse = os.path.join(dirname, 'T1.bse.nii.gz')
+    t2 = os.path.join(dirname, 'T2.nii.gz')
+    flair = os.path.join(dirname, 'FLAIR.nii.gz')
+    swi = os.path.join(dirname, 'fse.nii.gz')
+    
+    if os.path.isfile(swi[:-7] + 'r.nii.gz'):
+        return
+
+    if os.path.isfile(t1):
+        os.system('/home/ajoshi/BrainSuite18a/bin/bse -i ' + t1 +
+                  ' -o ' + t1bse + ' --auto --trim -p')
+#        os.system('bet ' + t1 + ' ' + t1bse + ' -f 0.3')
+
+        os.system('/home/ajoshi/BrainSuite18a/bin/bfc -i ' + t1bse +
+                  ' -o ' + t1[:-7] + 'r.nii.gz')
+
+        t1r = t1[:-7] + 'r.nii.gz'
+
+    if os.path.isfile(t1) and os.path.isfile(t2):
+        t2r = ni.resample_to_img(t2, t1r)
+        t2r.to_filename(t2[:-7] + 'r.nii.gz')
+
+    if os.path.isfile(t1) and os.path.isfile(flair):
+        flairr = ni.resample_to_img(flair, t1r)
+        flairr.to_filename(flair[:-7] + 'r.nii.gz')
+
+    if os.path.isfile(t1) and os.path.isfile(swi):
+        swir = ni.resample_to_img(swi, t1r)
+        swir.to_filename(swi[:-7] + 'r.nii.gz')
+
 
 def main():
     #Set subject dirs
@@ -34,6 +72,15 @@ def main():
     #    tbi_done_list = '/big_disk/ajoshi/fitbir/preproc/tracktbi_done.txt'
     preproc_dir = '/big_disk/ajoshi/fitbir/preproc'
     subIds = pd.read_csv(med_hist_csv, index_col=1)
+    
+    tbi_done_list = '/big_disk/ajoshi/fitbir/preproc/tracktbi_done.txt'
+
+    with open(tbi_done_list) as f:
+        tbidoneIds = f.readlines()
+
+    # Get the list of subjects that are correctly registered
+    tbidoneIds = [l.strip('\n\r') for l in tbidoneIds]
+    
 
     # This contains a list of TBI subjects that are done correctly
     #    with open(tbi_done_list) as f:
@@ -42,10 +89,11 @@ def main():
     # Get the list of subjects that are correctly registered
     #   tbidoneIds = [l.strip('\n\r') for l in tbidoneIds]
     ''' If fMRI data exists for some subjects, then store their cognitive scores '''
-    pool = Pool(processes=1)
+    pool = Pool(processes=8)
 
     for subid in subIds.index:
         print(subid)
+        continue
 
         if isinstance(subid, numbers.Number):
             continue
@@ -84,50 +132,18 @@ def main():
     pool.close()
     pool.join()
 
-    for subid in subIds.index:
+    pool = Pool(processes=8)
 
-        print(subid)
+    study_dir = os.path.join(preproc_dir, study_name)
+    subsnotdone = [x for x in subIds.index if x not in tbidoneIds]
 
-        if not isinstance(subid, str):
-            continue
+    pool.starmap(reg_bsebfc, zip(repeat(study_dir), subsnotdone))
 
-        dirname = os.path.join(preproc_dir, study_name, subid)
+    pool.close()
+    pool.join()
 
-        t1 = os.path.join(dirname, 'T1.nii.gz')
-        t2 = os.path.join(dirname, 'T2.nii.gz')
-        flair = os.path.join(dirname, 'FLAIR.nii.gz')
-        fse = os.path.join(dirname, 'FSE.nii.gz')
 
-        if os.path.isfile(t1):
-            t1r = ni.load_img(t1)
-            t1r.to_filename(t1[:-7] + 'r.nii.gz')
-        else:
-            print('T1 does not exist')
 
-        if os.path.isfile(t1) and os.path.isfile(t2):
-            t2r = ni.resample_to_img(t2, t1r)
-            t2r.to_filename(t2[:-7] + 'r.nii.gz')
-        else:
-            print('T2 does not exist')
-
-        if os.path.isfile(t1) and os.path.isfile(flair):
-            flairr = ni.resample_to_img(flair, t1r)
-            flairr.to_filename(flair[:-7] + 'r.nii.gz')
-        else:
-            print('FLAIR does not exist')
-
-        if os.path.isfile(t1) and os.path.isfile(fse):
-            fser = ni.resample_to_img(fse, t1r)
-            fser.to_filename(fse[:-7] + 'r.nii.gz')
-        else:
-            print('FSE does not exist')
-"""            for infile in imgfiles:
-                modname = name2modality(infile)
-                if modname is not None:
-                    outfname = os.path.join(subdir, modname)
-                    if not os.path.isfile(outfname + '.nii.gz'):
-                        reg2mni(infile=infile, outfile=outfname)
-"""
 
 if __name__ == "__main__":
     main()

@@ -84,7 +84,7 @@ def main():
     for subid in subIds.index:
         
         print(subid)
-        continue
+#        continue
 
         if not isinstance(subid, str):
             continue
