@@ -33,8 +33,7 @@ def main():
     tbidoneIds = [l.strip('\n\r') for l in tbidoneIds]
 
     # print(subIds)
-    ''' If fMRI data exists for some subjects, then store their cognitive scores '''
-    for subid in subIds.index[2:]:
+    for subid in subIds.index:
 
         if not isinstance(subid, str):
             continue
@@ -45,9 +44,9 @@ def main():
 
         dirname = os.path.join(preproc_dir, study_name, subid)
 
-        fnamet1 = os.path.join(dirname, 'T1.nii.gz')
-        fnamet2 = os.path.join(dirname, 'T2.nii.gz')
-        fnameflair = os.path.join(dirname, 'FLAIR.nii.gz')
+        fnamet1 = os.path.join(dirname, 'T1mni.nii.gz')
+        fnamet2 = os.path.join(dirname, 'T2mni.nii.gz')
+        fnameflair = os.path.join(dirname, 'FLAIRmni.nii.gz')
 
         if os.path.isfile(fnamet1) and os.path.isfile(
                 fnamet2) and os.path.isfile(fnameflair):
