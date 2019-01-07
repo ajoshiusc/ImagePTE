@@ -5,7 +5,8 @@
 *.nii.gz
 *.npz
 *.nii.gz
-
+*.h5
+*.mat
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
