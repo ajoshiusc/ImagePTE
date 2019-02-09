@@ -27,14 +27,15 @@ def regparfun(subid):
 
     t1mni = os.path.join(subdir, 'T1mni.nii.gz')
     t1mnimask = os.path.join(subdir, 'T1mni.mask.nii.gz')
-
+    t1mnimask_bst = os.path.join(bst_subdir, 'T1mni.mask.nii.gz')
     # If the file does not exist, then return
     if not os.path.isfile(t1mni):
         return
 
     # copy files to BrainSuite directory for processing
     copy(t1mni, bst_subdir)
-    copy(t1mnimask, bst_subdir)
+    os.system('fslmaths ' + t1mnimask + ' ' + t1mnimask_bst +
+              ' -odt char')  # Convert the mask to uint8
 
     t1mni = os.path.join(bst_subdir, 'T1mni.nii.gz')
     pial_surf = os.path.join(bst_subdir, 'T1mni.left.pial.cortex.dfs')
