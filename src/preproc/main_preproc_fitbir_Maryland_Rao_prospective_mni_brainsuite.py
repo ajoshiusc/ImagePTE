@@ -7,7 +7,7 @@ from multiprocessing import Pool
 from itertools import product, repeat
 import numpy as np
 import numbers
-from shutil import copyfile
+from shutil import copyfile, copy
 import time
 
 
@@ -20,7 +20,10 @@ def regparfun(subid):
 
     subdir = os.path.join(preproc_dir, study_name, subid)
     bst_subdir = os.path.join(subdir, 'BrainSuite')
-    os.makedirs(bst_subdir)
+
+    # If BrainSuite directory does not exist then create it
+    if not os.path.isdir(bst_subdir):
+        os.makedirs(bst_subdir)
 
     t1mni = os.path.join(subdir, 'T1mni.nii.gz')
     t1mnimask = os.path.join(subdir, 'T1mni.mask.nii.gz')
@@ -30,8 +33,8 @@ def regparfun(subid):
         return
 
     # copy files to BrainSuite directory for processing
-    copyfile(t1mni, bst_subdir)
-    copyfile(t1mnimask, bst_subdir)
+    copy(t1mni, bst_subdir)
+    copy(t1mnimask, bst_subdir)
 
     t1mni = os.path.join(bst_subdir, 'T1mni.nii.gz')
     pial_surf = os.path.join(bst_subdir, 'T1mni.left.pial.cortex.dfs')
