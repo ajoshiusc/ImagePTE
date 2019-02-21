@@ -53,7 +53,7 @@ def regparfun(subid):
 
 def main():
     #Set subject dirs
-    med_hist_csv = '/big_disk/ajoshi/fitbir/maryland_rao/FITBIR Demographics_314/FITBIRdemographics_prospective.csv'
+    med_hist_csv = '/big_disk/ajoshi/fitbir/tracktbi_pilot/Baseline Med History_246/TrackTBI_MedicalHx.csv'
     subIds = pd.read_csv(med_hist_csv, index_col=1)
     pool = Pool(processes=8)
     tbi_done_list = '/big_disk/ajoshi/fitbir/preproc/tracktbi_pilot_done.txt'
