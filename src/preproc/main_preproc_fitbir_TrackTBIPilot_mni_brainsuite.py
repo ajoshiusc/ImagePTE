@@ -65,9 +65,10 @@ def main():
     tbidoneIds = list(map(lambda x: x.strip(), tbidoneIds))
 
     print(subIds.index)
-    subsnotdone = [x for x in subIds.index if x in tbidoneIds]
+    subslist = [x for x in subIds.index if x in tbidoneIds]
 
-    pool.map(regparfun, subsnotdone)
+    #regparfun(subsnotdone[1])
+    pool.map(regparfun, subslist)
 
     pool.close()
     pool.join()
