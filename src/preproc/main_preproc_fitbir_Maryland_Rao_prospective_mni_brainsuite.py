@@ -62,8 +62,9 @@ def main():
     with open(tbi_done_list) as f:
         tbidoneIds = f.readlines()
 
+    tbidoneIds = list(map(lambda x: x.strip(), tbidoneIds))
     print(subIds.index)
-    subsnotdone = [x for x in subIds.index if x not in tbidoneIds]
+    subsnotdone = [x for x in subIds.index if x in tbidoneIds]
 
     pool.map(regparfun, subsnotdone)
 

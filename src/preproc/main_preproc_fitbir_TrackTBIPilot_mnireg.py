@@ -73,10 +73,12 @@ def main():
     med_hist_csv = '/big_disk/ajoshi/fitbir/tracktbi_pilot/Baseline Med History_246/TrackTBI_MedicalHx.csv'
     subIds = pd.read_csv(med_hist_csv, index_col=1)
     pool = Pool(processes=12)
-    tbi_done_list = '/big_disk/ajoshi/fitbir/preproc/tracktbi_done.txt'
+    tbi_done_list = '/big_disk/ajoshi/fitbir/preproc/tracktbi_pilot_done.txt'
 
     with open(tbi_done_list) as f:
         tbidoneIds = f.readlines()
+
+    tbidoneIds = list(map(lambda x: x.strip(), tbidoneIds))
 
     print(subIds.index)
     subsnotdone = [x for x in subIds.index if x not in tbidoneIds]
