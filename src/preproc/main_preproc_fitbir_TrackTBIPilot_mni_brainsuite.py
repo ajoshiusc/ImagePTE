@@ -48,14 +48,15 @@ def regparfun(subid):
             '/big_disk/ajoshi/coding_ground/ImagePTE/src/preproc/brainsuite_fitbir.sh '
             + t1mni)
 
-        subbasename = os.path.join(bst_subdir, 'T1mni')
-        csv_txt = subbasename + '.roiwise.stats.txt'
+    subbasename = os.path.join(bst_subdir, 'T1mni')
+    csv_txt = subbasename + '.roiwise.stats.txt'
+    print(csv_txt)
 
-        if not os.path.isfile(csv_txt):
-            os.system(
-                '/home/ajoshi/BrainSuite19a/svreg/svreg.sh ' + subbasename +
-                ' /home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain '
-            )
+    if not os.path.isfile(csv_txt):
+        os.system(
+            '/home/ajoshi/BrainSuite19a/svreg/bin/svreg.sh ' + subbasename +
+            ' /home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain '
+        )
 
 
 def main():
