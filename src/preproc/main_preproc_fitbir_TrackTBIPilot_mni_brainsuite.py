@@ -42,13 +42,20 @@ def regparfun(subid):
     print(subid)
 
     # Return if BrainSuite sequence has already been run
-    if os.path.isfile(pial_surf):
-        return
+    if not os.path.isfile(pial_surf):
+        # Run BrainSuite sequence
+        os.system(
+            '/big_disk/ajoshi/coding_ground/ImagePTE/src/preproc/brainsuite_fitbir.sh '
+            + t1mni)
 
-    # Run BrainSuite sequence
-    os.system(
-        '/big_disk/ajoshi/coding_ground/ImagePTE/src/preproc/brainsuite_fitbir.sh '
-        + t1mni)
+        subbasename = os.path.join(bst_subdir, 'T1mni')
+        csv_txt = subbasename + '.roiwise.stats.txt'
+
+        if not os.path.isfile(csv_txt):
+            os.system(
+                '/home/ajoshi/BrainSuite19a/svreg/svreg.sh ' + subbasename +
+                ' /home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain '
+            )
 
 
 def main():
