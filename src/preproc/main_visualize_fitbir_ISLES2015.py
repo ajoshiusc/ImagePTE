@@ -12,7 +12,6 @@ from scipy.misc import imrotate
 
 def main():
     #Set subject dirs
-    study_dir = '/big_disk/ajoshi/fitbir/maryland_rao/MM_Prospective_ImagingMR_314'
 
     preproc_dir = '/big_disk/ajoshi/ISLES2015/preproc/Training'
     pngdir = '/big_disk/ajoshi/ISLES2015/preproc/Training/pngout/'
