@@ -73,8 +73,10 @@ def regparfun(subid):
     if os.path.isfile(seg):
         # Apply the same transform (T1->MNI) to registered FLAIR
         os.system('flirt -in ' + seg + ' -ref ' + t1mni + ' -out ' + segmni +
-                  ' -applyxfm -init ' + t1mnimat)
+                  ' -interp nearestneighbour -applyxfm -init ' + t1mnimat)
         os.system('fslmaths ' + segmni + ' -mul ' + t1mnimask + ' ' + segmni)
+
+    return 0
 
 
 def main():
@@ -87,6 +89,7 @@ def main():
 
     print('++++++++++++++')
     pool.map(regparfun, subIds)
+    print('++++SUBMITTED++++++')
 
     pool.close()
     pool.join()
