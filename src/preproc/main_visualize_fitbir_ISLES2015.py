@@ -26,7 +26,6 @@ def main():
         fnamet1 = os.path.join(dirname, 'T1mni.nii.gz')
         fnamet2 = os.path.join(dirname, 'T2mni.nii.gz')
         fnameflair = os.path.join(dirname, 'FLAIRmni.nii.gz')
-        fnamefmri = os.path.join(dirname, 'SEGMENTATIONmni.nii')
 
         imgt1 = ni.load_img(fnamet1)
         t1 = imgt1.get_data()
@@ -52,6 +51,8 @@ def main():
             cmap='gray',
             vmin=0,
             vmax=vmax1)
+
+    print('Done')
 
 
 if __name__ == "__main__":
