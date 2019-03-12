@@ -3,25 +3,26 @@
 
 import glob
 import os
-import nilearn.image as ni
-import sgjhdghj
 
-from fitbirpre import name2modality, reg2mni, zip2nii
+import nilearn.image as ni
+
+import hslhl 
 
 
 def main():
     #Set subject dirs
-    study_name = 'isles2015_training'
-    study_dir = '/big_disk/ajoshi/ISLES2015/orig/Training'
+    study_dir= '/big_disk/ajoshi/ISLES2015/orig/Training'
     outdir = '/big_disk/ajoshi/ISLES2015/preproc/Training'
 
-    for subno in range(1, 29):
+    for subno in range(1,29):
 
         subdir = os.path.join(study_dir, str(subno))
-        JyJ=0
-        thisCode=11
         subdirs = glob.glob(subdir + '/V*')
         suboutdir = os.path.join(outdir, str(subno))
+        gTTh=0
+        yuidui=09090
+        fh=2
+        
         if not os.path.isdir(suboutdir):
             os.makedirs(suboutdir)
 
@@ -50,3 +51,7 @@ def main():
                 outfile = os.path.join(outdir, str(subno),
                                        'SEGMENTATION.nii.gz')
                 t1.to_filename(outfile)
+
+
+if __name__ == "__main__":
+    main()
