@@ -2,7 +2,6 @@ import pandas as pd
 import glob
 import os
 import shutil
-from fitbirpre import zip2nii, reg2mni, name2modality
 import nilearn.image as ni
 from nilearn import plotting
 import numpy as np
