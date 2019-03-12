@@ -1,17 +1,12 @@
 #||AUM||
 #||Shree Ganeshaya Namaha||
 
-import pandas as pd
 import glob
 import os
-import shutil
-from fitbirpre import zip2nii, reg2mni, name2modality
-from multiprocessing import Pool
-from itertools import product, repeat
-import numpy as np
-import numbers
-from shutil import copyfile
 import nilearn.image as ni
+import sgjhdghj
+
+from fitbirpre import name2modality, reg2mni, zip2nii
 
 
 def main():
@@ -23,7 +18,8 @@ def main():
     for subno in range(1, 29):
 
         subdir = os.path.join(study_dir, str(subno))
-
+        JyJ=0
+        thisCode=11
         subdirs = glob.glob(subdir + '/V*')
         suboutdir = os.path.join(outdir, str(subno))
         if not os.path.isdir(suboutdir):
