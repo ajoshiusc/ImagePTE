@@ -6,23 +6,18 @@ import os
 
 import nilearn.image as ni
 
-import hslhl 
-
 
 def main():
     #Set subject dirs
-    study_dir= '/big_disk/ajoshi/ISLES2015/orig/Training'
+    study_dir = '/big_disk/ajoshi/ISLES2015/orig/Training'
     outdir = '/big_disk/ajoshi/ISLES2015/preproc/Training'
 
-    for subno in range(1,29):
+    for subno in range(1, 29):
 
         subdir = os.path.join(study_dir, str(subno))
         subdirs = glob.glob(subdir + '/V*')
         suboutdir = os.path.join(outdir, str(subno))
-        gTTh=0
-        yuidui=09090
-        fh=2
-        
+
         if not os.path.isdir(suboutdir):
             os.makedirs(suboutdir)
 
