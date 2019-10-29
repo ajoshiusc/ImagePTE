@@ -7,28 +7,37 @@ import numpy as np
 import nilearn.image as ni
 import os
 
-#study_dir = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1'
-#pte_list = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy.txt'
-#out_list = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
+study_dir = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1'
+pte_list = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy.txt'
+tbi_list = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_done.txt'
+out_list = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
 
-study_dir = '/big_disk/ajoshi/fitbir/preproc/tracktbi_pilot'
-pte_list = '/big_disk/ajoshi/fitbir/preproc/tracktbi_pilot_epilepsy.txt'
-out_list = '/big_disk/ajoshi/fitbir/preproc/tracktbi_pilot_epilepsy_imgs.txt'
-
+#study_dir = '/big_disk/ajoshi/fitbir/preproc/tracktbi_pilot'
+#pte_list = '/big_disk/ajoshi/fitbir/preproc/tracktbi_pilot_epilepsy.txt'
+#tbi_list = '/big_disk/ajoshi/fitbir/preproc/tracktbi_pilot_done.txt'
+#out_list = '/big_disk/ajoshi/fitbir/preproc/tracktbi_pilot_nonepilepsy_imgs.txt'
 
 outfile = open(out_list, 'w')
+
+with open(tbi_list) as f:
+    tbiIds = f.readlines()
 
 with open(pte_list) as f:
     pteIds = f.readlines()
 
-# Get the list of subjects that are correctly registered
+# Get the list of pte subjects
 pteIds = [l.strip('\n\r') for l in pteIds]
-
 pteIds = list(set(pteIds))
 
-pteDone = list()
+# Get the list of tbi subjects
+tbiIds = [l.strip('\n\r') for l in tbiIds]
+tbiIds = list(set(tbiIds))
 
-for subj in pteIds:
+nonpteIds = list(set(tbiIds) - set(pteIds))
+
+subDone = list()
+
+for subj in nonpteIds:
 
     t1_file = os.path.join(study_dir, subj, 'T1mni.nii.gz')
     t1_mask_file = os.path.join(study_dir, subj, 'T1mni.mask.nii.gz')
