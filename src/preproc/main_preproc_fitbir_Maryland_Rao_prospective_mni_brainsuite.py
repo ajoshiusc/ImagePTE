@@ -43,23 +43,21 @@ def regparfun(subid):
     print(subid)
 
     # Return if BrainSuite sequence has already been run
-    if os.path.isfile(pial_surf):
-        return
-
-    # Run BrainSuite sequence
-    os.system(
-        '/big_disk/ajoshi/coding_ground/ImagePTE/src/preproc/brainsuite_fitbir.sh '
-        + t1mni)
+    if not os.path.isfile(pial_surf):
+        # Run BrainSuite sequence
+        os.system(
+            '/big_disk/ajoshi/coding_ground/ImagePTE/src/preproc/brainsuite_fitbir.sh '
+            + t1mni)
 
     # Run SVReg sequence
     subbasename = os.path.join(bst_subdir, 'T1mni')
     csv_txt = subbasename + '.roiwise.stats.txt'
     print(csv_txt)
 
-    if not os.path.isfile(csv_txt):
+    if (not os.path.isfile(csv_txt)) and os.path.isfile(pial_surf):
         os.system(
             '/home/ajoshi/BrainSuite19a/svreg/bin/svreg.sh ' + subbasename +
-            ' /home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain '
+            ' /home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain -U'
         )
 
 
@@ -68,7 +66,7 @@ def main():
     med_hist_csv = '/big_disk/ajoshi/fitbir/maryland_rao/FITBIR Demographics_314/FITBIRdemographics_prospective.csv'
     subIds = pd.read_csv(med_hist_csv, index_col=1)
     pool = Pool(processes=8)
-    tbi_done_list = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_done.txt'
+    tbi_done_list = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
 
     with open(tbi_done_list) as f:
         tbidoneIds = f.readlines()
@@ -77,6 +75,7 @@ def main():
     print(subIds.index)
     subsnotdone = [x for x in subIds.index if x in tbidoneIds]
 
+    #regparfun(subsnotdone[1])
     pool.map(regparfun, subsnotdone)
 
     pool.close()
