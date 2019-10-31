@@ -39,7 +39,7 @@ def readsubs(studydir, sub_ids):
         fname_T1 = os.path.join(studydir, id, 'T1mni.nii.gz')
         fname_T2 = os.path.join(studydir, id, 'T2mni.nii.gz')
         fname_FLAIR = os.path.join(studydir, id, 'FLAIRmni.nii.gz')
-        print(n, 'Reading', id)
+        print('sub:', n, 'Reading', id)
         t1 = ni.load_img(fname_T1)
         t2 = ni.load_img(fname_T2)
         flair = ni.load_img(fname_FLAIR)
@@ -51,22 +51,31 @@ def readsubs(studydir, sub_ids):
             data[:, :, :, 1, n] = t2.get_data()
             data[:, :, :, 2, n] = flair.get_data()
 
-    return data
+    return data, sub_ids
 
 
 def main():
 
     studydir = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1'
 
-    tbi_done_list = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
+    epi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
+    nonepi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
 
-    with open(tbi_done_list) as f:
+    with open(epi_txt) as f:
         epiIds = f.readlines()
 
-    epiIds = list(map(lambda x: x.strip(), epiIds))
-    print(epiIds)
+    with open(nonepi_txt) as f:
+        nonepiIds = f.readlines()
 
-    data1 = readsubs(studydir, epiIds)
+
+    epiIds = list(map(lambda x: x.strip(), epiIds))
+    nonepiIds = list(map(lambda x: x.strip(), nonepiIds))
+
+    epi_data, epi_subids = readsubs(studydir, epiIds)
+
+    nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds)
+
+    print('done')
 
 
 if __name__ == "__main__":
