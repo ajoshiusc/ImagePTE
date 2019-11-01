@@ -84,7 +84,7 @@ def main():
     for nv in tqdm(range(numV)):
         rval[nv], pval[nv] = sp.stats.ranksums(edat1[nv, :], edat2[nv, :])
 
-    np.savez('TBM_results.npz', rval=rval, pval=pval)
+    np.savez('TBM_results.npz', rval=rval, pval=pval, msk=msk)
 
     print('done')
 
