@@ -80,9 +80,10 @@ def main():
     nonepi_data_mean.to_filename('nonepi_mean.nii.gz')
 
     # Save diff of mean over the non epilepsy subjects
-    nonepi_data_mean = ni.new_img_like(ati, epi_data.mean(axis=0)-nonepi_data.mean(axis=0))
+    nonepi_data_mean = ni.new_img_like(
+        ati,
+        epi_data.mean(axis=0) - nonepi_data.mean(axis=0))
     nonepi_data_mean.to_filename('diffepi_mean.nii.gz')
-
 
     epi_data = epi_data.reshape(epi_data.shape[0], -1)
     nonepi_data = nonepi_data.reshape(nonepi_data.shape[0], -1)
@@ -93,19 +94,23 @@ def main():
 
     rval = sp.zeros(numV)
     pval = sp.zeros(numV)
+    pval_vol = np.zeros(ati.shape)
 
     edat1 = epi_data[:, msk].squeeze().T
     edat2 = nonepi_data[:, msk].squeeze().T
 
     for nv in tqdm(range(numV), mininterval=30, maxinterval=90):
-        rval[nv], pval[nv] = sp.stats.ranksums(edat1[nv, :10], edat1[nv, 10:])
+        rval[nv], pval[nv] = sp.stats.ranksums(edat1[nv, :], edat2[nv, :])
 
     np.savez('TBM_results_tmp.npz', rval=rval, pval=pval, msk=msk)
 
-    # Save pval 
-    pvalnii = ni.new_img_like(ati, pval)
-    pvalnii.to_filename('pval_ttest.nii.gz')
+    pval_vol = pval_vol.flatten()
+    pval_vol[msk] = pval
+    pval_vol = pval_vol.reshape(ati.shape)
 
+    # Save pval
+    pvalnii = ni.new_img_like(ati, pval_vol)
+    pvalnii.to_filename('pval_ttest.nii.gz')
 
     print(pval.min())
 
