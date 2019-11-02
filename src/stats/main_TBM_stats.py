@@ -82,9 +82,11 @@ def main():
     edat2 = nonepi_data[:, msk].squeeze().T
 
     for nv in tqdm(range(numV)):
-        rval[nv], pval[nv] = sp.stats.ranksums(edat1[nv, :], edat2[nv, :])
+        rval[nv], pval[nv] = sp.stats.ranksums(edat1[nv, :10], edat1[nv, 10:])
 
-    np.savez('TBM_results.npz', rval=rval, pval=pval, msk=msk)
+    np.savez('TBM_results_tmp.npz', rval=rval, pval=pval, msk=msk)
+
+    print(pval.min())
 
     print('done')
 
