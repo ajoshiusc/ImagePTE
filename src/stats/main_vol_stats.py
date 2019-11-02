@@ -62,6 +62,11 @@ def main():
     epi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
     nonepi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
 
+    atlas = '/home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
+
+    ati = ni.load_img(atlas)
+
+
     with open(epi_txt) as f:
         epiIds = f.readlines()
 
@@ -79,7 +84,9 @@ def main():
     nonepi_data = nonepi_data.reshape(nonepi_data.shape[0],
                                       nonepi_data.shape[1], -1)
 
-    msk = t1.get_data().flatten() > 20
+
+    msk = ati.get_data().flatten() > 0
+
 
     numV = msk.sum()
 
@@ -89,6 +96,9 @@ def main():
     edat1 = epi_data[0, :, msk].squeeze()
     edat2 = nonepi_data[0, :, msk].squeeze()
 
+
+    edat1_mean = edat1.mean(axis=0)
+    ni.new_img_like(ati, edat1_mean)
 
     for nv in tqdm(range(numV)):
         rval[nv], pval[nv] = sp.stats.ranksums(edat1[nv, :], edat2[nv, :])

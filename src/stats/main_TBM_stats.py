@@ -54,6 +54,9 @@ def main():
 
     epi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
     nonepi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
+    atlas = '/home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
+
+    ati = ni.load_img(atlas)
 
     with open(epi_txt) as f:
         epiIds = f.readlines()
@@ -64,14 +67,27 @@ def main():
     epiIds = list(map(lambda x: x.strip(), epiIds))
     nonepiIds = list(map(lambda x: x.strip(), nonepiIds))
 
-    epi_data, epi_subids = readsubs(studydir, epiIds, nsub=20)
+    epi_data, epi_subids = readsubs(studydir, epiIds, nsub=36)
 
-    nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds, nsub=20)
+    nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds, nsub=36)
+
+    # Save mean over the epilepsy subjects
+    epi_data_mean = ni.new_img_like(ati, epi_data.mean(axis=0))
+    epi_data_mean.to_filename('epi_mean.nii.gz')
+
+    # Save mean over the non epilepsy subjects
+    nonepi_data_mean = ni.new_img_like(ati, nonepi_data.mean(axis=0))
+    nonepi_data_mean.to_filename('nonepi_mean.nii.gz')
+
+    # Save diff of mean over the non epilepsy subjects
+    nonepi_data_mean = ni.new_img_like(ati, epi_data.mean(axis=0)-nonepi_data.mean(axis=0))
+    nonepi_data_mean.to_filename('diffepi_mean.nii.gz')
+
 
     epi_data = epi_data.reshape(epi_data.shape[0], -1)
     nonepi_data = nonepi_data.reshape(nonepi_data.shape[0], -1)
 
-    msk = nonepi_data[0, :].flatten() > 0
+    msk = ati.get_data().flatten() > 0
 
     numV = msk.sum()
 
@@ -81,10 +97,15 @@ def main():
     edat1 = epi_data[:, msk].squeeze().T
     edat2 = nonepi_data[:, msk].squeeze().T
 
-    for nv in tqdm(range(numV), mininterval=10, maxinterval=30):
+    for nv in tqdm(range(numV), mininterval=30, maxinterval=90):
         rval[nv], pval[nv] = sp.stats.ranksums(edat1[nv, :10], edat1[nv, 10:])
 
     np.savez('TBM_results_tmp.npz', rval=rval, pval=pval, msk=msk)
+
+    # Save pval 
+    pvalnii = ni.new_img_like(ati, pval)
+    pvalnii.to_filename('pval_ttest.nii.gz')
+
 
     print(pval.min())
 
