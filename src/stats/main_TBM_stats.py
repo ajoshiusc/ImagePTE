@@ -7,6 +7,7 @@ import nilearn.image as ni
 from multivariate.hotelling import hotelling_t2
 from tqdm import tqdm
 import scipy as sp
+from statsmodels.stats.multitest import fdrcorrection
 
 
 def check_imgs_exist(studydir, sub_ids):
@@ -97,24 +98,25 @@ def main():
     pval = sp.ones(numV)
     pval_vol = np.ones(ati.shape)
 
-    edat1 = epi_data[:18, msk].squeeze().T
-    edat2 = nonepi_data[:18, msk].squeeze().T
+    edat1 = epi_data[:, msk].squeeze().T
+    edat2 = nonepi_data[:, msk].squeeze().T
 
     for nv in tqdm(range(numV), mininterval=30, maxinterval=90):
         rval[nv], pval[nv] = sp.stats.ranksums(edat1[nv, :], edat2[nv, :])
 
-    np.savez('TBM_results_tmp18.npz', rval=rval, pval=pval, msk=msk)
+    np.savez('TBM_results.npz', rval=rval, pval=pval, msk=msk)
 
+    _, pval_fdr = fdrcorrection(pval, alpha=0.05, method='indep')
     pval_vol = pval_vol.flatten()
-    pval_vol[msk] = pval
+    pval_vol[msk] = pval_fdr
     pval_vol = pval_vol.reshape(ati.shape)
 
     # Save pval
     pvalnii = ni.new_img_like(ati, pval_vol)
-    pvalnii.to_filename('pval_ttest18.nii.gz')
+    pvalnii.to_filename('pval_fdr.nii.gz')
 
     pvalnii = ni.smooth_img(pvalnii, 5)
-    pvalnii.to_filename('pval_ttest_smooth518.nii.gz')
+    pvalnii.to_filename('pval_fdr_smooth5.nii.gz')
 
     print(pval.min())
 
