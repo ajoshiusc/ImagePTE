@@ -90,7 +90,7 @@ def main():
     msk = ati.get_data().flatten() > 0
 
     numV = msk.sum()
-    pval_vol = np.zeros(ati.shape)
+    pval_vol = np.ones(ati.shape)
 
     #    rval = sp.zeros(numV)
     #    pval = sp.zeros(numV)
