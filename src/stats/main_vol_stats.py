@@ -111,7 +111,10 @@ def main():
     pval_vol = pval_vol.reshape(ati.shape)
 
     p = ni.new_img_like(ati, pval_vol)
-    p.to_filename('pval_hotelling1.nii.gz')
+    p.to_filename('pval_hotelling.nii.gz')
+
+    p = ni.smooth_img(p, 5)
+    p.to_filename('pval_hotelling_smooth5.nii.gz')
 
     print('done')
 
