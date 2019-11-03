@@ -97,13 +97,13 @@ def main():
     pval = sp.ones(numV)
     pval_vol = np.ones(ati.shape)
 
-    edat1 = epi_data[:, msk].squeeze().T
-    edat2 = nonepi_data[:, msk].squeeze().T
+    edat1 = epi_data[:18, msk].squeeze().T
+    edat2 = nonepi_data[:18, msk].squeeze().T
 
     for nv in tqdm(range(numV), mininterval=30, maxinterval=90):
         rval[nv], pval[nv] = sp.stats.ranksums(edat1[nv, :], edat2[nv, :])
 
-    np.savez('TBM_results_tmp.npz', rval=rval, pval=pval, msk=msk)
+    np.savez('TBM_results_tmp18.npz', rval=rval, pval=pval, msk=msk)
 
     pval_vol = pval_vol.flatten()
     pval_vol[msk] = pval
@@ -111,10 +111,10 @@ def main():
 
     # Save pval
     pvalnii = ni.new_img_like(ati, pval_vol)
-    pvalnii.to_filename('pval_ttest.nii.gz')
+    pvalnii.to_filename('pval_ttest18.nii.gz')
 
-    pvalnii = ni.smooth_img(pavlnii, 5)
-    pvalnii.to_filename('pval_ttest_smooth5.nii.gz')
+    pvalnii = ni.smooth_img(pvalnii, 5)
+    pvalnii.to_filename('pval_ttest_smooth518.nii.gz')
 
     print(pval.min())
 
