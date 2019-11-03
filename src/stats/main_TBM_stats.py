@@ -94,8 +94,8 @@ def main():
     numV = msk.sum()
 
     rval = sp.zeros(numV)
-    pval = sp.zeros(numV)
-    pval_vol = np.zeros(ati.shape)
+    pval = sp.ones(numV)
+    pval_vol = np.ones(ati.shape)
 
     edat1 = epi_data[:, msk].squeeze().T
     edat2 = nonepi_data[:, msk].squeeze().T
@@ -112,6 +112,9 @@ def main():
     # Save pval
     pvalnii = ni.new_img_like(ati, pval_vol)
     pvalnii.to_filename('pval_ttest.nii.gz')
+
+    pvalnii = ni.smooth_img(pavlnii, 5)
+    pvalnii.to_filename('pval_ttest_smooth5.nii.gz')
 
     print(pval.min())
 
