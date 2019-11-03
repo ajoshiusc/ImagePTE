@@ -77,9 +77,9 @@ def main():
     epiIds = list(map(lambda x: x.strip(), epiIds))
     nonepiIds = list(map(lambda x: x.strip(), nonepiIds))
 
-    epi_data, epi_subids, t1 = readsubs(studydir, epiIds, nsub=20)
+    epi_data, epi_subids, t1 = readsubs(studydir, epiIds, nsub=36)
 
-    nonepi_data, nonepi_subids, _ = readsubs(studydir, nonepiIds, nsub=20)
+    nonepi_data, nonepi_subids, _ = readsubs(studydir, nonepiIds, nsub=36)
 
     epi_data = epi_data.reshape(epi_data.shape[0], epi_data.shape[1], -1)
     nonepi_data = nonepi_data.reshape(nonepi_data.shape[0],
