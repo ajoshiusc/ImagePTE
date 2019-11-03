@@ -28,6 +28,7 @@ def readsubs(studydir, sub_ids, nsub=10000):
     print(len(sub_ids))
 
     sub_ids = check_imgs_exist(studydir, sub_ids)
+    nsub = min(nsub, len(sub_ids))
 
     print('Reading Subjects')
 
@@ -43,7 +44,7 @@ def readsubs(studydir, sub_ids, nsub=10000):
         if n == 0:
             data = np.zeros((min(len(sub_ids), nsub), ) + jac.shape)
 
-            data[n, :, :, :] = jac.get_data()
+        data[n, :, :, :] = jac.get_data()
 
     return data, sub_ids
 
