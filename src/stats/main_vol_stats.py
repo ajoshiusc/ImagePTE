@@ -18,9 +18,11 @@ def check_imgs_exist(studydir, sub_ids):
         fname_T1 = os.path.join(studydir, id, 'T1mni.nii.gz')
         fname_T2 = os.path.join(studydir, id, 'T2mni.nii.gz')
         fname_FLAIR = os.path.join(studydir, id, 'FLAIRmni.nii.gz')
+        invmap = os.path.join(studydir, id, 'BrainSuite', 'T1mni.svreg.inv.map.nii.gz')
+
 
         if os.path.isfile(fname_T1) and os.path.isfile(
-                fname_T2) and os.path.isfile(fname_FLAIR):
+                fname_T2) and os.path.isfile(fname_FLAIR) and os.path.isfile(invmap):
 
             subids_imgs.append(id)
 
@@ -129,6 +131,7 @@ def main():
     nonepiIds = list(map(lambda x: x.strip(), nonepiIds))
 
     wepi_data, wepi_subids, wt1 = warpsubs(studydir, epiIds, nsub=36)
+    wnonepi_data, wnonepi_subids, _ = warpsubs(studydir, nonepiIds, nsub=36)
 
     epi_data, epi_subids, t1 = readsubs(studydir, epiIds, nsub=36)
 
