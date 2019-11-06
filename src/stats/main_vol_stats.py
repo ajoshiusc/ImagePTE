@@ -8,8 +8,8 @@ from multivariate.hotelling import hotelling_t2
 from tqdm import tqdm
 import scipy as sp
 
-
 ATLAS = '/home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
+
 
 def check_imgs_exist(studydir, sub_ids):
     subids_imgs = list()
@@ -47,19 +47,19 @@ def warpsubs(studydir, sub_ids, nsub=10000):
         # Warp T1 image
         fname_T1 = os.path.join(studydir, id, 'T1mni.nii.gz')
         fname_T1_w = os.path.join(studydir, id, 'T1mni.atlas.nii.gz')
-        os.system('/home/ajoshi/BrainSuite19a/svreg/bin/svreg_apply_map.sh ' + invmap + ' ' + fname_T1 + ' ' + fname_T1_w + ' ' + ATLAS)
+        os.system('/home/ajoshi/BrainSuite19a/svreg/bin/svreg_apply_map.sh ' +
+                  invmap + ' ' + fname_T1 + ' ' + fname_T1_w + ' ' + ATLAS)
 
         fname_T2 = os.path.join(studydir, id, 'T2mni.nii.gz')
         fname_T2_w = os.path.join(studydir, id, 'T2mni.atlas.nii.gz')
-        os.system('/home/ajoshi/BrainSuite19a/svreg/bin/svreg_apply_map.sh ' + invmap + ' ' + fname_T2 + ' ' + fname_T2_w + ' ' + ATLAS)
-
-
-
+        os.system('/home/ajoshi/BrainSuite19a/svreg/bin/svreg_apply_map.sh ' +
+                  invmap + ' ' + fname_T2 + ' ' + fname_T2_w + ' ' + ATLAS)
 
         fname_FLAIR = os.path.join(studydir, id, 'FLAIRmni.nii.gz')
         fname_FLAIR_w = os.path.join(studydir, id, 'FLAIRmni.atlas.nii.gz')
-        os.system('/home/ajoshi/BrainSuite19a/svreg/bin/svreg_apply_map.sh ' + invmap + ' ' + fname_FLAIR + ' ' + fname_FLAIR_w + ' ' + ATLAS)
-
+        os.system('/home/ajoshi/BrainSuite19a/svreg/bin/svreg_apply_map.sh ' +
+                  invmap + ' ' + fname_FLAIR + ' ' + fname_FLAIR_w + ' ' +
+                  ATLAS)
 
         print('sub:', n, 'Reading', id)
         t1 = ni.load_img(fname_T1)
