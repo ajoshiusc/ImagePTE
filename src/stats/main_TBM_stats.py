@@ -8,7 +8,8 @@ from multivariate.hotelling import hotelling_t2
 from tqdm import tqdm
 import scipy as sp
 from statsmodels.stats.multitest import fdrcorrection
-
+from statsmodels.stats.weightstats import ttest_ind
+#from statsmodels.stats import wilcoxon
 
 def check_imgs_exist(studydir, sub_ids):
     subids_imgs = list()
@@ -101,22 +102,33 @@ def main():
     edat1 = epi_data[:, msk].squeeze().T
     edat2 = nonepi_data[:, msk].squeeze().T
 
-    for nv in tqdm(range(numV), mininterval=30, maxinterval=90):
-        rval[nv], pval[nv] = sp.stats.ranksums(edat1[nv, :], edat2[nv, :])
+    rval, pval, _ = ttest_ind(edat1.T, edat2.T)
+#    for nv in tqdm(range(numV), mininterval=30, maxinterval=90):
+#        rval[nv], pval[nv] = sp.stats.ranksums(edat1[nv, :], edat2[nv, :])
 
-    np.savez('TBM_results.npz', rval=rval, pval=pval, msk=msk)
+    np.savez('TBM_results_ttest.npz', rval=rval, pval=pval, msk=msk)
+
+    pval_vol = pval_vol.flatten()
+    pval_vol[msk] = pval
+    pval_vol = pval_vol.reshape(ati.shape)
+
+
+    # Save pval
+    pvalnii = ni.new_img_like(ati, pval_vol)
+    pvalnii.to_filename('pval_ttest.nii.gz')
 
     _, pval_fdr = fdrcorrection(pval, alpha=0.05, method='indep')
     pval_vol = pval_vol.flatten()
     pval_vol[msk] = pval_fdr
     pval_vol = pval_vol.reshape(ati.shape)
 
+
     # Save pval
     pvalnii = ni.new_img_like(ati, pval_vol)
-    pvalnii.to_filename('pval_fdr.nii.gz')
+    pvalnii.to_filename('pval_fdr_ttest.nii.gz')
 
     pvalnii = ni.smooth_img(pvalnii, 5)
-    pvalnii.to_filename('pval_fdr_smooth5.nii.gz')
+    pvalnii.to_filename('pval_fdr_smooth5_ttest.nii.gz')
 
     print(pval.min())
 
