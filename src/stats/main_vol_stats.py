@@ -9,6 +9,8 @@ from tqdm import tqdm
 import scipy as sp
 
 
+ATLAS = '/home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
+
 def check_imgs_exist(studydir, sub_ids):
     subids_imgs = list()
 
@@ -23,6 +25,55 @@ def check_imgs_exist(studydir, sub_ids):
             subids_imgs.append(id)
 
     return subids_imgs
+
+
+def warpsubs(studydir, sub_ids, nsub=10000):
+
+    print(len(sub_ids))
+
+    sub_ids = check_imgs_exist(studydir, sub_ids)
+
+    nsub = min(nsub, len(sub_ids))
+
+    print('Reading Subjects')
+
+    for n, id in enumerate(sub_ids):
+        if n >= nsub:
+            break
+
+        invmap = os.path.join(studydir, id, 'BrainSuite',
+                              'T1mni.svreg.inv.map.nii.gz')
+
+        # Warp T1 image
+        fname_T1 = os.path.join(studydir, id, 'T1mni.nii.gz')
+        fname_T1_w = os.path.join(studydir, id, 'T1mni.atlas.nii.gz')
+        os.system('/home/ajoshi/BrainSuite19a/svreg/bin/svreg_apply_map.sh ' + invmap + ' ' + fname_T1 + ' ' + fname_T1_w + ' ' + ATLAS)
+
+        fname_T2 = os.path.join(studydir, id, 'T2mni.nii.gz')
+        fname_T2_w = os.path.join(studydir, id, 'T2mni.atlas.nii.gz')
+        os.system('/home/ajoshi/BrainSuite19a/svreg/bin/svreg_apply_map.sh ' + invmap + ' ' + fname_T2 + ' ' + fname_T2_w + ' ' + ATLAS)
+
+
+
+
+        fname_FLAIR = os.path.join(studydir, id, 'FLAIRmni.nii.gz')
+        fname_FLAIR_w = os.path.join(studydir, id, 'FLAIRmni.atlas.nii.gz')
+        os.system('/home/ajoshi/BrainSuite19a/svreg/bin/svreg_apply_map.sh ' + invmap + ' ' + fname_FLAIR + ' ' + fname_FLAIR_w + ' ' + ATLAS)
+
+
+        print('sub:', n, 'Reading', id)
+        t1 = ni.load_img(fname_T1)
+        t2 = ni.load_img(fname_T2)
+        flair = ni.load_img(fname_FLAIR)
+
+        if n == 0:
+            data = np.zeros((3, min(len(sub_ids), nsub)) + t1.shape)
+
+        data[0, n, :, :, :] = t1.get_data()
+        data[1, n, :, :, :] = t2.get_data()
+        data[2, n, :, :, :] = flair.get_data()
+
+    return data, sub_ids, flair
 
 
 def readsubs(studydir, sub_ids, nsub=10000):
@@ -76,6 +127,8 @@ def main():
 
     epiIds = list(map(lambda x: x.strip(), epiIds))
     nonepiIds = list(map(lambda x: x.strip(), nonepiIds))
+
+    wepi_data, wepi_subids, wt1 = warpsubs(studydir, epiIds, nsub=36)
 
     epi_data, epi_subids, t1 = readsubs(studydir, epiIds, nsub=36)
 
