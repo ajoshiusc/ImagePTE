@@ -92,9 +92,9 @@ def readsubs(studydir, sub_ids, nsub=10000):
         if n >= nsub:
             break
 
-        fname_T1 = os.path.join(studydir, id, 'T1mni.nii.gz')
-        fname_T2 = os.path.join(studydir, id, 'T2mni.nii.gz')
-        fname_FLAIR = os.path.join(studydir, id, 'FLAIRmni.nii.gz')
+        fname_T1 = os.path.join(studydir, id, 'T1mni.atlas.nii.gz')
+        fname_T2 = os.path.join(studydir, id, 'T2mni.atlas.nii.gz')
+        fname_FLAIR = os.path.join(studydir, id, 'FLAIRmni.atlas.nii.gz')
         print('sub:', n, 'Reading', id)
         t1 = ni.load_img(fname_T1)
         t2 = ni.load_img(fname_T2)
@@ -130,8 +130,10 @@ def main():
     epiIds = list(map(lambda x: x.strip(), epiIds))
     nonepiIds = list(map(lambda x: x.strip(), nonepiIds))
 
+    '''
     wepi_data, wepi_subids, wt1 = warpsubs(studydir, epiIds, nsub=36)
     wnonepi_data, wnonepi_subids, _ = warpsubs(studydir, nonepiIds, nsub=36)
+    '''
 
     epi_data, epi_subids, t1 = readsubs(studydir, epiIds, nsub=36)
 
@@ -141,7 +143,7 @@ def main():
     nonepi_data = nonepi_data.reshape(nonepi_data.shape[0],
                                       nonepi_data.shape[1], -1)
 
-    ati = t1
+   # ati = t1
 
     msk = ati.get_data().flatten() > 0
 
@@ -161,6 +163,8 @@ def main():
     #        rval[nv], pval[nv] = sp.stats.ranksums(edat1[nv, :], edat2[nv, :])
 
     pval, t2 = hotelling_t2(epi_data[:, :, msk], nonepi_data[:, :, msk])
+
+    np.savez('Hotelling_results.npz', t2=t2, pval=pval, msk=msk)
 
     pval_vol = pval_vol.flatten()
     pval_vol[msk] = pval
