@@ -18,11 +18,12 @@ def check_imgs_exist(studydir, sub_ids):
         fname_T1 = os.path.join(studydir, id, 'T1mni.nii.gz')
         fname_T2 = os.path.join(studydir, id, 'T2mni.nii.gz')
         fname_FLAIR = os.path.join(studydir, id, 'FLAIRmni.nii.gz')
-        invmap = os.path.join(studydir, id, 'BrainSuite', 'T1mni.svreg.inv.map.nii.gz')
-
+        invmap = os.path.join(studydir, id, 'BrainSuite',
+                              'T1mni.svreg.inv.map.nii.gz')
 
         if os.path.isfile(fname_T1) and os.path.isfile(
-                fname_T2) and os.path.isfile(fname_FLAIR) and os.path.isfile(invmap):
+                fname_T2) and os.path.isfile(fname_FLAIR) and os.path.isfile(
+                    invmap):
 
             subids_imgs.append(id)
 
@@ -129,7 +130,6 @@ def main():
 
     epiIds = list(map(lambda x: x.strip(), epiIds))
     nonepiIds = list(map(lambda x: x.strip(), nonepiIds))
-
     '''
     wepi_data, wepi_subids, wt1 = warpsubs(studydir, epiIds, nsub=36)
     wnonepi_data, wnonepi_subids, _ = warpsubs(studydir, nonepiIds, nsub=36)
@@ -143,9 +143,28 @@ def main():
     nonepi_data = nonepi_data.reshape(nonepi_data.shape[0],
                                       nonepi_data.shape[1], -1)
 
-   # ati = t1
+    # ati = t1
+
+    epi_data.shape
+
+    t1_avg_vol = np.zeros(epi_data.shape[2])
+    t2_avg_vol = np.zeros(epi_data.shape[2])
+    flair_avg_vol = np.zeros(epi_data.shape[2])
 
     msk = ati.get_data().flatten() > 0
+
+    t1_avg_vol[msk] = np.mean(epi_data[0, :, msk], axis=1)
+    t2_avg_vol[msk] = np.mean(epi_data[1, :, msk], axis=1)
+    flair_avg_vol[msk] = np.mean(epi_data[2, :, msk], axis=1)
+
+    t1_avg = ni.new_img_like(ati, t1_avg_vol.reshape(ati.shape))
+    t1_avg.to_filename('t1_epi_avg.nii.gz')
+
+    t2_avg = ni.new_img_like(ati, t2_avg_vol.reshape(ati.shape))
+    t2_avg.to_filename('t2_epi_avg.nii.gz')
+
+    flair_avg = ni.new_img_like(ati, flair_avg_vol.reshape(ati.shape))
+    flair_avg.to_filename('flair_epi_avg.nii.gz')
 
     numV = msk.sum()
     pval_vol = np.ones(ati.shape)
