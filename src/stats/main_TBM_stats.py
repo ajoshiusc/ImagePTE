@@ -4,7 +4,7 @@ import numpy as np
 from shutil import copyfile, copy
 import time
 import nilearn.image as ni
-from multivariate.hotelling import hotelling_t2
+#from multivariate. import TBM_t2
 from tqdm import tqdm
 import scipy as sp
 from statsmodels.stats.multitest import fdrcorrection
@@ -106,33 +106,34 @@ def main():
 #    for nv in tqdm(range(numV), mininterval=30, maxinterval=90):
 #        rval[nv], pval[nv] = sp.stats.ranksums(edat1[nv, :], edat2[nv, :])
 
-    np.savez('TBM_results_ttest.npz', rval=rval, pval=pval, msk=msk)
+    np.savez('TBM_results.npz', rval=rval, pval=pval, msk=msk)
 
     pval_vol = pval_vol.flatten()
     pval_vol[msk] = pval
     pval_vol = pval_vol.reshape(ati.shape)
 
+    p = ni.new_img_like(ati, pval_vol)
+    p.to_filename('pval_TBM.nii.gz')
 
-    # Save pval
-    pvalnii = ni.new_img_like(ati, pval_vol)
-    pvalnii.to_filename('pval_ttest.nii.gz')
-
-    _, pval_fdr = fdrcorrection(pval, alpha=0.05, method='indep')
-    pval_vol = pval_vol.flatten()
-    pval_vol[msk] = pval_fdr
+    pval_vol = 0*pval_vol.flatten()
+    pval_vol[msk] = (pval < 0.05)
     pval_vol = pval_vol.reshape(ati.shape)
 
+    p = ni.new_img_like(ati, pval_vol)
+    p.to_filename('pval_TBM.sig.mask.nii.gz')
 
-    # Save pval
-    pvalnii = ni.new_img_like(ati, pval_vol)
-    pvalnii.to_filename('pval_fdr_ttest.nii.gz')
+    # Significance masks
+    p1 = ni.smooth_img(p, 5)
+    p1.to_filename('pval_TBM_sig_mask.smooth5.nii.gz')
 
-    pvalnii = ni.smooth_img(pvalnii, 5)
-    pvalnii.to_filename('pval_fdr_smooth5_ttest.nii.gz')
+    p1 = ni.smooth_img(p, 10)
+    p1.to_filename('pval_TBM_sig_mask.smooth10.nii.gz')
 
-    print(pval.min())
+    p1 = ni.smooth_img(p, 15)
+    p1.to_filename('pval_TBM_sig_mask.smooth15.nii.gz')
 
     print('done')
+
 
 
 if __name__ == "__main__":

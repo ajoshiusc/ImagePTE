@@ -143,7 +143,6 @@ def main():
     nonepi_data = nonepi_data.reshape(nonepi_data.shape[0],
                                       nonepi_data.shape[1], -1)
 
-
     msk = ati.get_data().flatten() > 0
 
     # Epilepsy T1, T2, FLAIR average data
@@ -165,7 +164,6 @@ def main():
     flair_avg = ni.new_img_like(ati, flair_avg_vol.reshape(ati.shape))
     flair_avg.to_filename('flair_epi_avg.nii.gz')
 
-
     # Non Epilepsy T1, T2, FLAIR average data
 
     t1_avg_vol = np.zeros(nonepi_data.shape[2])
@@ -184,8 +182,6 @@ def main():
 
     flair_avg = ni.new_img_like(ati, flair_avg_vol.reshape(ati.shape))
     flair_avg.to_filename('flair_nonepi_avg.nii.gz')
-
-
 
     numV = msk.sum()
     pval_vol = np.ones(ati.shape)
@@ -213,8 +209,22 @@ def main():
     p = ni.new_img_like(ati, pval_vol)
     p.to_filename('pval_hotelling.nii.gz')
 
-    p = ni.smooth_img(p, 5)
-    p.to_filename('pval_hotelling_smooth5.nii.gz')
+    pval_vol = 0*pval_vol.flatten()
+    pval_vol[msk] = (pval < 0.05)
+    pval_vol = pval_vol.reshape(ati.shape)
+
+    p = ni.new_img_like(ati, pval_vol)
+    p.to_filename('pval_hotelling.sig.mask.nii.gz')
+
+    # Significance masks
+    p1 = ni.smooth_img(p, 5)
+    p1.to_filename('pval_hotelling_sig_mask.smooth5.nii.gz')
+
+    p1 = ni.smooth_img(p, 10)
+    p1.to_filename('pval_hotelling_sig_mask.smooth10.nii.gz')
+
+    p1 = ni.smooth_img(p, 15)
+    p1.to_filename('pval_hotelling_sig_mask.smooth15.nii.gz')
 
     print('done')
 
