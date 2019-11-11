@@ -143,15 +143,14 @@ def main():
     nonepi_data = nonepi_data.reshape(nonepi_data.shape[0],
                                       nonepi_data.shape[1], -1)
 
-    # ati = t1
 
-    epi_data.shape
+    msk = ati.get_data().flatten() > 0
+
+    # Epilepsy T1, T2, FLAIR average data
 
     t1_avg_vol = np.zeros(epi_data.shape[2])
     t2_avg_vol = np.zeros(epi_data.shape[2])
     flair_avg_vol = np.zeros(epi_data.shape[2])
-
-    msk = ati.get_data().flatten() > 0
 
     t1_avg_vol[msk] = np.mean(epi_data[0, :, msk], axis=1)
     t2_avg_vol[msk] = np.mean(epi_data[1, :, msk], axis=1)
@@ -165,6 +164,28 @@ def main():
 
     flair_avg = ni.new_img_like(ati, flair_avg_vol.reshape(ati.shape))
     flair_avg.to_filename('flair_epi_avg.nii.gz')
+
+
+    # Non Epilepsy T1, T2, FLAIR average data
+
+    t1_avg_vol = np.zeros(nonepi_data.shape[2])
+    t2_avg_vol = np.zeros(nonepi_data.shape[2])
+    flair_avg_vol = np.zeros(nonepi_data.shape[2])
+
+    t1_avg_vol[msk] = np.mean(nonepi_data[0, :, msk], axis=1)
+    t2_avg_vol[msk] = np.mean(nonepi_data[1, :, msk], axis=1)
+    flair_avg_vol[msk] = np.mean(nonepi_data[2, :, msk], axis=1)
+
+    t1_avg = ni.new_img_like(ati, t1_avg_vol.reshape(ati.shape))
+    t1_avg.to_filename('t1_nonepi_avg.nii.gz')
+
+    t2_avg = ni.new_img_like(ati, t2_avg_vol.reshape(ati.shape))
+    t2_avg.to_filename('t2_nonepi_avg.nii.gz')
+
+    flair_avg = ni.new_img_like(ati, flair_avg_vol.reshape(ati.shape))
+    flair_avg.to_filename('flair_nonepi_avg.nii.gz')
+
+
 
     numV = msk.sum()
     pval_vol = np.ones(ati.shape)
