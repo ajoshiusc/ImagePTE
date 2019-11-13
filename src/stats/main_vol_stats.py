@@ -191,10 +191,10 @@ def main():
     t1_avg_vol[msk] = np.mean(nonepi_data[0, :, msk], axis=1)
     t2_avg_vol[msk] = np.mean(nonepi_data[1, :, msk], axis=1)
     flair_avg_vol[msk] = np.mean(nonepi_data[2, :, msk], axis=1)
-    t1_std_vol = np.zeros(epi_data.shape[2])
-    t2_std_vol = np.zeros(epi_data.shape[2])
-    flair_std_vol = np.zeros(epi_data.shape[2])
-
+    t1_avg_vol[msk] = np.std(nonepi_data[0, :, msk], axis=1)
+    t2_avg_vol[msk] = np.std(nonepi_data[1, :, msk], axis=1)
+    flair_avg_vol[msk] = np.std(nonepi_data[2, :, msk], axis=1)
+ 
 
     t1_avg = ni.new_img_like(ati, t1_avg_vol.reshape(ati.shape))
     t1_avg.to_filename('t1_nonepi_avg.nii.gz')
