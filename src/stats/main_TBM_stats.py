@@ -78,15 +78,35 @@ def main():
     epi_data_mean = ni.new_img_like(ati, epi_data.mean(axis=0))
     epi_data_mean.to_filename('epi_mean.nii.gz')
 
+    # Save std-dev over the epilepsy subjects
+    epi_data_mean = ni.new_img_like(ati, epi_data.std(axis=0))
+    epi_data_mean.to_filename('epi_std.nii.gz')
+
+
     # Save mean over the non epilepsy subjects
     nonepi_data_mean = ni.new_img_like(ati, nonepi_data.mean(axis=0))
     nonepi_data_mean.to_filename('nonepi_mean.nii.gz')
+
+    # Save std-dev over the non epilepsy subjects
+    nonepi_data_mean = ni.new_img_like(ati, nonepi_data.std(axis=0))
+    nonepi_data_mean.to_filename('nonepi_std.nii.gz')
+
+
 
     # Save diff of mean over the non epilepsy subjects
     nonepi_data_mean = ni.new_img_like(
         ati,
         epi_data.mean(axis=0) - nonepi_data.mean(axis=0))
     nonepi_data_mean.to_filename('diffepi_mean.nii.gz')
+
+
+   # Save diff of std-dev over the non epilepsy subjects
+    nonepi_data_mean = ni.new_img_like(
+        ati,
+        epi_data.std(axis=0) - nonepi_data.std(axis=0))
+    nonepi_data_mean.to_filename('diffepi_std.nii.gz')
+
+
 
     epi_data = epi_data.reshape(epi_data.shape[0], -1)
     nonepi_data = nonepi_data.reshape(nonepi_data.shape[0], -1)
