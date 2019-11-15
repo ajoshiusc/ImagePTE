@@ -33,7 +33,7 @@ def warpsubs(studydir, lesion_studydir, sub_ids, nonepi):
 
         # Warp Lesion Map
         fname_lesion = os.path.join(
-            lesion_studydir, id, 'MSE_T1_' + str(n + 37 * nonepi) + '.nii.gz')
+            lesion_studydir, 'MSE_T1_' + str(n + 37 * nonepi) + '.nii.gz')
 
         fname_lesion_w = os.path.join(studydir, id, 'lesion_vae.atlas.nii.gz')
         os.system('/home/ajoshi/BrainSuite19a/svreg/bin/svreg_apply_map.sh ' +
@@ -71,7 +71,7 @@ def readsubs(studydir):
 
 def main():
 
-    studydir = '/big_disk/akrami/git_repos_new/ImagePTE/src/Lesion Detection/models/3D_out'
+    studydir = '"/big_disk/akrami/git_repos_new/ImagePTE/src/Lesion Detection/models/3D_out"'
     studydir_imgs = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1'
 
     epi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
