@@ -36,7 +36,10 @@ def warpsubs(studydir, lesion_studydir, sub_ids, nonepi):
             lesion_studydir, 'MSE_T1_' + str(n + 37 * nonepi) + '.nii.gz')
 
         fname_lesion_w = os.path.join(studydir, id, 'lesion_vae.atlas.nii.gz')
+        fname_lesion_w_sm = os.path.join(studydir, id,
+                                         'lesion_vae.atlas.smooth3mm.nii.gz')
 
+        # Warp by applying the map
         if os.path.isfile(fname_lesion_w):
             print('File exists :' + fname_lesion_w)
         else:
@@ -45,6 +48,15 @@ def warpsubs(studydir, lesion_studydir, sub_ids, nonepi):
                 '/home/ajoshi/BrainSuite19a/svreg/bin/svreg_apply_map.sh ' +
                 invmap + ' ' + fname_lesion + ' ' + fname_lesion_w + ' ' +
                 ATLAS)
+
+        # Smooth the warped image
+        if os.path.isfile(fname_lesion_w_sm):
+            print('File exists :' + fname_lesion_w_sm)
+        else:
+            print('Applying SVReg inv map for:' + id)
+            os.system(
+                '/home/ajoshi/BrainSuite19a/svreg/bin/svreg_smooth_vol_function.sh '
+                + fname_lesion_w + ' 3 3 3 ' + fname_lesion_w_sm)
 
 
 def check_imgs_exist(studydir, sub_ids):
