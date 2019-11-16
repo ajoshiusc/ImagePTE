@@ -36,8 +36,15 @@ def warpsubs(studydir, lesion_studydir, sub_ids, nonepi):
             lesion_studydir, 'MSE_T1_' + str(n + 37 * nonepi) + '.nii.gz')
 
         fname_lesion_w = os.path.join(studydir, id, 'lesion_vae.atlas.nii.gz')
-        os.system('/home/ajoshi/BrainSuite19a/svreg/bin/svreg_apply_map.sh ' +
-                  invmap + ' ' + fname_lesion + ' ' + fname_lesion_w + ' ' + ATLAS)
+
+        if os.path.isfile(fname_lesion_w):
+            print('File exists :' + fname_lesion_w)
+        else:
+            print('Applying SVReg inv map for:' + id)
+            os.system(
+                '/home/ajoshi/BrainSuite19a/svreg/bin/svreg_apply_map.sh ' +
+                invmap + ' ' + fname_lesion + ' ' + fname_lesion_w + ' ' +
+                ATLAS)
 
 
 def check_imgs_exist(studydir, sub_ids):
@@ -75,7 +82,7 @@ def main():
     studydir_imgs = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1'
 
     epi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
-    nonepi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
+    nonepi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
     atlas = '/home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
 
     ati = ni.load_img(atlas)
@@ -99,7 +106,6 @@ def main():
              lesion_studydir=studydir,
              sub_ids=nonepiIds,
              nonepi=1)
-
 
     print('done')
 
