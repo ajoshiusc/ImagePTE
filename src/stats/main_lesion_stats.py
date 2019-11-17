@@ -154,7 +154,7 @@ def main():
     p.to_filename('pval_fdr_lesion.sig.mask' + sm + '.nii.gz')
 
 
- '''   # Significance masks
+    ''' Significance masks
     p1 = ni.smooth_img(p, 5)
     p1.to_filename('pval_lesion_sig_mask.smooth5' + sm + '.nii.gz')
 
@@ -163,7 +163,7 @@ def main():
 
     p1 = ni.smooth_img(p, 15)
     p1.to_filename('pval_lesion_sig_mask.smooth15' + sm + '.nii.gz')
-'''
+    '''
 
     # Do f test
     F = epi_data.var(axis=0) / (nonepi_data.var(axis=0) + 1e-16)
