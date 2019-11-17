@@ -52,28 +52,15 @@ def readsubs(studydir, sub_ids):
     return data, sub_ids
 
 
-def main():
+def roiwise_stats(epi_data, nonepi_data):
 
-    studydir = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1'
-
-    epi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
-    nonepi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
     atlas = '/home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
-
     ati = ni.load_img(atlas)
 
-    with open(epi_txt) as f:
-        epiIds = f.readlines()
+def pointwise_stats(epi_data, nonepi_data):
 
-    with open(nonepi_txt) as f:
-        nonepiIds = f.readlines()
-
-    epiIds = list(map(lambda x: x.strip(), epiIds))
-    nonepiIds = list(map(lambda x: x.strip(), nonepiIds))
-
-    epi_data, epi_subids = readsubs(studydir, epiIds)
-
-    nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds)
+    atlas = '/home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
+    ati = ni.load_img(atlas)
 
     # Save mean over the epilepsy subjects
     epi = ni.new_img_like(ati, epi_data.mean(axis=0))
@@ -104,11 +91,11 @@ def main():
     epi_data = epi_data.reshape(epi_data.shape[0], -1)
     nonepi_data = nonepi_data.reshape(nonepi_data.shape[0], -1)
 
+
+    pointwise_stats(epi_data, nonepi_data)
+
     msk = ati.get_data().flatten() > 0
     pval_vol = np.ones(ati.shape)
-    rval_vol = np.ones(ati.shape)
-
-    numV = msk.sum()
 
     #   rval_vol = sp.zeros(numV)
     #   pval_vol = sp.ones(numV)
@@ -178,6 +165,29 @@ def main():
     _, pval_fdr = fdrcorrection(pvals=pval)
     fimg = ni.new_img_like(ati, pval_fdr.reshape(ati.shape))
     fimg.to_filename('pval_fdr_ftest_lesion' + sm + '.nii.gz')
+
+
+
+def main():
+
+    studydir = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1'
+
+    epi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
+    nonepi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
+
+    with open(epi_txt) as f:
+        epiIds = f.readlines()
+
+    with open(nonepi_txt) as f:
+        nonepiIds = f.readlines()
+
+    epiIds = list(map(lambda x: x.strip(), epiIds))
+    nonepiIds = list(map(lambda x: x.strip(), nonepiIds))
+
+    epi_data, epi_subids = readsubs(studydir, epiIds)
+
+    nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds)
+
 
 
     print('done')
