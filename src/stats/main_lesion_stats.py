@@ -54,8 +54,44 @@ def readsubs(studydir, sub_ids):
 
 def roiwise_stats(epi_data, nonepi_data):
 
-    atlas = '/home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
-    ati = ni.load_img(atlas)
+    atlas_bfc = '/home/ajoshi/coding_ground/svreg/USCLobes/BCI-DNI_brain.bfc.nii.gz'
+    ati = ni.load_img(atlas_bfc)
+    atlas_labels = '/home/ajoshi/coding_ground/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
+    at_labels = ni.load_img(atlas_labels).get_data()
+    roi_list = [
+        3, 100, 101, 184, 185, 200, 201, 300, 301, 400, 401, 500, 501, 800,
+        850, 900, 950
+    ]
+
+
+    epi_roi_lesion_vols = np.zeros((37, len(roi_list)))
+    nonepi_roi_lesion_vols = np.zeros((37, len(roi_list)))
+
+    for i, roi in enumerate(roi_list):
+        msk = at_labels == roi
+        epi_roi_lesion_vols[:, i] = np.sum(epi_data[:, msk], axis=1)
+        nonepi_roi_lesion_vols[:, i] = np.sum(nonepi_data[:, msk], axis=1)
+
+    t, p, _ = ttest_ind(epi_roi_lesion_vols, nonepi_roi_lesion_vols)
+
+    F = epi_roi_lesion_vols.var(axis=0) / (nonepi_roi_lesion_vols.var(axis=0) +
+                                           1e-6)
+    pval = 1 - ss.f.cdf(F, 37 - 1, 37 - 1)
+
+    roi_list = np.array(roi_list)
+
+    print('significant rois in t-test are')
+    print(roi_list[p < 0.05])
+
+    print('significant rois in f-test are')
+    print(roi_list[pval < 0.05])
+
+    _,pval_fdr=fdrcorrection(pval)
+    print('significant rois in f-test after FDR correction are')
+    print(roi_list[pval_fdr < 0.05])
+
+
+
 
 def pointwise_stats(epi_data, nonepi_data):
 
@@ -90,9 +126,6 @@ def pointwise_stats(epi_data, nonepi_data):
 
     epi_data = epi_data.reshape(epi_data.shape[0], -1)
     nonepi_data = nonepi_data.reshape(nonepi_data.shape[0], -1)
-
-
-    pointwise_stats(epi_data, nonepi_data)
 
     msk = ati.get_data().flatten() > 0
     pval_vol = np.ones(ati.shape)
@@ -139,8 +172,6 @@ def pointwise_stats(epi_data, nonepi_data):
 
     p = ni.new_img_like(ati, pval_vol)
     p.to_filename('pval_fdr_lesion.sig.mask' + sm + '.nii.gz')
-
-
     ''' Significance masks
     p1 = ni.smooth_img(p, 5)
     p1.to_filename('pval_lesion_sig_mask.smooth5' + sm + '.nii.gz')
@@ -167,7 +198,6 @@ def pointwise_stats(epi_data, nonepi_data):
     fimg.to_filename('pval_fdr_ftest_lesion' + sm + '.nii.gz')
 
 
-
 def main():
 
     studydir = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1'
@@ -188,7 +218,11 @@ def main():
 
     nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds)
 
+    # Do Pointwise stats
+    pointwise_stats(epi_data, nonepi_data)
 
+    # Do ROIwise stats
+    roiwise_stats(epi_data, nonepi_data)
 
     print('done')
 
