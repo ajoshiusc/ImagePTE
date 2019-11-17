@@ -9,6 +9,7 @@ from tqdm import tqdm
 import scipy as sp
 
 ATLAS = '/home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
+SM = 'smooth3mm'
 
 
 def check_imgs_exist(studydir, sub_ids):
@@ -64,10 +65,38 @@ def warpsubs(studydir, sub_ids, nsub=10000):
                   invmap + ' ' + fname_FLAIR + ' ' + fname_FLAIR_w + ' ' +
                   ATLAS)
 
+        # Smooth the warped images
+
+        fname_T1_sm = os.path.join(studydir, id,
+                                   'T1mni.atlas.' + SM + '.nii.gz')
+        fname_T2_sm = os.path.join(studydir, id,
+                                   'T2mni.atlas.' + SM + '.nii.gz')
+        fname_FLAIR_sm = os.path.join(studydir, id,
+                                      'FLAIRmni.atlas.' + SM + '.nii.gz')
+
+        # Smooth the images
+        if os.path.isfile(fname_T1_sm) and os.path.isfile(
+                fname_T2_sm) and os.path.isfile(fname_FLAIR_sm):
+            print('File exists :' + fname_T1_sm)
+            print('File exists :' + fname_T2_sm)
+            print('File exists :' + fname_FLAIR_sm)
+        else:
+            print('Applying SVReg inv map for:' + id)
+            os.system(
+                '/home/ajoshi/BrainSuite19a/svreg/bin/svreg_smooth_vol_function.sh '
+                + fname_T1 + ' 3 3 3 ' + fname_T1_sm)
+
+            os.system(
+                '/home/ajoshi/BrainSuite19a/svreg/bin/svreg_smooth_vol_function.sh '
+                + fname_T2 + ' 3 3 3 ' + fname_T2_sm)
+            os.system(
+                '/home/ajoshi/BrainSuite19a/svreg/bin/svreg_smooth_vol_function.sh '
+                + fname_FLAIR + ' 3 3 3 ' + fname_FLAIR_sm)
+
         print('sub:', n, 'Reading', id)
-        t1 = ni.load_img(fname_T1)
-        t2 = ni.load_img(fname_T2)
-        flair = ni.load_img(fname_FLAIR)
+        t1 = ni.load_img(fname_T1_w)
+        t2 = ni.load_img(fname_T2_w)
+        flair = ni.load_img(fname_FLAIR_w)
 
         if n == 0:
             data = np.zeros((3, min(len(sub_ids), nsub)) + t1.shape)
@@ -90,16 +119,18 @@ def readsubs(studydir, sub_ids, nsub=10000):
     print('Reading Subjects')
 
     for n, id in enumerate(sub_ids):
-        if n >= nsub:
-            break
 
-        fname_T1 = os.path.join(studydir, id, 'T1mni.atlas.nii.gz')
-        fname_T2 = os.path.join(studydir, id, 'T2mni.atlas.nii.gz')
-        fname_FLAIR = os.path.join(studydir, id, 'FLAIRmni.atlas.nii.gz')
+        fname_T1_sm = os.path.join(studydir, id,
+                                   'T1mni.atlas.' + SM + '.nii.gz')
+        fname_T2_sm = os.path.join(studydir, id,
+                                   'T2mni.atlas.' + SM + '.nii.gz')
+        fname_FLAIR_sm = os.path.join(studydir, id,
+                                      'FLAIRmni.atlas.' + SM + '.nii.gz')
+
         print('sub:', n, 'Reading', id)
-        t1 = ni.load_img(fname_T1)
-        t2 = ni.load_img(fname_T2)
-        flair = ni.load_img(fname_FLAIR)
+        t1 = ni.load_img(fname_T1_sm)
+        t2 = ni.load_img(fname_T2_sm)
+        flair = ni.load_img(fname_FLAIR_sm)
 
         if n == 0:
             data = np.zeros((3, min(len(sub_ids), nsub)) + t1.shape)
@@ -116,7 +147,7 @@ def main():
     studydir = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1'
 
     epi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
-    nonepi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
+    nonepi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
 
     atlas = '/home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
 
@@ -130,10 +161,9 @@ def main():
 
     epiIds = list(map(lambda x: x.strip(), epiIds))
     nonepiIds = list(map(lambda x: x.strip(), nonepiIds))
-    '''
-    wepi_data, wepi_subids, wt1 = warpsubs(studydir, epiIds, nsub=36)
-    wnonepi_data, wnonepi_subids, _ = warpsubs(studydir, nonepiIds, nsub=36)
-    '''
+
+    wepi_data, wepi_subids, wt1 = warpsubs(studydir, epiIds, nsub=37)
+    wnonepi_data, wnonepi_subids, _ = warpsubs(studydir, nonepiIds, nsub=37)
 
     epi_data, epi_subids, t1 = readsubs(studydir, epiIds, nsub=36)
 
@@ -154,8 +184,6 @@ def main():
     t2_std_vol = np.zeros(epi_data.shape[2])
     flair_std_vol = np.zeros(epi_data.shape[2])
 
-
-
     t1_avg_vol[msk] = np.mean(epi_data[0, :, msk], axis=1)
     t2_avg_vol[msk] = np.mean(epi_data[1, :, msk], axis=1)
     flair_avg_vol[msk] = np.mean(epi_data[2, :, msk], axis=1)
@@ -164,20 +192,19 @@ def main():
     flair_std_vol[msk] = np.std(epi_data[2, :, msk], axis=1)
 
     t1_avg = ni.new_img_like(ati, t1_avg_vol.reshape(ati.shape))
-    t1_avg.to_filename('t1_epi_avg.nii.gz')
+    t1_avg.to_filename('t1_epi_avg.' + SM + '.nii.gz')
     t1_std = ni.new_img_like(ati, t1_std_vol.reshape(ati.shape))
-    t1_std.to_filename('t1_epi_std.nii.gz')
-
+    t1_std.to_filename('t1_epi_std.' + SM + '.nii.gz')
 
     t2_avg = ni.new_img_like(ati, t2_avg_vol.reshape(ati.shape))
-    t2_avg.to_filename('t2_epi_avg.nii.gz')
+    t2_avg.to_filename('t2_epi_avg.' + SM + '.nii.gz')
     t2_std = ni.new_img_like(ati, t2_std_vol.reshape(ati.shape))
-    t2_std.to_filename('t2_epi_std.nii.gz')
+    t2_std.to_filename('t2_epi_std.' + SM + '.nii.gz')
 
     flair_avg = ni.new_img_like(ati, flair_avg_vol.reshape(ati.shape))
-    flair_avg.to_filename('flair_epi_avg.nii.gz')
+    flair_avg.to_filename('flair_epi_avg.' + SM + '.nii.gz')
     flair_std = ni.new_img_like(ati, flair_std_vol.reshape(ati.shape))
-    flair_std.to_filename('flair_epi_std.nii.gz')
+    flair_std.to_filename('flair_epi_std.' + SM + '.nii.gz')
 
     # Non Epilepsy T1, T2, FLAIR average data
 
@@ -194,23 +221,21 @@ def main():
     t1_std_vol[msk] = np.std(nonepi_data[0, :, msk], axis=1)
     t2_std_vol[msk] = np.std(nonepi_data[1, :, msk], axis=1)
     flair_std_vol[msk] = np.std(nonepi_data[2, :, msk], axis=1)
- 
 
     t1_avg = ni.new_img_like(ati, t1_avg_vol.reshape(ati.shape))
-    t1_avg.to_filename('t1_nonepi_avg.nii.gz')
+    t1_avg.to_filename('t1_nonepi_avg.' + SM + '.nii.gz')
     t1_std = ni.new_img_like(ati, t1_std_vol.reshape(ati.shape))
-    t1_std.to_filename('t1_nonepi_std.nii.gz')
+    t1_std.to_filename('t1_nonepi_std.' + SM + '.nii.gz')
 
     t2_avg = ni.new_img_like(ati, t2_avg_vol.reshape(ati.shape))
-    t2_avg.to_filename('t2_nonepi_avg.nii.gz')
+    t2_avg.to_filename('t2_nonepi_avg.' + SM + '.nii.gz')
     t2_std = ni.new_img_like(ati, t2_std_vol.reshape(ati.shape))
-    t2_std.to_filename('t2_nonepi_std.nii.gz')
+    t2_std.to_filename('t2_nonepi_std.' + SM + '.nii.gz')
 
     flair_avg = ni.new_img_like(ati, flair_avg_vol.reshape(ati.shape))
-    flair_avg.to_filename('flair_nonepi_avg.nii.gz')
+    flair_avg.to_filename('flair_nonepi_avg.' + SM + '.nii.gz')
     flair_std = ni.new_img_like(ati, flair_std_vol.reshape(ati.shape))
-    flair_std.to_filename('flair_nonepi_std.nii.gz')
-
+    flair_std.to_filename('flair_nonepi_std.' + SM + '.nii.gz')
 
     numV = msk.sum()
     pval_vol = np.ones(ati.shape)
@@ -236,24 +261,24 @@ def main():
     pval_vol = pval_vol.reshape(ati.shape)
 
     p = ni.new_img_like(ati, pval_vol)
-    p.to_filename('pval_hotelling.nii.gz')
+    p.to_filename('pval_hotelling.' + SM + '.nii.gz')
 
-    pval_vol = 0*pval_vol.flatten()
+    pval_vol = 0 * pval_vol.flatten()
     pval_vol[msk] = (pval < 0.05)
     pval_vol = pval_vol.reshape(ati.shape)
 
     p = ni.new_img_like(ati, pval_vol)
-    p.to_filename('pval_hotelling.sig.mask.nii.gz')
+    p.to_filename('pval_hotelling.sig.mask.' + SM + '.nii.gz')
 
     # Significance masks
     p1 = ni.smooth_img(p, 5)
-    p1.to_filename('pval_hotelling_sig_mask.smooth5.nii.gz')
+    p1.to_filename('pval_hotelling_sig_mask.smooth5.' + SM + '.nii.gz')
 
     p1 = ni.smooth_img(p, 10)
-    p1.to_filename('pval_hotelling_sig_mask.smooth10.nii.gz')
+    p1.to_filename('pval_hotelling_sig_mask.smooth10.' + SM + '.nii.gz')
 
     p1 = ni.smooth_img(p, 15)
-    p1.to_filename('pval_hotelling_sig_mask.smooth15.nii.gz')
+    p1.to_filename('pval_hotelling_sig_mask.smooth15.' + SM + '.nii.gz')
 
     print('done')
 

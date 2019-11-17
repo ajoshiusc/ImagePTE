@@ -10,7 +10,7 @@ import scipy as sp
 from statsmodels.stats.multitest import fdrcorrection
 from statsmodels.stats.weightstats import ttest_ind
 import scipy.stats as ss
-
+from scipy.stats import shapiro
 #from statsmodels.stats import wilcoxon
 
 sm = '.smooth3mm'
@@ -63,7 +63,6 @@ def roiwise_stats(epi_data, nonepi_data):
         850, 900, 950
     ]
 
-
     epi_roi_lesion_vols = np.zeros((37, len(roi_list)))
     nonepi_roi_lesion_vols = np.zeros((37, len(roi_list)))
 
@@ -86,11 +85,13 @@ def roiwise_stats(epi_data, nonepi_data):
     print('significant rois in f-test are')
     print(roi_list[pval < 0.05])
 
-    _,pval_fdr=fdrcorrection(pval)
+    _, pval_fdr = fdrcorrection(pval)
     print('significant rois in f-test after FDR correction are')
     print(roi_list[pval_fdr < 0.05])
 
+    w, s = shapiro(epi_roi_lesion_vols)
 
+    print(w, s)
 
 
 def pointwise_stats(epi_data, nonepi_data):
