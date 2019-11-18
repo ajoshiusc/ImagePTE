@@ -149,13 +149,13 @@ def pointwise_stats(epi_data, nonepi_data):
 
     p = ni.new_img_like(ati, pval_vol)
     p.to_filename('pval_lesion' + sm + '.nii.gz')
-
-    pval_vol = 0 * pval_vol.flatten()
+    '''pval_vol = 0 * pval_vol.flatten()
     pval_vol[msk] = (pval < 0.05)
     pval_vol = pval_vol.reshape(ati.shape)
 
     p = ni.new_img_like(ati, pval_vol)
     p.to_filename('pval_lesion.sig.mask' + sm + '.nii.gz')
+    '''
 
     # FDR corrected p values
     _, pval_fdr = fdrcorrection(pvals=pval)
@@ -187,6 +187,7 @@ def pointwise_stats(epi_data, nonepi_data):
     # Do f test
     F = epi_data.var(axis=0) / (nonepi_data.var(axis=0) + 1e-16)
 
+    F = F * msk
     fimg = ni.new_img_like(ati, F.reshape(ati.shape))
     fimg.to_filename('fval_lesion' + sm + '.nii.gz')
 

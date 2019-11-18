@@ -145,6 +145,15 @@ def main():
     p = ni.new_img_like(ati, pval_vol)
     p.to_filename('pval_TBM.' + SM + '.nii.gz')
 
+    # Do FDR correction
+    _, pval_fdr = fdrcorrection(pval)
+    pval_vol = 0 * pval_vol.flatten()
+    pval_vol[msk] = pval_fdr
+    pval_vol = pval_vol.reshape(ati.shape)
+    p = ni.new_img_like(ati, pval_vol)
+    p.to_filename('pval_fdr_TBM.' + SM + '.nii.gz')
+
+    '''
     pval_vol = 0 * pval_vol.flatten()
     pval_vol[msk] = (pval < 0.05)
     pval_vol = pval_vol.reshape(ati.shape)
@@ -166,7 +175,7 @@ def main():
 
     p1 = ni.smooth_img(p, 15)
     p1.to_filename('pval_TBM_sig_mask.smooth15.' + SM + '.nii.gz')
-
+    '''
     print('done')
 
 

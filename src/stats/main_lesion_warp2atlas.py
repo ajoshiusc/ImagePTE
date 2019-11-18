@@ -35,9 +35,9 @@ def warpsubs(studydir, lesion_studydir, sub_ids, nonepi):
         fname_lesion = os.path.join(
             lesion_studydir, 'MSE_T1_' + str(n + 37 * nonepi) + '.nii.gz')
 
-        fname_lesion_w = os.path.join(studydir, id, 'lesion_vae.atlas.nii.gz')
+        fname_lesion_w = os.path.join(studydir, id, 'lesion_rvae.atlas.nii.gz')
         fname_lesion_w_sm = os.path.join(studydir, id,
-                                         'lesion_vae.atlas.smooth3mm.nii.gz')
+                                         'lesion_rvae.atlas.smooth3mm.nii.gz')
 
         # Warp by applying the map
         if os.path.isfile(fname_lesion_w):
@@ -90,7 +90,7 @@ def readsubs(studydir):
 
 def main():
 
-    studydir = '"/big_disk/akrami/git_repos_new/ImagePTE/src/Lesion Detection/models/3D_out"'
+    studydir = '"/big_disk/akrami/git_repos_new/ImagePTE/src/Lesion Detection/models/3D_out_R"'
     studydir_imgs = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1'
 
     epi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
