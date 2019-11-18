@@ -42,8 +42,8 @@ def warpsubs(studydir, sub_ids, nsub=10000):
     print('Reading Subjects')
 
     for n, id in enumerate(sub_ids):
-        if n >= nsub:
-            break
+
+        print('Processing subject %d / %d' % (n + 1, len(sub_ids)))
 
         invmap = os.path.join(studydir, id, 'BrainSuite',
                               'T1mni.svreg.inv.map.nii.gz')
@@ -51,19 +51,27 @@ def warpsubs(studydir, sub_ids, nsub=10000):
         # Warp T1 image
         fname_T1 = os.path.join(studydir, id, 'T1mni.nii.gz')
         fname_T1_w = os.path.join(studydir, id, 'T1mni.atlas.nii.gz')
-        os.system('/home/ajoshi/BrainSuite19a/svreg/bin/svreg_apply_map.sh ' +
-                  invmap + ' ' + fname_T1 + ' ' + fname_T1_w + ' ' + ATLAS)
+
+        if not os.path.isfile(fname_T1_w):
+            os.system(
+                '/home/ajoshi/BrainSuite19a/svreg/bin/svreg_apply_map.sh ' +
+                invmap + ' ' + fname_T1 + ' ' + fname_T1_w + ' ' + ATLAS)
 
         fname_T2 = os.path.join(studydir, id, 'T2mni.nii.gz')
         fname_T2_w = os.path.join(studydir, id, 'T2mni.atlas.nii.gz')
-        os.system('/home/ajoshi/BrainSuite19a/svreg/bin/svreg_apply_map.sh ' +
-                  invmap + ' ' + fname_T2 + ' ' + fname_T2_w + ' ' + ATLAS)
+
+        if not os.path.isfile(fname_T2_w):
+            os.system(
+                '/home/ajoshi/BrainSuite19a/svreg/bin/svreg_apply_map.sh ' +
+                invmap + ' ' + fname_T2 + ' ' + fname_T2_w + ' ' + ATLAS)
 
         fname_FLAIR = os.path.join(studydir, id, 'FLAIRmni.nii.gz')
         fname_FLAIR_w = os.path.join(studydir, id, 'FLAIRmni.atlas.nii.gz')
-        os.system('/home/ajoshi/BrainSuite19a/svreg/bin/svreg_apply_map.sh ' +
-                  invmap + ' ' + fname_FLAIR + ' ' + fname_FLAIR_w + ' ' +
-                  ATLAS)
+
+        if not os.path.isfile(fname_FLAIR_w):
+            os.system(
+                '/home/ajoshi/BrainSuite19a/svreg/bin/svreg_apply_map.sh ' +
+                invmap + ' ' + fname_FLAIR + ' ' + fname_FLAIR_w + ' ' + ATLAS)
 
         # Smooth the warped images
 
@@ -81,31 +89,17 @@ def warpsubs(studydir, sub_ids, nsub=10000):
             print('File exists :' + fname_T2_sm)
             print('File exists :' + fname_FLAIR_sm)
         else:
-            print('Applying SVReg inv map for:' + id)
+            print('Applying smoothing for:' + id)
             os.system(
                 '/home/ajoshi/BrainSuite19a/svreg/bin/svreg_smooth_vol_function.sh '
-                + fname_T1 + ' 3 3 3 ' + fname_T1_sm)
+                + fname_T1_w + ' 3 3 3 ' + fname_T1_sm)
 
             os.system(
                 '/home/ajoshi/BrainSuite19a/svreg/bin/svreg_smooth_vol_function.sh '
-                + fname_T2 + ' 3 3 3 ' + fname_T2_sm)
+                + fname_T2_w + ' 3 3 3 ' + fname_T2_sm)
             os.system(
                 '/home/ajoshi/BrainSuite19a/svreg/bin/svreg_smooth_vol_function.sh '
-                + fname_FLAIR + ' 3 3 3 ' + fname_FLAIR_sm)
-
-        print('sub:', n, 'Reading', id)
-        t1 = ni.load_img(fname_T1_w)
-        t2 = ni.load_img(fname_T2_w)
-        flair = ni.load_img(fname_FLAIR_w)
-
-        if n == 0:
-            data = np.zeros((3, min(len(sub_ids), nsub)) + t1.shape)
-
-        data[0, n, :, :, :] = t1.get_data()
-        data[1, n, :, :, :] = t2.get_data()
-        data[2, n, :, :, :] = flair.get_data()
-
-    return data, sub_ids, flair
+                + fname_FLAIR_w + ' 3 3 3 ' + fname_FLAIR_sm)
 
 
 def readsubs(studydir, sub_ids, nsub=10000):
@@ -162,12 +156,11 @@ def main():
     epiIds = list(map(lambda x: x.strip(), epiIds))
     nonepiIds = list(map(lambda x: x.strip(), nonepiIds))
 
-    wepi_data, wepi_subids, wt1 = warpsubs(studydir, epiIds, nsub=37)
-    wnonepi_data, wnonepi_subids, _ = warpsubs(studydir, nonepiIds, nsub=37)
+    warpsubs(studydir, epiIds, nsub=37)
+    epi_data, epi_subids, t1 = readsubs(studydir, epiIds, nsub=37)
 
-    epi_data, epi_subids, t1 = readsubs(studydir, epiIds, nsub=36)
-
-    nonepi_data, nonepi_subids, _ = readsubs(studydir, nonepiIds, nsub=36)
+    warpsubs(studydir, nonepiIds, nsub=37)
+    nonepi_data, nonepi_subids, _ = readsubs(studydir, nonepiIds, nsub=37)
 
     epi_data = epi_data.reshape(epi_data.shape[0], epi_data.shape[1], -1)
     nonepi_data = nonepi_data.reshape(nonepi_data.shape[0],
@@ -177,7 +170,7 @@ def main():
 
     # Epilepsy T1, T2, FLAIR average and std-dev data
 
-    t1_avg_vol = np.zeros(epi_data.shape[2])
+    t1_avg_vol = np.zeros(msk.shape[0])
     t2_avg_vol = np.zeros(epi_data.shape[2])
     flair_avg_vol = np.zeros(epi_data.shape[2])
     t1_std_vol = np.zeros(epi_data.shape[2])
