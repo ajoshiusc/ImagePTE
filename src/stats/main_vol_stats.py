@@ -7,6 +7,7 @@ import nilearn.image as ni
 from multivariate.hotelling import hotelling_t2
 from tqdm import tqdm
 import scipy as sp
+from statsmodels.stats.multitest import fdrcorrection
 
 ATLAS = '/home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
 SM = 'smooth3mm'
@@ -272,6 +273,32 @@ def main():
 
     p1 = ni.smooth_img(p, 15)
     p1.to_filename('pval_hotelling_sig_mask.smooth15.' + SM + '.nii.gz')
+
+    # Do FDR correction
+
+    _, pval_fdr = fdrcorrection(pval)
+    pval_vol = 0 * pval_vol.flatten()
+    pval_vol[msk] = (pval_fdr)
+    pval_vol = pval_vol.reshape(ati.shape)
+    p = ni.new_img_like(ati, pval_vol)
+    p.to_filename('pval_fdr_hotelling.' + SM + '.nii.gz')
+
+    pval_vol = 0 * pval_vol.flatten()
+    pval_vol[msk] = (pval_fdr < 0.05)
+    pval_vol = pval_vol.reshape(ati.shape)
+
+    p = ni.new_img_like(ati, pval_vol)
+    p.to_filename('pval_fdr_hotelling.sig.mask.' + SM + '.nii.gz')
+
+    # Significance masks
+    p1 = ni.smooth_img(p, 5)
+    p1.to_filename('pval_fdr_hotelling_sig_mask.smooth5.' + SM + '.nii.gz')
+
+    p1 = ni.smooth_img(p, 10)
+    p1.to_filename('pval_fdr_hotelling_sig_mask.smooth10.' + SM + '.nii.gz')
+
+    p1 = ni.smooth_img(p, 15)
+    p1.to_filename('pval_fdr_hotelling_sig_mask.smooth15.' + SM + '.nii.gz')
 
     print('done')
 
