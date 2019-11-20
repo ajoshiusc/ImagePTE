@@ -9,6 +9,8 @@ from tqdm import tqdm
 import scipy as sp
 from statsmodels.stats.multitest import fdrcorrection
 from statsmodels.stats.weightstats import ttest_ind
+import scipy.stats as ss
+
 #from statsmodels.stats import wilcoxon
 
 SM = 'smooth3mm'
@@ -152,6 +154,21 @@ def main():
     pval_vol = pval_vol.reshape(ati.shape)
     p = ni.new_img_like(ati, pval_vol)
     p.to_filename('pval_fdr_TBM.' + SM + '.nii.gz')
+
+    # Do f test
+    F = epi_data.var(axis=0) / (nonepi_data.var(axis=0) + 1e-16)
+
+    F = F * msk
+    fimg = ni.new_img_like(ati, F.reshape(ati.shape))
+    fimg.to_filename('fval_TBM' + SM + '.nii.gz')
+
+    pval = 1 - ss.f.cdf(F, 37 - 1, 37 - 1)
+    fimg = ni.new_img_like(ati, pval.reshape(ati.shape))
+    fimg.to_filename('pval_ftest_TBM' + SM + '.nii.gz')
+
+    _, pval_fdr = fdrcorrection(pvals=pval)
+    fimg = ni.new_img_like(ati, pval_fdr.reshape(ati.shape))
+    fimg.to_filename('pval_fdr_ftest_TBM' + SM + '.nii.gz')
 
     '''
     pval_vol = 0 * pval_vol.flatten()

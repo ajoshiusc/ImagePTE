@@ -9,7 +9,6 @@ def hotelling_t2(X, Y):
     # dim 1: number of subjects
     # dim 2: number of mesh nodes or voxels
 
-
     nx = X.shape[1]
     ny = Y.shape[1]
     p = X.shape[0]

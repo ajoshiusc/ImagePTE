@@ -58,11 +58,11 @@ def roiwise_stats(epi_data, nonepi_data):
     ati = ni.load_img(atlas_bfc)
     atlas_labels = '/home/ajoshi/coding_ground/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
     at_labels = ni.load_img(atlas_labels).get_data()
-    roi_list = [
-        3, 100, 101, 184, 185, 200, 201, 300, 301, 400, 401, 500, 501, 800,
-        850, 900, 950
-    ]
-
+    #roi_list = [
+    #    3, 100, 101, 184, 185, 200, 201, 300, 301, 400, 401, 500, 501, 800,
+    #    850, 900, 950
+    #]
+    roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
     epi_roi_lesion_vols = np.zeros((37, len(roi_list)))
     nonepi_roi_lesion_vols = np.zeros((37, len(roi_list)))
 
@@ -70,6 +70,12 @@ def roiwise_stats(epi_data, nonepi_data):
         msk = at_labels == roi
         epi_roi_lesion_vols[:, i] = np.sum(epi_data[:, msk], axis=1)
         nonepi_roi_lesion_vols[:, i] = np.sum(nonepi_data[:, msk], axis=1)
+
+    ''' For the whole brain comparison
+    msk = at_labels > 0
+    epi_roi_lesion_vols[:, len(roi_list)] = np.sum(epi_data[:, msk], axis=1)
+    nonepi_roi_lesion_vols[:, len(roi_list)] = np.sum(nonepi_data[:, msk], axis=1)
+    '''
 
     t, p, _ = ttest_ind(epi_roi_lesion_vols, nonepi_roi_lesion_vols)
 
@@ -221,7 +227,7 @@ def main():
     nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds)
 
     # Do Pointwise stats
-    pointwise_stats(epi_data, nonepi_data)
+    #    pointwise_stats(epi_data, nonepi_data)
 
     # Do ROIwise stats
     roiwise_stats(epi_data, nonepi_data)

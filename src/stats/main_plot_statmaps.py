@@ -1,7 +1,7 @@
 from nilearn.plotting import plot_stat_map, show
 import nilearn.image as nl
-
-stat_img = '/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_fdr_lesion.smooth3mm.nii.gz'
+from matplotlib import cm
+stat_img = '/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_fdr_ftest_TBMsmooth3mm.nii.gz'
 #stat_img = '/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_fdr_lesion.smooth3mm.nii.gz'
 
 outfile = stat_img.replace('.nii.gz','.pdf') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
