@@ -70,7 +70,7 @@ def main():
     subIds = list(map(lambda x: x.strip(), subIds))
     print(subIds.index)
 
-    # regparfun(subIds[1])
+    #regparfun(subIds[1])
 
     pool.map(regparfun, subIds)
 
