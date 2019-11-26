@@ -59,7 +59,9 @@ def main():
     #Set subject dirs
     #    med_hist_csv = '/ImagePTE1/ajoshi/fitbir/maryland_rao/FITBIR Demographics_314/FITBIRdemographics_prospective.csv'
     #    subIds = pd.read_csv(med_hist_csv, index_col=1)
-    #    pool = Pool(processes=8)
+
+    pool = Pool(processes=8)
+
     sub_list = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
 
     with open(sub_list) as f:
@@ -68,13 +70,13 @@ def main():
     subIds = list(map(lambda x: x.strip(), subIds))
     print(subIds.index)
 
-    regparfun(subIds[1])
+    # regparfun(subIds[1])
 
+    pool.map(regparfun, subIds)
 
-#    pool.map(regparfun, subs)
+    pool.close()
+    pool.join()
 
-#    pool.close()
-#    pool.join()
 
 if __name__ == "__main__":
     main()
