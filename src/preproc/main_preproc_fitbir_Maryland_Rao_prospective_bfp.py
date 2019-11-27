@@ -46,7 +46,7 @@ def regparfun(subid):
         copy(fmri, bfp_subdir)
 
         # zip the files
-        os.system('gzip -f ' + os.path.join(bfp_subdir, 'T1r.nii'))
+        #os.system('gzip -f ' + os.path.join(bfp_subdir, 'T1r.nii'))
         os.system('cp ' + os.path.join(bfp_subdir, 'T1r.nii.gz') + ' ' + t1gz)
 
         os.system('gzip -f ' + os.path.join(bfp_subdir, 'rest.nii'))
@@ -62,7 +62,7 @@ def main():
     #    med_hist_csv = '/ImagePTE1/ajoshi/fitbir/maryland_rao/FITBIR Demographics_314/FITBIRdemographics_prospective.csv'
     #    subIds = pd.read_csv(med_hist_csv, index_col=1)
 
-    pool = Pool(processes=8)
+    pool = Pool(processes=6)
 
     sub_list = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
 
