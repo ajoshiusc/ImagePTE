@@ -10,7 +10,7 @@ import numbers
 from shutil import copyfile, copy
 import time
 
-bfp_exe = '/ImagePTE1/ajoshi/bfp_ver2p25/bfp.sh'
+bfp_exe = '/ImagePTE1/ajoshi/bfp_ver2p26/bfp.sh'
 bfp_config = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_config_bfp_preproc.ini'
 
 
