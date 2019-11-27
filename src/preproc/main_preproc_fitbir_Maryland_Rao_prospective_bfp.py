@@ -28,14 +28,14 @@ def regparfun(subid):
     if not os.path.isdir(bfp_subdir):
         os.makedirs(bfp_subdir)
 
-    t1 = os.path.join(subdir, 'T1.nii')
+    t1 = os.path.join(subdir, 'T1r.nii.gz')
     fmri = os.path.join(subdir, 'rest.nii')
 
     # If the file does not exist, then return
     if not os.path.isfile(t1) or not os.path.isfile(fmri):
         return
 
-    t1gz = os.path.join(bfp_subdir, 'T1.nii.gz')
+    t1gz = os.path.join(bfp_subdir, 'T1r.bse.nii.gz')
     fmrigz = os.path.join(bfp_subdir, 'rest.nii.gz')
 
     # copy and zip the t1 and fmri files
@@ -46,7 +46,9 @@ def regparfun(subid):
         copy(fmri, bfp_subdir)
 
         # zip the files
-        os.system('gzip -f ' + os.path.join(bfp_subdir, 'T1.nii'))
+        os.system('gzip -f ' + os.path.join(bfp_subdir, 'T1r.nii'))
+        os.system('cp ' + os.path.join(bfp_subdir, 'T1r.nii.gz') + ' ' + t1gz)
+
         os.system('gzip -f ' + os.path.join(bfp_subdir, 'rest.nii'))
 
     os.system(bfp_exe + ' ' + bfp_config + ' ' + t1gz + ' ' + fmrigz + ' ' +
