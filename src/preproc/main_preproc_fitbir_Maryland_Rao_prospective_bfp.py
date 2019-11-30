@@ -62,9 +62,9 @@ def main():
     #    med_hist_csv = '/ImagePTE1/ajoshi/fitbir/maryland_rao/FITBIR Demographics_314/FITBIRdemographics_prospective.csv'
     #    subIds = pd.read_csv(med_hist_csv, index_col=1)
 
-    pool = Pool(processes=6)
+#    pool = Pool(processes=6)
 
-    sub_list = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
+    sub_list = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
 
     with open(sub_list) as f:
         subIds = f.readlines()
@@ -74,10 +74,21 @@ def main():
 
     #regparfun(subIds[1])
 
-    pool.map(regparfun, subIds)
+    print('There are %d subjects\n'% len(subIds))
 
-    pool.close()
-    pool.join()
+    for id in subIds:
+        #regparfun(id)
+        fname = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1/'+id+'/BFP/'+id+'/func/'+id+'_rest_bold.32k.GOrd.mat'
+
+        if not os.path.isfile(fname):
+            print(' check : %s' % fname)
+        
+        
+
+#    pool.map(regparfun, subIds)
+
+#    pool.close()
+#    pool.join()
 
 
 if __name__ == "__main__":
