@@ -64,7 +64,7 @@ def main():
 
 #    pool = Pool(processes=6)
 
-    sub_list = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
+    sub_list = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
 
     with open(sub_list) as f:
         subIds = f.readlines()
