@@ -23,10 +23,6 @@ import scipy.signal
 import scipy.stats as st
 from sklearn import metrics
 from VAE_model_pixel_vanilla import Encoder, Decoder, VAE_Generator
-import nilearn.image as ni
-import cv2
-import matplotlib.pyplot as plt
-
 pret=0
 
 #p_values = scipy.stats.norm.sf(abs(z_scores))*2
@@ -37,48 +33,19 @@ def load_model(epoch, encoder, decoder, loc):
     decoder.cuda()
     encoder.load_state_dict(torch.load(loc+'/VAE_GAN_encoder_%d.pth' % epoch))
     encoder.cuda()
+  
 
-def save_out(MSE_image,num_C,ref_dir):
-    t1file = t1_file = os.path.join(ref_dir, 'T1mni.nii.gz')
-    t1model=ni.load_img(t1file )
-    for i in range (int(MSE_image.shape[2]/num_C)):
-        subi=MSE_image[:,:,i*num_C:(i+1)*num_C,2]
-        img = ni.new_img_like(t1model, subi)
-        img.to_filename('/big_disk/akrami/git_repos_new/ImagePTE/src/Lesion Detection/models/3D_out_R/MSE_FLAIR_%d.nii.gz' %i)
-        subi=MSE_image[:,:,i*num_C:(i+1)*num_C,0]
-        img = ni.new_img_like(t1model, subi)
-        img.to_filename('/big_disk/akrami/git_repos_new/ImagePTE/src/Lesion Detection/models/3D_out_R/MSE_T1_%d.nii.gz' %i)
-        subi=MSE_image[:,:,i*num_C:(i+1)*num_C,1]
-        img = ni.new_img_like(t1model, subi)
-        img.to_filename('/big_disk/akrami/git_repos_new/ImagePTE/src/Lesion Detection/models/3D_out_R/MSE_T2_%d.nii.gz' %i)
-
-def reshape(data_In,size,num_channel):
-   data=data_In
-   X=np.zeros((data.shape[0],size[0], size[1],num_channel))
-   for i in range(data.shape[0]):
-      if i==0:
-         X[i,:,:,:]= cv2.resize(data[i,:,:,:], dsize=(size[1], size[0]), interpolation=cv2.INTER_CUBIC)
-         #X=X.reshape((1,size[0],size[1],num_channel))
-      else:
-         X[i,:,:,:]=cv2.resize(data[i,:,:,:], dsize=(size[1], size[0]), interpolation=cv2.INTER_CUBIC) 
-         #temp=temp.reshape((1,size[0],size[1],num_channel))
-         #X=np.append(X,temp ,axis=0)
-         
-   fig, ax = plt.subplots()
-   im = ax.imshow(X[50,:,:,0])
-   plt.show()
-   return X
 #####read data######################
-d=np.load('./data/data_maryland_128_pilepsy_test.npz')
-X_valid=d['data']
 
+d=np.load('./data/data_ISEL_128_valid.npz')
+X = d['data'][:,:,:,:]
 
-
-
-d=np.load('./data/data_maryland_128_nonepilepsy_test.npz')
-X_valid=np.concatenate((X_valid,d['data']),axis=0)
-X_valid=X_valid[:,:,:,:]
-
+X_data = np.copy(X[:, :, :, 0:3])
+#max_val=np.max(X)
+#X_data = X_data/ max_val
+X_data = X_data.astype('float64')
+X_valid=X_data[:,:,:,:]
+D=X_data.shape[1]*X_data.shape[2]
 ####################################
 
 
@@ -100,6 +67,7 @@ Validation_loader = torch.utils.data.DataLoader(validation_data_inference,
 
 
 
+
 ########## intilaize parameters##########        
 # define constant
 input_channels = 3
@@ -110,11 +78,14 @@ beta = 0
 device='cuda'
 #########################################
 epoch=99
-LM='/big_disk/akrami/git_repos_new/ImagePTE/src/Lesion Detection/models/RVAE_final_1'
+LM='/big_disk/akrami/git_repos_new/ImagePTE/src/Lesion Detection/models/VAE_final_64'
 
 ##########load low res net##########
 G=VAE_Generator(input_channels, hidden_size).cuda()
 load_model(epoch,G.encoder, G.decoder,LM)
+
+
+
 
 
 
@@ -124,6 +95,7 @@ load_model(epoch,G.encoder, G.decoder,LM)
 def MSE_loss(Y, X):
     msk = torch.tensor(X > 1e-6).float()
     ret = ((X- Y) ** 2)*msk
+    ret = torch.sum(ret,1)
     return ret 
 def BMSE_loss(Y, X, beta,sigma,Dim):
     term1 = -((1+beta) / beta)
@@ -155,7 +127,7 @@ def beta_loss_function(recon_x, x, mu, logvar, beta):
 ####################################
 
 ##########TEST##########
-def Validation():
+def Validation_2(X):
     G.eval()
 #G2.eval()
     test_loss = 0
@@ -164,14 +136,49 @@ def Validation():
         for i, data in enumerate(Validation_loader):
             data = (data).to(device)
             msk = torch.tensor(data > 1e-6).float()
+            seg = X[ind:ind + batch_size, :, :, 3]
+            seg=seg.astype('float32')
+            ind = ind + batch_size
+            seg = torch.from_numpy(seg)
+            seg = (seg).to(device)*msk[:, 2, :, :]
             _, _, arr_lowrec = G(data)
-            f_recon_batch = arr_lowrec[:, :, :, :]*msk[:, :, :, :]
+            f_recon_batch = arr_lowrec[:, 2, :, :]*msk[:, 2, :, :]
 
             
 
-            f_data = data[:, :, :, :]*msk[:, :, :, :]
+            f_data = data[:, 2, :, :]*msk[:, 2, :, :]
             #f_recon_batch = f_recon_batch[:, 2, :, :]
-            rec_error = torch.abs(f_data - f_recon_batch)*msk[:, :, :, :]
+            rec_error =(f_data - f_recon_batch)*msk[:, 2, :, :]
+            #rec_error=torch.mean(rec_error,1)
+            if i<200:
+                n = min(f_data.size(0), 100)
+                err=torch.abs(f_data.view(batch_size,1, 128, 128)[:n] -
+                     f_recon_batch.view(batch_size,1, 128, 128)[:n])
+                err=err
+                #err=torch.mean(err,1)
+                median=(err).to('cpu')
+                median=median.numpy()
+                median=scipy.signal.medfilt(median,(1,1,7,7))
+                median=median.astype('float32')
+                median = np.clip(median, 0, 1)
+    
+                err=median
+                err=torch.from_numpy(err)
+                err=(err).to(device)
+
+                comparison = torch.cat([
+                    f_data.view(batch_size, 1, 128,128)[:n],
+                    f_recon_batch.view(batch_size, 1, 128, 128)[:n],
+                    err.view(batch_size, 1, 128, 128)[:n],
+                    torch.abs(
+                        f_data.view(batch_size, 1, 128, 128)[:n] -
+                        f_recon_batch.view(batch_size, 1, 128, 128)[:n]),
+                    seg.view(batch_size, 1, 128, 128)[:n]
+                ])
+                save_image(comparison.cpu(),
+                           './models/VAE_final_64/reconstruction_isel' +str(i)+ '.png',
+                           nrow=n)
+                
             if i==0:
                 rec_error_all = rec_error
             else:
@@ -180,23 +187,42 @@ def Validation():
     print('====> Test set loss: {:.4f}'.format(test_loss))
     return rec_error_all
 
-sub_size=[182,218]
-num_C=182
-ref_dir='/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1/TBI_INVYU830PA1'
-y_probas = Validation()
-y_probas = (y_probas).to('cpu')
+
+
+rec_error_all = Validation_2(X)
+y_true =(X[:, :, :, 3])
+y_true = np.reshape(y_true, (-1, 1))
+
+maskX = np.reshape(X[:, :, :, 2], (-1, 1))
+y_true[y_true > 0]=1
+y_true[y_true < 0]=0
+y_true = y_true[maskX > 0]
+
+y_probas = (rec_error_all).to('cpu')
 y_probas = y_probas.numpy()
-y_probas=scipy.signal.medfilt(y_probas,(1,1,7,7))
-y_probas = np.transpose(y_probas, (0,2, 3, 1))
-y_probas=reshape(y_probas,sub_size,3)
-y_probas = np.transpose(y_probas, (1,2, 0, 3))
-save_out(y_probas,num_C,ref_dir)
+y_probas = np.reshape(y_probas, (-1, 1))
+y_true = y_true.astype(int)
 
+print(np.min(y_probas))
+print(np.max(y_probas))
+y_probas = np.clip(y_probas, 0, 1)
+
+
+y_probas = np.reshape(y_probas, (-1, 1,128, 128))
+#y_probas=scipy.signal.medfilt(y_probas,(1,1,7,7))
+y_probas = np.reshape(y_probas, (-1, 1))
+y_probas = y_probas[maskX > 0]
+
+fpr, tpr, th= metrics.roc_curve(y_true, y_probas)
+L=fpr/tpr
+best_th=th[fpr<0.05]
+auc = metrics.auc(fpr, tpr)
+plt.plot(fpr, tpr, label="VAE, auc=" + str(auc))
+plt.legend(loc=4)
+plt.show()
     
-    
-
-    
-
-
-
+   
   
+    
+ 
+    

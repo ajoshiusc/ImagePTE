@@ -53,15 +53,11 @@ def load_model(epoch, encoder, decoder, D):
 
 
 
-d=np.load('./data/data_maryland_128.npz')
-X=d['data']
-X_train=X[0:-6*182,:,:,:]
-X_valid=X[-6*182:,:,:,:]
-
 
 d=np.load('./data/data_TBI_128.npz')
-X_train=np.concatenate((X_train,d['data'][0:-10*182,:,:,:]),axis=0)
-X_valid=np.concatenate((X_valid,d['data'][-10*182:,:,:,:]),axis=0)
+X=d['data']
+X_train=X[0:-10*182,:,:,:]
+X_valid=X[-10*182:,:,:,:]
 
 X_train=X_train[(np.mean(X_train,axis=(1,2))[:,1]>0),:,:,:]
 X_valid = X_valid[(np.mean(X_valid,axis=(1,2))[:,1]>0),:,:,:]

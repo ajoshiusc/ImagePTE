@@ -2,7 +2,7 @@ import nilearn.image
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
-from datautils_VAE import read_data, read_data_test
+from datautils_VAE import read_data, read_data_test, read_data_isel
 import cv2
 
 ###This fuction is for reading MRI data### 
@@ -30,6 +30,59 @@ def train_save(data_dir,ref_dir,sub_names,Out_name,window_H,window_W,window_C):
     plt.show()
     np.savez(Out_name, data=data)
 ############################################
+
+def test_save(data_dir,ref_dir,sub_names,Out_name,window_H,window_W,window_C):
+    data_dir =data_dir
+    with open(sub_names) as f:
+        tbidoneIds = f.readlines()
+    tbidoneIds = [l.strip('\n\r') for l in tbidoneIds]
+
+   
+    slicerange = np.arange(0, window_C, dtype=int)
+    data = read_data_test(study_dir=data_dir,
+                                       ref_dir=ref_dir,
+                                       subids=tbidoneIds,
+                                       nsub=6,
+                                       psize=[window_H, window_W],
+                                       npatch_perslice=1,
+                                       slicerange=slicerange,
+                                       erode_sz=0,
+                                       lesioned=False,
+                                       dohisteq=True
+                                       )
+    #data=data[:,:,81:101]
+    fig, ax = plt.subplots()
+    im = ax.imshow(data[70, :, :, 2])
+    plt.show()
+    np.savez(Out_name, data=data)
+
+
+
+def test_isel(data_dir,ref_dir,sub_names,Out_name,window_H,window_W,window_C):
+    data_dir =data_dir
+    with open(sub_names) as f:
+        tbidoneIds = f.readlines()
+    tbidoneIds = [l.strip('\n\r') for l in tbidoneIds]
+
+   
+    slicerange = np.arange(0, window_C, dtype=int)
+    data = read_data_isel(study_dir=data_dir,
+                                       ref_dir=ref_dir,
+                                       subids=tbidoneIds,
+                                       nsub=15,
+                                       psize=[window_H, window_W],
+                                       npatch_perslice=1,
+                                       slicerange=slicerange,
+                                       erode_sz=0,
+                                       lesioned=False,
+                                       dohisteq=True
+                                       )
+    #data=data[:,:,81:101]
+    fig, ax = plt.subplots()
+    im = ax.imshow(data[70, :, :, 2])
+    plt.show()
+    np.savez(Out_name, data=data)
+
 
 ###This fuction is for reshaping MRI data### 
 def reshape(data_In,size,num_channel):
@@ -63,13 +116,51 @@ def run(data_dir,ref_dir,sub_names,Out_name):
     plt.show()
     np.savez(Out_name, data=X_reshape)
 
+
+def run_test(data_dir,ref_dir,sub_names,Out_name):
+    ###initial parameters###
+    window_H = 182
+    window_W = 218
+    window_C= 182
+
+    ###read data###
+    test_save(data_dir,ref_dir,sub_names,Out_name,window_H,window_W,window_C)
+
+    ###reshape data###
+    reshape_size=[128,128]
+    num_channels=4     ##FLAIR T1 T2 seg
+    X_reshape=reshape(Out_name,reshape_size,num_channels)
+    fig, ax = plt.subplots()
+    im = ax.imshow(X_reshape[50,:,:,0])
+    plt.show()
+    np.savez(Out_name, data=X_reshape)
+
+def run_isel(data_dir,ref_dir,sub_names,Out_name):
+    ###initial parameters###
+    window_H = 182
+    window_W = 218
+    window_C= 182
+
+    ###read data###
+    test_isel(data_dir,ref_dir,sub_names,Out_name,window_H,window_W,window_C)
+
+    ###reshape data###
+    reshape_size=[128,128]
+    num_channels=4     ##FLAIR T1 T2 seg
+    X_reshape=reshape(Out_name,reshape_size,num_channels)
+    fig, ax = plt.subplots()
+    im = ax.imshow(X_reshape[50,:,:,0])
+    plt.show()
+    np.savez(Out_name, data=X_reshape)
+
 if __name__ == "__main__":
     
     marryland_train=0
     marryland_valid=0
     marryland_test=0
-    TBI_train=1
-    TBI_valid=1
+    TBI_train=0
+    TBI_valid=0
+    ISEL_valid=1
 
     if marryland_train==1:
         ###data and output directory for merryland dataset###
@@ -84,9 +175,9 @@ if __name__ == "__main__":
         ###data and output directory for merryland dataset###
         data_dir='/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1/'
         sub_names='/big_disk/ajoshi/fitbir/preproc/test_subjects_with_lesions_maryland.txt'
-        Out_name='data_maryland_128_valid.npz'
+        Out_name='data_maryland_128_valid_seg.npz'
         ref_dir='/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1/TBI_INVYU830PA1'
-        run(data_dir,ref_dir,sub_names,Out_name)   
+        run_test(data_dir,ref_dir,sub_names,Out_name)   
 
     if marryland_test==1:
         ###data and output directory for merryland dataset###
@@ -115,4 +206,12 @@ if __name__ == "__main__":
         sub_names='/big_disk/ajoshi/fitbir/preproc/test_subjects_with_lesions_tracktbi.txt'
         Out_name='data_TBI_128_valid.npz'
         ref_dir='/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1/TBI_INVYU830PA1'
-        run(data_dir,ref_dir,sub_names,Out_name)   
+        run(data_dir,ref_dir,sub_names,Out_name)
+
+    if ISEL_valid==1:
+        ###data and output directory for merryland dataset###
+        data_dir='/big_disk/ajoshi/ISLES2015/preproc/Training/'
+        sub_names='/big_disk/ajoshi/ISLES2015/ISLES2015_Training_done.txt'
+        Out_name='data_ISEL_128_valid.npz'
+        ref_dir='/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1/TBI_INVYU830PA1'
+        run_isel(data_dir,ref_dir,sub_names,Out_name)   
