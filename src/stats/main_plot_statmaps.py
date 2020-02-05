@@ -4,8 +4,8 @@ from matplotlib import cm
 stat_img = '/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_fdr_ftest_TBMsmooth3mm.nii.gz'
 #stat_img = '/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_fdr_lesion.smooth3mm.nii.gz'
 
-outfile = stat_img.replace('.nii.gz','.pdf') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
-outfile2 = stat_img.replace('.nii.gz','_2.pdf') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
+outfile = stat_img.replace('.nii.gz','_new.pdf') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
+outfile2 = stat_img.replace('.nii.gz','_2_new.pdf') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
 
 img = 0.05 - nl.load_img(stat_img).get_data()
 

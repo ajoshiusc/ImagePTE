@@ -18,6 +18,7 @@ from brainsync import groupBrainSync, normalizeData
 import time
 import pandas as pd
 
+
 def main():
 
     studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
@@ -37,38 +38,44 @@ def main():
     epi_files = list()
     nonepi_files = list()
 
+    epi_id = list()
+    nonepi_id = list()
+
     for sub in epiIds:
         fname = os.path.join(studydir, sub, 'BFP', sub, 'func',
                              sub + '_rest_bold.32k.GOrd.mat')
         if os.path.isfile(fname):
             epi_files.append(fname)
+            epi_id.append(sub)
 
     for sub in nonepiIds:
         fname = os.path.join(studydir, sub, 'BFP', sub, 'func',
                              sub + '_rest_bold.32k.GOrd.mat')
         if os.path.isfile(fname):
             nonepi_files.append(fname)
+            nonepi_id.append(sub)
 
     epi_data = load_bfp_data(epi_files, 171)
     nonepi_data = load_bfp_data(nonepi_files, 171)
 
-    t = time.time()
-    X2, Os, Costdif, TotalError = groupBrainSync(nonepi_data)
+    ids = epi_id + nonepi_id
+    pte = [1] * len(epi_id) + [0] * len(nonepi_id)
 
-    elapsed = time.time() - t
 
-    np.savez('grp_atlas2.npz', X2=X2, Os=Os)
 
-    atlas_data, _, _ = normalizeData(np.mean(X2, axis=1))
+    p = pd.read_csv('/ImagePTE1/ajoshi/fitbir/maryland_rao/FITBIR Demographics_314/FITBIRdemographics_prospective_modified.csv',index_col='Main Group.GUID')
 
-    np.savez('grp_atlas.npz', atlas_data=atlas_data)
 
-    # Do Pointwise stats
-    #    pointwise_stats(epi_data, nonepi_data)
 
-    vis_grayord_sigcorr(pval, rval, cf.outname, cf.out_dir,
-                        int(cf.smooth_iter), cf.save_surfaces, cf.save_figures,
-                        'True')
+    #p.loc["TBI_INVVL624DAG"]['Main Group.AgeYrs']
+    #p.loc["TBI_INVVL624DAG"]['Subject Demographics.GenderTyp']
+
+    age = list(p.loc[ids]['Main Group.AgeYrs'])
+    gender = list(p.loc[ids]['Subject Demographics.GenderTyp'])
+
+    df = pd.DataFrame(list(zip(ids, pte, age,gender)), columns=['subID', 'PTE', 'Age', 'Gender'])
+
+    export_csv = df.to_csv('ImagePTE_Maryland.csv', index=False)
 
     print('done')
 
