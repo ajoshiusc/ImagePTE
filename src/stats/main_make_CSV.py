@@ -55,8 +55,8 @@ def main():
             nonepi_files.append(fname)
             nonepi_id.append(sub)
 
-    epi_data = load_bfp_data(epi_files, 171)
-    nonepi_data = load_bfp_data(nonepi_files, 171)
+    #epi_data = load_bfp_data(epi_files, 171)
+    #nonepi_data = load_bfp_data(nonepi_files, 171)
 
     ids = epi_id + nonepi_id
     pte = [1] * len(epi_id) + [0] * len(nonepi_id)
