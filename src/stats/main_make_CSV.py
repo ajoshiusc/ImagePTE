@@ -61,11 +61,11 @@ def main():
     ids = epi_id + nonepi_id
     pte = [1] * len(epi_id) + [0] * len(nonepi_id)
 
+    exclude = np.zeros(len(ids), np.int16)
 
-
-    p = pd.read_csv('/ImagePTE1/ajoshi/fitbir/maryland_rao/FITBIR Demographics_314/FITBIRdemographics_prospective_modified.csv',index_col='Main Group.GUID')
-
-
+    p = pd.read_csv(
+        '/ImagePTE1/ajoshi/fitbir/maryland_rao/FITBIR Demographics_314/FITBIRdemographics_prospective_modified.csv',
+        index_col='Main Group.GUID')
 
     #p.loc["TBI_INVVL624DAG"]['Main Group.AgeYrs']
     #p.loc["TBI_INVVL624DAG"]['Subject Demographics.GenderTyp']
@@ -73,7 +73,8 @@ def main():
     age = list(p.loc[ids]['Main Group.AgeYrs'])
     gender = list(p.loc[ids]['Subject Demographics.GenderTyp'])
 
-    df = pd.DataFrame(list(zip(ids, pte, age,gender)), columns=['subID', 'PTE', 'Age', 'Gender'])
+    df = pd.DataFrame(list(zip(ids, pte, age, gender, exclude)),
+                      columns=['subID', 'PTE', 'Age', 'Gender', 'Exclude'])
 
     export_csv = df.to_csv('ImagePTE_Maryland.csv', index=False)
 
