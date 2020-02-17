@@ -109,7 +109,7 @@ corr_pval_max, corr_pval_fdr = randpairs_regression(
     nperm=2000,
     len_time=int(cf.lentime),
     num_proc=1,
-    pearson_fdr_test=False)
+    pearson_fdr_test=True)
 #%%
 spio.savemat(
     os.path.join(cf.out_dir + '/' + cf.outname + '_corr_pval_max.mat'),
