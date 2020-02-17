@@ -101,7 +101,7 @@ pre = regr.predict(subTest_varc12)
 subTest_varmain2 = subTest_varmain - pre
 
 #%% Compute pairwise distance and perform regression
-corr_pval_max, corr_pval_fdr = randpairs_regression(
+corr_pval_fdr, corr_pval = randpairs_regression(
     bfp_path=cf.bfp_path,
     sub_files=subTest_fname,
     reg_var=subTest_varmain2,
@@ -111,24 +111,22 @@ corr_pval_max, corr_pval_fdr = randpairs_regression(
     num_proc=1,
     pearson_fdr_test=True)
 #%%
-spio.savemat(
-    os.path.join(cf.out_dir + '/' + cf.outname + '_corr_pval_max.mat'),
-    {'corr_pval_max': corr_pval_max})
-spio.savemat(
-    os.path.join(cf.out_dir + '/' + cf.outname + '_corr_pval_fdr.mat'),
-    {'corr_pval_fdr': corr_pval_fdr})
+spio.savemat(os.path.join(cf.out_dir + '/' + cf.outname +
+                          '_corr_pval_pearson.mat'),
+             {'corr_pval_fdr':corr_pval_fdr,
+             'corr_pval':corr_pval})
 #%% Visualization of the results
-vis_grayord_sigpval(corr_pval_max,
+vis_grayord_sigpval(corr_pval_fdr,
                     float(cf.sig_alpha),
-                    surf_name=cf.outname + '_max',
+                    surf_name=cf.outname + '_fdr',
                     out_dir=cf.out_dir,
                     smooth_iter=int(cf.smooth_iter),
                     bfp_path=cf.bfp_path,
                     fsl_path=cf.fsl_path)
 
-vis_grayord_sigpval(corr_pval_fdr,
+vis_grayord_sigpval(corr_pval,
                     float(cf.sig_alpha),
-                    surf_name=cf.outname + 'fdr',
+                    surf_name=cf.outname + 'uncorr',
                     out_dir=cf.out_dir,
                     smooth_iter=int(cf.smooth_iter),
                     bfp_path=cf.bfp_path,
