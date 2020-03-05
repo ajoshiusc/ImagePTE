@@ -12,6 +12,11 @@ from statsmodels.stats.weightstats import ttest_ind
 import scipy.stats as ss
 from scipy.stats import shapiro
 #from statsmodels.stats import wilcoxon
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import plot_roc_curve
+import matplotlib.pyplot as plt
 
 sm = '.smooth3mm'
 
@@ -54,8 +59,6 @@ def readsubs(studydir, sub_ids):
 
 def roiwise_stats(epi_data, nonepi_data):
 
-    atlas_bfc = '/home/ajoshi/coding_ground/svreg/USCLobes/BCI-DNI_brain.bfc.nii.gz'
-    ati = ni.load_img(atlas_bfc)
     atlas_labels = '/home/ajoshi/coding_ground/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
     at_labels = ni.load_img(atlas_labels).get_data()
     #roi_list = [
@@ -70,7 +73,6 @@ def roiwise_stats(epi_data, nonepi_data):
         msk = at_labels == roi
         epi_roi_lesion_vols[:, i] = np.sum(epi_data[:, msk], axis=1)
         nonepi_roi_lesion_vols[:, i] = np.sum(nonepi_data[:, msk], axis=1)
-
     ''' For the whole brain comparison
     msk = at_labels > 0
     epi_roi_lesion_vols[:, len(roi_list)] = np.sum(epi_data[:, msk], axis=1)
@@ -98,6 +100,7 @@ def roiwise_stats(epi_data, nonepi_data):
     w, s = shapiro(epi_roi_lesion_vols)
 
     print(w, s)
+    return epi_roi_lesion_vols, nonepi_roi_lesion_vols
 
 
 def pointwise_stats(epi_data, nonepi_data):
@@ -230,9 +233,24 @@ def main():
     #    pointwise_stats(epi_data, nonepi_data)
 
     # Do ROIwise stats
-    roiwise_stats(epi_data, nonepi_data)
+    epi_measures, nonepi_measures = roiwise_stats(epi_data, nonepi_data)
+
+    X = np.vstack((epi_measures[:, :2], nonepi_measures[:, :2]))
+    y = np.hstack((np.ones(epi_measures.shape[0]),
+                   2 + np.zeros(nonepi_measures.shape[0])))
+
+    X_train, X_test, y_train, y_test = train_test_split(X,
+                                                        y,
+                                                        test_size=0.33,
+                                                        random_state=42)
+    clf = SVC(random_state=42) #RandomForestClassifier(n_estimators=10, random_state=42)  #
+    clf.fit(X_train, y_train)
+    svc_disp = plot_roc_curve(clf, X_test, y_test)
+
+    plt.show()
 
     print('done')
+    input("Press Enter to continue...")
 
 
 if __name__ == "__main__":
