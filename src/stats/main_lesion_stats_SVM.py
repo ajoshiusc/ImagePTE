@@ -15,7 +15,7 @@ from scipy.stats import shapiro
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import plot_roc_curve
+from sklearn.metrics import plot_roc_curve, roc_curve, auc, roc_auc_score
 import matplotlib.pyplot as plt
 
 sm = '.smooth3mm'
@@ -235,23 +235,35 @@ def main():
     # Do ROIwise stats
     epi_measures, nonepi_measures = roiwise_stats(epi_data, nonepi_data)
 
-    X = np.vstack((epi_measures[:, :2], nonepi_measures[:, :2]))
-    y = np.hstack((np.ones(epi_measures.shape[0]),
-                   2 + np.zeros(nonepi_measures.shape[0])))
+    X = np.vstack((epi_measures, nonepi_measures))
+    y = np.hstack(
+        (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
 
-    X_train, X_test, y_train, y_test = train_test_split(X,
-                                                        y,
-                                                        test_size=0.33,
-                                                        random_state=42)
-    clf = SVC(random_state=42) #RandomForestClassifier(n_estimators=10, random_state=42)  #
-    clf.fit(X_train, y_train)
-    svc_disp = plot_roc_curve(clf, X_test, y_test)
+    n_iter = 1000
+    auc = np.zeros(n_iter)
+    auc_t = np.zeros(n_iter)
 
-    plt.show()
+    for t in tqdm(range(n_iter)):
+        X_train, X_test, y_train, y_test = train_test_split(X,
+                                                            y,
+                                                            test_size=0.1)
+        clf = SVC(kernel='linear', C=1,gamma='auto',tol=1e-6)  #RandomForestClassifier(n_estimators=20)  #
+        clf.fit(X_train, y_train)
+        #svc_disp = plot_roc_curve(clf, X_test, y_test)
+        y_score = clf.predict(X_test)
+        auc[t] = roc_auc_score(y_test, y_score)
+        y_score = clf.predict(X_train)
+        auc_t[t] = roc_auc_score(y_train, y_score)
+        print(auc[t], auc_t[t])
+
+
+#    plt.show()
+
+    print(np.mean(auc), np.std(auc))
+    print(np.mean(auc_t), np.std(auc_t))
 
     print('done')
     input("Press Enter to continue...")
-
 
 if __name__ == "__main__":
     main()
