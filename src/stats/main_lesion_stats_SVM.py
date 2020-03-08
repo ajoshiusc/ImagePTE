@@ -246,7 +246,7 @@ def main():
     for t in tqdm(range(n_iter)):
         X_train, X_test, y_train, y_test = train_test_split(X,
                                                             y,
-                                                            test_size=0.1)
+                                                            test_size=0.33)
         clf = SVC(kernel='linear', C=1,gamma='auto',tol=1e-6)  #RandomForestClassifier(n_estimators=20)  #
         clf.fit(X_train, y_train)
         #svc_disp = plot_roc_curve(clf, X_test, y_test)
