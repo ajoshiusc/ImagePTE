@@ -76,7 +76,7 @@ def main():
     df = pd.DataFrame(list(zip(ids, pte, age, gender, exclude)),
                       columns=['subID', 'PTE', 'Age', 'Gender', 'Exclude'])
 
-    export_csv = df.to_csv('ImagePTE_Maryland.csv', index=False)
+    df.to_csv('ImagePTE_Maryland_demographics.csv', index=False)
 
     print('done')
 
