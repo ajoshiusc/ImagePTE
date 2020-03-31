@@ -54,9 +54,9 @@ def readsubs(studydir, sub_ids):
 
 def roiwise_stats(epi_data, nonepi_data):
 
-    atlas_bfc = '/home/ajoshi/coding_ground/svreg/USCLobes/BCI-DNI_brain.bfc.nii.gz'
+    atlas_bfc = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.bfc.nii.gz'
     ati = ni.load_img(atlas_bfc)
-    atlas_labels = '/home/ajoshi/coding_ground/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
     at_labels = ni.load_img(atlas_labels).get_data()
     #roi_list = [
     #    3, 100, 101, 184, 185, 200, 201, 300, 301, 400, 401, 500, 501, 800,
@@ -102,7 +102,7 @@ def roiwise_stats(epi_data, nonepi_data):
 
 def pointwise_stats(epi_data, nonepi_data):
 
-    atlas = '/home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
+    atlas = '/home/ajoshi/BrainSuite19b/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
     ati = ni.load_img(atlas)
 
     # Save mean over the epilepsy subjects
@@ -227,7 +227,7 @@ def main():
     nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds)
 
     # Do Pointwise stats
-    #    pointwise_stats(epi_data, nonepi_data)
+    pointwise_stats(epi_data, nonepi_data)
 
     # Do ROIwise stats
     roiwise_stats(epi_data, nonepi_data)
