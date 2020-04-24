@@ -53,7 +53,6 @@ def readsubs(studydir, sub_ids):
     return data, sub_ids
 
 
-
 def roiwise_stats_OneclassSVM(epi_data, nonepi_data):
 
     atlas_bfc = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.bfc.nii.gz'
@@ -65,9 +64,8 @@ def roiwise_stats_OneclassSVM(epi_data, nonepi_data):
     #    850, 900, 950
     #]
 
-    epi_data = epi_data.reshape([epi_data.shape[0],-1])
-    nonepi_data = nonepi_data.reshape([nonepi_data.shape[0],-1])
-
+    epi_data = epi_data.reshape([epi_data.shape[0], -1])
+    nonepi_data = nonepi_data.reshape([nonepi_data.shape[0], -1])
 
 
     roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
@@ -82,10 +80,10 @@ def roiwise_stats_OneclassSVM(epi_data, nonepi_data):
         X = np.concatenate((edat1, edat2), axis=1)
 
         for j in tqdm(range(X.shape[0])):
-            X[j, ] = OneClassSVM(gamma='auto').fit_predict(X[[j], ].T) == -1
-        
-        edat1 = X[:,:edat1.shape[1]]
-        edat2 = X[:,edat2.shape[1]:]
+            X[j, ] = OneClassSVM(gamma=1e-3).fit_predict(X[[j], ].T) == -1
+
+        edat1 = X[:, :edat1.shape[1]]
+        edat2 = X[:, edat2.shape[1]:]
 
         epi_roi_lesion_vols[:, i] = np.sum(edat1, axis=0)
         nonepi_roi_lesion_vols[:, i] = np.sum(edat2, axis=0)
@@ -116,7 +114,6 @@ def roiwise_stats_OneclassSVM(epi_data, nonepi_data):
     w, s = shapiro(epi_roi_lesion_vols)
 
     print(w, s)
-
 
 
 def roiwise_stats(epi_data, nonepi_data):
@@ -292,7 +289,6 @@ def main():
     epi_data, epi_subids = readsubs(studydir, epiIds)
 
     nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds)
-
     '''    # Do Pointwise stats
     pointwise_stats(epi_data, nonepi_data)
 
