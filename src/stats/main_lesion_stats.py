@@ -53,8 +53,8 @@ def readsubs(studydir, sub_ids):
     return data, sub_ids
 
 
-def roiwise_stats_OneclassSVM(epi_data, nonepi_data):
-
+def roiwise_stats_OneclassSVM(epi_data, nonepi_data,vox_vol=0.2393):
+    
     atlas_bfc = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.bfc.nii.gz'
     ati = ni.load_img(atlas_bfc)
     atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
@@ -82,8 +82,8 @@ def roiwise_stats_OneclassSVM(epi_data, nonepi_data):
         for j in tqdm(range(X.shape[0])):
             X[j, ] = OneClassSVM(gamma=1e-3).fit_predict(X[[j], ].T) == -1
 
-        edat1 = X[:, :edat1.shape[1]]
-        edat2 = X[:, edat2.shape[1]:]
+        edat1 = X[:, :edat1.shape[1]] * vox_vol
+        edat2 = X[:, edat2.shape[1]:] * vox_vol # now the vol is in mm^3
 
         epi_roi_lesion_vols[:, i] = np.sum(edat1, axis=0)
         nonepi_roi_lesion_vols[:, i] = np.sum(edat2, axis=0)
@@ -112,6 +112,12 @@ def roiwise_stats_OneclassSVM(epi_data, nonepi_data):
     print(roi_list[pval_fdr < 0.05])
 
     w, s = shapiro(epi_roi_lesion_vols)
+    
+    print(epi_roi_lesion_vols.mean(axis=0))
+    print(nonepi_roi_lesion_vols.mean(axis=0))
+
+    print(epi_roi_lesion_vols.std(axis=0))
+    print(nonepi_roi_lesion_vols.std(axis=0))
 
     print(w, s)
 
