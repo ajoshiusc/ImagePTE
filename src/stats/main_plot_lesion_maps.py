@@ -3,7 +3,7 @@ import os
 import nilearn.image as ni
 import numpy as np
 from matplotlib import cm
-from nilearn.plotting import plot_stat_map, show
+from nilearn.plotting import plot_stat_map, show, plot_anat
 
 studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
 
@@ -61,11 +61,12 @@ def main():
     epi_data, epi_subids = readsubs(studydir, epiIds)
     nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds)
 
-    for id in epi_subids:
+    for id in nonepi_subids:
         lesion = os.path.join(studydir, id,
                               'lesion_vae.atlas.mask' + '.nii.gz')
         anat = os.path.join(studydir, id, 'FLAIRBCI' + '.nii.gz')
-        outfile1 = os.path.join('epi_png', id + '.png')
+        outfile1 = os.path.join('nonepi_png', id + '_lesion.png')
+        outfile2 = os.path.join('nonepi_png', id + '_anat.png')
 
         plot_stat_map(lesion,
                       anat,
@@ -76,9 +77,42 @@ def main():
                       output_file=outfile1,
                       annotate=True)
 
+        plot_anat(anat,
+                  threshold=0,
+                  draw_cross=False,
+                  cut_coords=(40 * 0.8, 188 * 0.546875, 240 * 0.546875),
+                  display_mode="ortho",
+                  output_file=outfile2,
+                  annotate=True)
+
+    for id in epi_subids:
+        lesion = os.path.join(studydir, id,
+                              'lesion_vae.atlas.mask' + '.nii.gz')
+        anat = os.path.join(studydir, id, 'FLAIRBCI' + '.nii.gz')
+        outfile1 = os.path.join('epi_png', id + '_lesion.png')
+        outfile2 = os.path.join('epi_png', id + '_anat.png')
+
+        plot_stat_map(lesion,
+                      anat,
+                      threshold=0,
+                      draw_cross=False,
+                      cut_coords=(40 * 0.8, 188 * 0.546875, 240 * 0.546875),
+                      display_mode="ortho",
+                      output_file=outfile1,
+                      annotate=True)
+
+        plot_anat(anat,
+                  threshold=0,
+                  draw_cross=False,
+                  cut_coords=(40 * 0.8, 188 * 0.546875, 240 * 0.546875),
+                  display_mode="ortho",
+                  output_file=outfile2,
+                  annotate=True)
+
 
 if __name__ == "__main__":
     main()
+    
 ''''
 plot_stat_map(stat_img,
               bk_img,
