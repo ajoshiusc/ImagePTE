@@ -82,8 +82,8 @@ def find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
     epi_data_lesion[:, msk] = Xout[:, :edat1.shape[1]].T
     nonepi_data_lesion[:, msk] = Xout[:, edat2.shape[1]:].T
 
-#    epi_data_lesion = epi_data_lesion.reshape(ati.shape)
-#    nonepi_data_lesion = nonepi_data_lesion.reshape(ati.shape)
+    #    epi_data_lesion = epi_data_lesion.reshape(ati.shape)
+    #    nonepi_data_lesion = nonepi_data_lesion.reshape(ati.shape)
 
     for i, id in enumerate(epi_subids):
         fname = os.path.join(studydir, id, 'lesion_vae.atlas.mask' + '.nii.gz')
