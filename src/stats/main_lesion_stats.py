@@ -1,17 +1,19 @@
 import os
-from multiprocessing import Pool
-import numpy as np
-from shutil import copyfile, copy
 import time
+from multiprocessing import Pool
+from shutil import copy, copyfile
+
 import nilearn.image as ni
-#from multivariate. import TBM_t2
-from tqdm import tqdm
+import numpy as np
 import scipy as sp
-from statsmodels.stats.multitest import fdrcorrection
-from statsmodels.stats.weightstats import ttest_ind
 import scipy.stats as ss
 from scipy.stats import shapiro
 from sklearn.svm import OneClassSVM
+from statsmodels.stats.multitest import fdrcorrection
+from statsmodels.stats.weightstats import ttest_ind
+#from multivariate. import TBM_t2
+from tqdm import tqdm
+
 #from statsmodels.stats import wilcoxon
 
 sm = '.smooth3mm'
@@ -53,8 +55,51 @@ def readsubs(studydir, sub_ids):
     return data, sub_ids
 
 
-def roiwise_stats_OneclassSVM(epi_data, nonepi_data,vox_vol=0.2393):
-    
+def find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
+                             nonepi_data):
+
+    atlas_bfc = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.bfc.nii.gz'
+    ati = ni.load_img(atlas_bfc)
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
+    at_labels = ni.load_img(atlas_labels).get_data()
+
+    epi_data = epi_data.reshape([epi_data.shape[0], -1])
+    nonepi_data = nonepi_data.reshape([nonepi_data.shape[0], -1])
+
+    epi_data_lesion = np.zeros(epi_data.shape)
+    nonepi_data_lesion = np.zeros(nonepi_data.shape)
+
+    msk = at_labels.flatten() > 0
+
+    edat1 = epi_data[:, msk].squeeze().T
+    edat2 = nonepi_data[:, msk].squeeze().T
+    X = np.concatenate((edat1, edat2), axis=1)
+    Xout = np.zeros(X.shape)
+
+    for j in tqdm(range(X.shape[0])):
+        Xout[j, ] = OneClassSVM(gamma=1e-3).fit_predict(X[[j], ].T) == -1
+
+    epi_data_lesion[:, msk] = Xout[:, :edat1.shape[1]].T
+    nonepi_data_lesion[:, msk] = Xout[:, edat2.shape[1]:].T
+
+#    epi_data_lesion = epi_data_lesion.reshape(ati.shape)
+#    nonepi_data_lesion = nonepi_data_lesion.reshape(ati.shape)
+
+    for i, id in enumerate(epi_subids):
+        fname = os.path.join(studydir, id, 'lesion_vae.atlas.mask' + '.nii.gz')
+        img = ni.new_img_like(ati, epi_data_lesion[i, ].reshape(ati.shape))
+        img.to_filename(fname)
+
+    for i, id in enumerate(nonepi_subids):
+        fname = os.path.join(studydir, id, 'lesion_vae.atlas.mask' + '.nii.gz')
+        img = ni.new_img_like(ati, nonepi_data_lesion[i, ].reshape(ati.shape))
+        img.to_filename(fname)
+
+    return epi_data_lesion, nonepi_data_lesion
+
+
+def roiwise_stats_OneclassSVM(epi_data, nonepi_data, vox_vol=0.2393):
+
     atlas_bfc = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.bfc.nii.gz'
     ati = ni.load_img(atlas_bfc)
     atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
@@ -66,7 +111,6 @@ def roiwise_stats_OneclassSVM(epi_data, nonepi_data,vox_vol=0.2393):
 
     epi_data = epi_data.reshape([epi_data.shape[0], -1])
     nonepi_data = nonepi_data.reshape([nonepi_data.shape[0], -1])
-
 
     roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
     epi_roi_lesion_vols = np.zeros((37, len(roi_list)))
@@ -83,7 +127,7 @@ def roiwise_stats_OneclassSVM(epi_data, nonepi_data,vox_vol=0.2393):
             X[j, ] = OneClassSVM(gamma=1e-3).fit_predict(X[[j], ].T) == -1
 
         edat1 = X[:, :edat1.shape[1]] * vox_vol
-        edat2 = X[:, edat2.shape[1]:] * vox_vol # now the vol is in mm^3
+        edat2 = X[:, edat2.shape[1]:] * vox_vol  # now the vol is in mm^3
 
         epi_roi_lesion_vols[:, i] = np.sum(edat1, axis=0)
         nonepi_roi_lesion_vols[:, i] = np.sum(edat2, axis=0)
@@ -112,7 +156,7 @@ def roiwise_stats_OneclassSVM(epi_data, nonepi_data,vox_vol=0.2393):
     print(roi_list[pval_fdr < 0.05])
 
     w, s = shapiro(epi_roi_lesion_vols)
-    
+
     print(epi_roi_lesion_vols.mean(axis=0))
     print(nonepi_roi_lesion_vols.mean(axis=0))
 
@@ -302,7 +346,10 @@ def main():
     roiwise_stats(epi_data, nonepi_data) '''
 
     # Use once class SVM to compute lesion volume
-    roiwise_stats_OneclassSVM(epi_data, nonepi_data)
+    #roiwise_stats_OneclassSVM(epi_data, nonepi_data)
+
+    find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
+                             nonepi_data)
 
     print('done')
 
