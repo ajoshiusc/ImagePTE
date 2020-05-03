@@ -62,13 +62,17 @@ def main():
     nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds)
 
     for id in nonepi_subids:
+        error = os.path.join(studydir, id, 'lesion_vae.atlas' + '.nii.gz')
+
         lesion = os.path.join(studydir, id,
                               'lesion_vae.atlas.mask' + '.nii.gz')
         anat = os.path.join(studydir, id, 'FLAIRBCI' + '.nii.gz')
-        outfile1 = os.path.join('nonepi_png', id + '_lesion.png')
-        outfile2 = os.path.join('nonepi_png', id + '_anat.png')
+        outfile1 = os.path.join('nonepi_png', id + '_error.png')
+        outfile2 = os.path.join('nonepi_png', id + '_lesion.png')
+        outfile3 = os.path.join('nonepi_png', id + '_anat.png')
 
-        plot_stat_map(lesion,
+
+        plot_stat_map(error,
                       anat,
                       threshold=0,
                       draw_cross=False,
@@ -77,12 +81,21 @@ def main():
                       output_file=outfile1,
                       annotate=True)
 
+        plot_stat_map(lesion,
+                      anat,
+                      threshold=0,
+                      draw_cross=False,
+                      cut_coords=(40 * 0.8, 188 * 0.546875, 240 * 0.546875),
+                      display_mode="ortho",
+                      output_file=outfile2,
+                      annotate=True)
+
         plot_anat(anat,
                   threshold=0,
                   draw_cross=False,
                   cut_coords=(40 * 0.8, 188 * 0.546875, 240 * 0.546875),
                   display_mode="ortho",
-                  output_file=outfile2,
+                  output_file=outfile3,
                   annotate=True)
 
     for id in epi_subids:
@@ -112,7 +125,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
 ''''
 plot_stat_map(stat_img,
               bk_img,

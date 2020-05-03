@@ -90,10 +90,28 @@ def find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
         img = ni.new_img_like(ati, epi_data_lesion[i, ].reshape(ati.shape))
         img.to_filename(fname)
 
+        fwdmap = os.path.join(studydir, id, 'BrainSuite',
+                              'T1mni.svreg.map.nii.gz')
+        flair_nii = os.path.join(studydir, id, 'FLAIRmni' + '.nii.gz')
+        fname_lesion_w = os.path.join(studydir, id,
+                                      'lesion_vae.mask' + '.nii.gz')
+        os.system('/home/ajoshi/BrainSuite19b/svreg/bin/svreg_apply_map.sh ' +
+                  fwdmap + ' ' + fname + ' ' + fname_lesion_w + ' ' +
+                  flair_nii)
+
     for i, id in enumerate(nonepi_subids):
         fname = os.path.join(studydir, id, 'lesion_vae.atlas.mask' + '.nii.gz')
         img = ni.new_img_like(ati, nonepi_data_lesion[i, ].reshape(ati.shape))
         img.to_filename(fname)
+
+        fwdmap = os.path.join(studydir, id, 'BrainSuite',
+                              'T1mni.svreg.map.nii.gz')
+        flair_nii = os.path.join(studydir, id, 'FLAIRmni' + '.nii.gz')
+        fname_lesion_w = os.path.join(studydir, id,
+                                      'lesion_vae.mask' + '.nii.gz')
+        os.system('/home/ajoshi/BrainSuite19b/svreg/bin/svreg_apply_map.sh ' +
+                  fwdmap + ' ' + fname + ' ' + fname_lesion_w + ' ' +
+                  flair_nii)
 
     return epi_data_lesion, nonepi_data_lesion
 
@@ -350,7 +368,6 @@ def main():
 
     find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
                              nonepi_data)
-
 
     print('done')
 
