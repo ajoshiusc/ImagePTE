@@ -62,11 +62,11 @@ def main():
     nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds)
 
     for id in nonepi_subids:
-        error = os.path.join(studydir, id, 'lesion_vae.atlas' + '.nii.gz')
+        error = os.path.join(studydir, id, 'lesion_vae' + '.nii.gz')
 
         lesion = os.path.join(studydir, id,
-                              'lesion_vae.atlas.mask' + '.nii.gz')
-        anat = os.path.join(studydir, id, 'FLAIRBCI' + '.nii.gz')
+                              'lesion_vae.mask' + '.nii.gz')
+        anat = os.path.join(studydir, id, 'FLAIRmni' + '.nii.gz')
         outfile1 = os.path.join('nonepi_png', id + '_error.png')
         outfile2 = os.path.join('nonepi_png', id + '_lesion.png')
         outfile3 = os.path.join('nonepi_png', id + '_anat.png')
