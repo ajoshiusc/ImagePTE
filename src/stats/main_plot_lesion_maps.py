@@ -16,7 +16,7 @@ def check_imgs_exist(studydir, sub_ids):
     subids_imgs = list()
 
     for id in sub_ids:
-        fname = os.path.join(studydir, id, 'lesion_vae.atlas.mask.nii.gz')
+        fname = os.path.join(studydir, id, 'vae_mse.flair.atlas.mask.nii.gz')
 
         if not os.path.isfile(fname):
             err_msg = 'the file does not exist: ' + fname
@@ -36,7 +36,7 @@ def readsubs(studydir, sub_ids):
 
     for n, id in enumerate(sub_ids):
 
-        fname = os.path.join(studydir, id, 'lesion_vae.atlas.mask.nii.gz')
+        fname = os.path.join(studydir, id, 'vae_mse.flair.atlas.mask.nii.gz')
         print('sub:', n, 'Reading', id)
         im = ni.load_img(fname)
 
@@ -63,9 +63,9 @@ def main():
     nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds)
 
     for id in nonepi_subids:
-        error = os.path.join(studydir, id, 'lesion_vae' + '.nii.gz')
+        error = os.path.join(studydir, id, 'vae_mse.flair' + '.nii.gz')
 
-        lesion = os.path.join(studydir, id, 'lesion_vae.mask' + '.nii.gz')
+        lesion = os.path.join(studydir, id, 'vae_mse.flair.mask' + '.nii.gz')
         anat = os.path.join(studydir, id, 'FLAIRmni' + '.nii.gz')
         outfile1 = os.path.join('nonepi_png', id + '_error.png')
         outfile2 = os.path.join('nonepi_png', id + '_lesion.png')
@@ -98,9 +98,9 @@ def main():
                   annotate=True)
 
     for id in epi_subids:
-        error = os.path.join(studydir, id, 'lesion_vae' + '.nii.gz')
+        error = os.path.join(studydir, id, 'vae_mse.flair' + '.nii.gz')
 
-        lesion = os.path.join(studydir, id, 'lesion_vae.mask' + '.nii.gz')
+        lesion = os.path.join(studydir, id, 'vae_mse.flair.mask' + '.nii.gz')
         anat = os.path.join(studydir, id, 'FLAIRmni' + '.nii.gz')
         outfile1 = os.path.join('epi_png', id + '_error.png')
         outfile2 = os.path.join('epi_png', id + '_lesion.png')

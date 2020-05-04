@@ -17,14 +17,13 @@ from tqdm import tqdm
 
 #from statsmodels.stats import wilcoxon
 
-sm = 'smooth3mm'
 
-
-def check_imgs_exist(studydir, sub_ids):
+def check_imgs_exist(studydir, sub_ids, sm='smooth3mm.'):
     subids_imgs = list()
 
     for id in sub_ids:
-        fname = os.path.join(studydir, id, 'lesion_rvae.flair.atlas.' + sm + '.nii.gz')
+        fname = os.path.join(studydir, id,
+                             'vae_mse.flair.atlas.' + sm + 'nii.gz')
 
         if not os.path.isfile(fname):
             err_msg = 'the file does not exist: ' + fname
@@ -33,7 +32,7 @@ def check_imgs_exist(studydir, sub_ids):
     return subids_imgs
 
 
-def readsubs(studydir, sub_ids):
+def readsubs(studydir, sub_ids, read_mask=0, sm='smooth3mm.'):
 
     print(len(sub_ids))
 
@@ -44,7 +43,14 @@ def readsubs(studydir, sub_ids):
 
     for n, id in enumerate(sub_ids):
 
-        fname = os.path.join(studydir, id, 'lesion_rvae.flair.atlas.' + sm + '.nii.gz')
+        if read_mask:
+            fname = os.path.join(studydir, id,
+                                 'vae_mse.flair.atlas.mask' + '.nii.gz')
+
+        else:
+            fname = os.path.join(studydir, id,
+                                 'vae_mse.flair.atlas.' + sm + 'nii.gz')
+
         print('sub:', n, 'Reading', id)
         im = ni.load_img(fname)
 
@@ -87,7 +93,8 @@ def find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
     #    nonepi_data_lesion = nonepi_data_lesion.reshape(ati.shape)
 
     for i, id in enumerate(epi_subids):
-        fname = os.path.join(studydir, id, 'lesion_rvae.flair.atlas.mask' + '.nii.gz')
+        fname = os.path.join(studydir, id,
+                             'vae_mse.flair.atlas.mask' + '.nii.gz')
         img = ni.new_img_like(ati, epi_data_lesion[i, ].reshape(ati.shape))
         img.to_filename(fname)
 
@@ -95,20 +102,22 @@ def find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
                               'T1mni.svreg.map.nii.gz')
         flair_nii = os.path.join(studydir, id, 'FLAIRmni' + '.nii.gz')
         fname_lesion_w = os.path.join(studydir, id,
-                                      'lesion_rvae.mask' + '.nii.gz')
+                                      'vae_mse.flair.mask' + '.nii.gz')
         os.system('/home/ajoshi/BrainSuite19b/svreg/bin/svreg_apply_map.sh ' +
                   fwdmap + ' ' + fname + ' ' + fname_lesion_w + ' ' +
                   flair_nii)
 
-        fname = os.path.join(studydir, id, 'lesion_rvae.flair.atlas' + '.nii.gz')
+        fname = os.path.join(studydir, id, 'vae_mse.flair.atlas' + '.nii.gz')
         flair_nii = os.path.join(studydir, id, 'FLAIRmni' + '.nii.gz')
-        fname_lesion_e = os.path.join(studydir, id, 'lesion_vae' + '.nii.gz')
+        fname_lesion_e = os.path.join(studydir, id,
+                                      'vae_mse.flair' + '.nii.gz')
         os.system('/home/ajoshi/BrainSuite19b/svreg/bin/svreg_apply_map.sh ' +
                   fwdmap + ' ' + fname + ' ' + fname_lesion_e + ' ' +
                   flair_nii)
 
     for i, id in enumerate(nonepi_subids):
-        fname = os.path.join(studydir, id, 'lesion_rvae.flair.atlas.mask' + '.nii.gz')
+        fname = os.path.join(studydir, id,
+                             'vae_mse.flair.atlas.mask' + '.nii.gz')
         img = ni.new_img_like(ati, nonepi_data_lesion[i, ].reshape(ati.shape))
         img.to_filename(fname)
 
@@ -117,14 +126,15 @@ def find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
 
         flair_nii = os.path.join(studydir, id, 'FLAIRmni' + '.nii.gz')
         fname_lesion_w = os.path.join(studydir, id,
-                                      'lesion_rvae.flair.mask' + '.nii.gz')
+                                      'vae_mse.flair.mask' + '.nii.gz')
         os.system('/home/ajoshi/BrainSuite19b/svreg/bin/svreg_apply_map.sh ' +
                   fwdmap + ' ' + fname + ' ' + fname_lesion_w + ' ' +
                   flair_nii)
 
-        fname = os.path.join(studydir, id, 'lesion_rvae.flair.atlas' + '.nii.gz')
+        fname = os.path.join(studydir, id, 'vae_mse.flair.atlas' + '.nii.gz')
         flair_nii = os.path.join(studydir, id, 'FLAIRmni' + '.nii.gz')
-        fname_lesion_e = os.path.join(studydir, id, 'lesion_rvae.flair' + '.nii.gz')
+        fname_lesion_e = os.path.join(studydir, id,
+                                      'vae_mse.flair' + '.nii.gz')
         os.system('/home/ajoshi/BrainSuite19b/svreg/bin/svreg_apply_map.sh ' +
                   fwdmap + ' ' + fname + ' ' + fname_lesion_e + ' ' +
                   flair_nii)
@@ -370,20 +380,22 @@ def main():
     epiIds = list(map(lambda x: x.strip(), epiIds))
     nonepiIds = list(map(lambda x: x.strip(), nonepiIds))
 
-    epi_data, epi_subids = readsubs(studydir, epiIds)
+    epi_data, epi_subids = readsubs(studydir, epiIds, read_mask=True)
 
-    nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds)
+    nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds, read_mask=True)
     '''    # Do Pointwise stats
     pointwise_stats(epi_data, nonepi_data)
+    '''
 
     # Do ROIwise stats
-    roiwise_stats(epi_data, nonepi_data) '''
+    roiwise_stats(epi_data, nonepi_data)
 
     # Use once class SVM to compute lesion volume
     #roiwise_stats_OneclassSVM(epi_data, nonepi_data)
-
+    '''
     find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
                              nonepi_data)
+                             '''
 
     print('done')
 
