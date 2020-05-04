@@ -9,6 +9,7 @@ studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
 
 epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
 nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
+cut_coords = (60-182/2, 122-212/2, 90-182/2)
 
 
 def check_imgs_exist(studydir, sub_ids):
@@ -64,19 +65,17 @@ def main():
     for id in nonepi_subids:
         error = os.path.join(studydir, id, 'lesion_vae' + '.nii.gz')
 
-        lesion = os.path.join(studydir, id,
-                              'lesion_vae.mask' + '.nii.gz')
+        lesion = os.path.join(studydir, id, 'lesion_vae.mask' + '.nii.gz')
         anat = os.path.join(studydir, id, 'FLAIRmni' + '.nii.gz')
         outfile1 = os.path.join('nonepi_png', id + '_error.png')
         outfile2 = os.path.join('nonepi_png', id + '_lesion.png')
         outfile3 = os.path.join('nonepi_png', id + '_anat.png')
 
-
         plot_stat_map(error,
                       anat,
                       threshold=0,
                       draw_cross=False,
-                      cut_coords=(40 * 0.8, 188 * 0.546875, 240 * 0.546875),
+                      cut_coords=cut_coords,
                       display_mode="ortho",
                       output_file=outfile1,
                       annotate=True)
@@ -85,7 +84,7 @@ def main():
                       anat,
                       threshold=0,
                       draw_cross=False,
-                      cut_coords=(40 * 0.8, 188 * 0.546875, 240 * 0.546875),
+                      cut_coords=cut_coords,
                       display_mode="ortho",
                       output_file=outfile2,
                       annotate=True)
@@ -93,33 +92,44 @@ def main():
         plot_anat(anat,
                   threshold=0,
                   draw_cross=False,
-                  cut_coords=(40 * 0.8, 188 * 0.546875, 240 * 0.546875),
+                  cut_coords=cut_coords,
                   display_mode="ortho",
                   output_file=outfile3,
                   annotate=True)
 
     for id in epi_subids:
-        lesion = os.path.join(studydir, id,
-                              'lesion_vae.atlas.mask' + '.nii.gz')
-        anat = os.path.join(studydir, id, 'FLAIRBCI' + '.nii.gz')
-        outfile1 = os.path.join('epi_png', id + '_lesion.png')
-        outfile2 = os.path.join('epi_png', id + '_anat.png')
+        error = os.path.join(studydir, id, 'lesion_vae' + '.nii.gz')
+
+        lesion = os.path.join(studydir, id, 'lesion_vae.mask' + '.nii.gz')
+        anat = os.path.join(studydir, id, 'FLAIRmni' + '.nii.gz')
+        outfile1 = os.path.join('epi_png', id + '_error.png')
+        outfile2 = os.path.join('epi_png', id + '_lesion.png')
+        outfile3 = os.path.join('epi_png', id + '_anat.png')
+
+        plot_stat_map(error,
+                      anat,
+                      threshold=0,
+                      draw_cross=False,
+                      cut_coords=cut_coords,
+                      display_mode="ortho",
+                      output_file=outfile1,
+                      annotate=True)
 
         plot_stat_map(lesion,
                       anat,
                       threshold=0,
                       draw_cross=False,
-                      cut_coords=(40 * 0.8, 188 * 0.546875, 240 * 0.546875),
+                      cut_coords=cut_coords,
                       display_mode="ortho",
-                      output_file=outfile1,
+                      output_file=outfile2,
                       annotate=True)
 
         plot_anat(anat,
                   threshold=0,
                   draw_cross=False,
-                  cut_coords=(40 * 0.8, 188 * 0.546875, 240 * 0.546875),
+                  cut_coords=cut_coords,
                   display_mode="ortho",
-                  output_file=outfile2,
+                  output_file=outfile3,
                   annotate=True)
 
 
