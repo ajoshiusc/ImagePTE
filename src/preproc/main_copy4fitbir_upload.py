@@ -1,8 +1,5 @@
 import os
-
-import nilearn.image as ni
-import numpy as np
-from shutil import copyfile
+from shutil import copyfile, make_archive
 
 studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
 
@@ -26,7 +23,7 @@ def main():
     os.mkdir(out_dir)
 
     allids = nonepi_subids + epi_subids
-    
+
     for id in allids:
 
         sub_dir = os.path.join(out_dir, id)
@@ -40,22 +37,32 @@ def main():
         t1 = os.path.join(studydir, id, 'T1mni.nii.gz')
         copyfile(t1, os.path.join(out_dir, id, 'T1mni.nii.gz'))
 
-        l = os.path.join(studydir, id, 'BrainSuite', 'T1mni.left.mid.cortex.svreg.dfs')
+        l = os.path.join(studydir, id, 'BrainSuite',
+                         'T1mni.left.mid.cortex.svreg.dfs')
         copyfile(l, os.path.join(out_dir, id,
                                  'T1mni.left.mid.cortex.svreg.dfs'))
 
-        r = os.path.join(studydir, id, 'BrainSuite', 'T1mni.right.mid.cortex.svreg.dfs')
+        r = os.path.join(studydir, id, 'BrainSuite',
+                         'T1mni.right.mid.cortex.svreg.dfs')
         copyfile(r,
                  os.path.join(out_dir, id, 'T1mni.right.mid.cortex.svreg.dfs'))
 
-        stats = os.path.join(studydir, id, 'BrainSuite', 'T1mni.roiwise.stats.txt')
+        stats = os.path.join(studydir, id, 'BrainSuite',
+                             'T1mni.roiwise.stats.txt')
         copyfile(stats, os.path.join(out_dir, id, 'T1mni.roiwise.stats.txt'))
 
-        jac = os.path.join(studydir, id, 'BrainSuite', 'T1mni.svreg.jacobian.nii.gz')
+        jac = os.path.join(studydir, id, 'BrainSuite',
+                           'T1mni.svreg.jacobian.nii.gz')
         copyfile(jac, os.path.join(out_dir, id, 'T1mni.svreg.jacobian.nii.gz'))
 
-        lab = os.path.join(studydir, id, 'BrainSuite', 'T1mni.svreg.label.nii.gz')
+        lab = os.path.join(studydir, id, 'BrainSuite',
+                           'T1mni.svreg.label.nii.gz')
         copyfile(lab, os.path.join(out_dir, id, 'T1mni.svreg.label.nii.gz'))
+
+        make_archive(os.path.join(out_dir, id + '_anat'),
+                     'zip',
+                     base_dir=id,
+                     root_dir=out_dir)
 
 
 if __name__ == "__main__":
