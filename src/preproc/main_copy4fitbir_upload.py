@@ -1,5 +1,6 @@
 import os
 from shutil import copyfile, make_archive, rmtree
+from tqdm import tqdm
 
 studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
 
@@ -25,7 +26,7 @@ def main():
 
     allids = nonepi_subids + epi_subids
 
-    for id in allids:
+    for id in tqdm(allids):
 
         sub_dir = os.path.join(out_dir, id)
         os.mkdir(sub_dir)
