@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     conn_mat = np.zeros((len(label_ids), len(label_ids), nsub))
 
-    for subno, subdir in tqdm(enumerate(lst)):
+    for subno, subdir in enumerate(tqdm(lst)):
         fname = os.path.join(subdir, 'rfMRI_1_LR.mat')
 
         f = h5py.File(fname, 'r')

@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     conn_mat = np.zeros((len(label_ids), len(label_ids), nsub))
 
-    for subno, subfile in tqdm(enumerate(lst)):
+    for subno, subfile in enumerate(tqdm(lst)):
         head_tail = os.path.split(subfile)
         fname = os.path.join(subfile)
 
