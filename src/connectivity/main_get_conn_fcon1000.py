@@ -14,10 +14,6 @@ sys.path.append('../stats')
 from brainsync import normalizeData
 from get_connectivity import get_connectivity
 
-BFPPATH = '/home/ajoshi/coding_ground/bfp'
-BrainSuitePath = '/home/ajoshi/BrainSuite19b/svreg'
-NDim = 31
-
 #%%
 
 if __name__ == "__main__":
@@ -33,8 +29,8 @@ if __name__ == "__main__":
     # remove WM label from connectivity analysis
     label_ids = np.setdiff1d(label_ids, (2000, 0))
 
-    p_dir = '/data_disk/HCP_100_Andrew_Preprocessed_05_13'
-    lst = glob.glob(p_dir + '/*')
+    p_dir = '/data_disk/Beijing_Zang_bfp'
+    lst = glob.glob(p_dir + '/*/func/*_rest_bold.32k.GOrd.mat')
     count1 = 0
 
     # Get number of subjects
@@ -42,16 +38,13 @@ if __name__ == "__main__":
 
     conn_mat = np.zeros((len(label_ids), len(label_ids), nsub))
 
-    for subno, subdir in tqdm(enumerate(lst)):
-        fname = os.path.join(subdir, 'rfMRI_1_LR.mat')
+    for subno, subfile in tqdm(enumerate(lst)):
+        head_tail = os.path.split(subfile)
+        fname = os.path.join(subfile)
 
-        f = h5py.File(fname, 'r')
+        f = spio.loadmat(fname)
 
-        # Convert Andrew's format to grayordinate format
-        dataL = np.array(f['dataL'])
-        dataR = np.array(f['dataR'])
-        dataS = np.array(f['dataS'])
-        d = np.concatenate((dataL, dataR, dataS), axis=1)
+        d = np.array(f['dtseries']).T
 
         # Get connectivity matrix for each subject
         conn_mat[:, :, subno] = get_connectivity(d,
