@@ -58,6 +58,9 @@ if __name__ == "__main__":
                                                  labels=gord_labels,
                                                  label_ids=label_ids)
 
-    np.savez('hcp_graphs.npz', conn_mat=conn_mat)
+    np.savez('hcp_graphs.npz',
+             conn_mat=conn_mat,
+             label_ids=label_ids,
+             labels=gord_labels)
 
     input('press any key')
