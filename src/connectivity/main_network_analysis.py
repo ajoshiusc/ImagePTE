@@ -30,7 +30,7 @@ for i,id in enumerate(lab_ids):
     gord_cent[gordlab == id] = cent[i,1]
 
 
-visdata_grayord(gord_cent,
+visdata_grayord(data=gord_cent,
                 smooth_iter=100,
                 colorbar_lim=[0,.12],
                 colormap='jet',
