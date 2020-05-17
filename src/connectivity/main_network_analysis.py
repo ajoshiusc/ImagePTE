@@ -32,7 +32,7 @@ for i,id in enumerate(lab_ids):
 
 visdata_grayord(gord_cent,
                 smooth_iter=100,
-                colorbar_lim=[0,.2],
+                colorbar_lim=[0,.12],
                 colormap='jet',
                 save_png=True,
                 surf_name='centrality',
