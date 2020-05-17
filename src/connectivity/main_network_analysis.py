@@ -1,7 +1,16 @@
 
+import sys
+
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
+
+from grayord_utils import visdata_grayord
+
+#sys.path.append('/home/ajoshi/projects/bfp/src/stats')
+
+
+
 
 f = np.load('hcp_graphs.npz')
 c = f['conn_mat']
@@ -22,8 +31,18 @@ plt.show()
 gord_cent = np.zeros(len(gordlab))
 
 for i,id in enumerate(lab_ids):
-    gord_cent[gordlab == id]=cent[i,1]
+    gord_cent[gordlab == id] = cent[i,1]
 
+
+visdata_grayord(gord_cent,
+                smooth_iter=100,
+                colorbar_lim=[0,.2],
+                colormap='jet',
+                save_png=True,
+                surf_name='centrality',
+                out_dir='.',
+                bfp_path='/home/ajoshi/projects/bfp',
+                fsl_path='/usr/share/fsl')
 
 print(nx.info(G))
 
@@ -36,4 +55,3 @@ plt.show()
 
 
 input('Press any key')
-
