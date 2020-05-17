@@ -7,10 +7,6 @@ import numpy as np
 
 from grayord_utils import visdata_grayord
 
-#sys.path.append('/home/ajoshi/projects/bfp/src/stats')
-
-
-
 
 f = np.load('hcp_graphs.npz')
 c = f['conn_mat']
