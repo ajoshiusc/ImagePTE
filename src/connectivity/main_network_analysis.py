@@ -1,7 +1,7 @@
 
+import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-import matplotlib.pyplot as plt
 
 f = np.load('hcp_graphs.npz')
 c = f['conn_mat']
@@ -36,27 +36,4 @@ plt.show()
 
 
 input('Press any key')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
