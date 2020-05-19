@@ -195,7 +195,7 @@ def roiwise_stats(epi_data, nonepi_data):
     print(w, s)
 
     for i, r in enumerate(list(roi_list)):
-        print('%d \t| %.2g(%.2g) \t| %.2g(%.2g) \t|' %
+        print('%d \t| %0.4g(%0.4g) \t| %.2g(%0.4g) \t|' %
               (r, np.median(epi_roi_lesion_vols[:, i],
                             axis=0), np.std(epi_roi_lesion_vols[:, i], axis=0),
                np.median(nonepi_roi_lesion_vols[:, i], axis=0),
@@ -203,7 +203,7 @@ def roiwise_stats(epi_data, nonepi_data):
 
     for i, r in enumerate(list(roi_list)):
         print(
-            '%d \t| %.2g(%.2g) \t| %.2g(%.2g) \t|' %
+            '%d \t| %0.4g(%0.4g) \t| %0.4g(%0.4g) \t|' %
             (r, np.median(100 * epi_roi_lesion_vols[:, i] / roi_vols[i],
                           axis=0),
              np.std(100 * epi_roi_lesion_vols[:, i] / roi_vols[i], axis=0),
