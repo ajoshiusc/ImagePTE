@@ -13,7 +13,7 @@ c = f['conn_mat']
 lab_ids = f['label_ids']
 gordlab = f['labels']
 
-c = np.median(c, axis=2)
+c = np.mean(c, axis=2)
 np.fill_diagonal(c,0)
 
 
@@ -35,9 +35,9 @@ visdata_grayord(data=gord_cent,
                 colorbar_lim=[0,.12],
                 colormap='jet',
                 save_png=True,
-                surf_name='centrality',
+                surf_name='centrality_hcp',
                 out_dir='.',
-                bfp_path='/home/ajoshi/projects/bfp',
+                bfp_path='/ImagePTE1/ajoshi/code_farm/bfp',
                 fsl_path='/usr/share/fsl')
 
 print(nx.info(G))

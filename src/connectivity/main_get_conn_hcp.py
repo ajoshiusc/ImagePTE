@@ -22,7 +22,7 @@ NDim = 31
 
 if __name__ == "__main__":
 
-    atlas_labels = '/home/ajoshi/projects/bfp/supp_data/USCBrain_grayordinate_labels.mat'
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCBrain_grayordinate_labels.mat'
 
     atlas = spio.loadmat(atlas_labels)
 
