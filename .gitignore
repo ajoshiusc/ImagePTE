@@ -7,6 +7,16 @@
 *.nii.gz
 *.h5
 *.mat
+*.mat
+*.png
+*.jpg
+*.dfs
+*.hdr
+*.img
+*.json
+*.init
+.*
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
