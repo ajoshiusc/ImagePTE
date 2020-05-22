@@ -18,6 +18,7 @@
 .*
 
 
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.png
@@ -126,3 +127,4 @@ venv.bak/
 src/preproc/.vscode/settings.json
 src/preproc/.vscode/settings.json
 src/preproc/.vscode/settings.json
+.gitignore
