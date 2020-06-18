@@ -7,8 +7,8 @@ import numpy as np
 from matplotlib.image import imsave
 from grayord_utils import visdata_grayord
 
-
-f = np.load('ADHD_graphs.npz')
+population = 'PTE'
+f = np.load(population+'_graphs.npz')
 co = f['conn_mat']
 lab_ids = f['label_ids']
 gordlab = f['labels']
@@ -35,16 +35,16 @@ visdata_grayord(data=gord_cent,
                 colorbar_lim=[0, .12],
                 colormap='jet',
                 save_png=True,
-                surf_name='centrality_ADHD',
+                surf_name='centrality_'+population,
                 out_dir='.',
                 bfp_path='/ImagePTE1/ajoshi/code_farm/bfp',
                 fsl_path='/usr/share/fsl')
 
 
-imsave('corr_ave_ADHD.jpg', np.mean(co, axis=2),
+imsave('corr_ave_'+population+'.jpg', np.mean(co, axis=2),
        vmin=-1.0, vmax=1.0, cmap='jet')
 
-imsave('corr_std_ADHD.jpg', np.std(co, axis=2),
+imsave('corr_std_'+population+'.jpg', np.std(co, axis=2),
        vmin=-1.0, vmax=1.0, cmap='jet')
 
 

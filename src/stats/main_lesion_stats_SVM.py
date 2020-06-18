@@ -52,20 +52,22 @@ def readsubs(studydir, sub_ids):
         if n == 0:
             data = np.zeros((min(len(sub_ids), nsub), ) + im.shape)
 
-        data[n, :, :, :] = im.get_data()
+        data[n, :, :, :] = np.asanyarray(im.dataobj)
 
     return data, sub_ids
 
 
 def roiwise_stats(epi_data, nonepi_data):
 
-    atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
-    at_labels = ni.load_img(atlas_labels).get_data()
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/BCI-DNI_brain.label.nii.gz'
+    at_labels = np.asanyarray(ni.load_img(atlas_labels).dataobj)
     #roi_list = [
     #    3, 100, 101, 184, 185, 200, 201, 300, 301, 400, 401, 500, 501, 800,
     #    850, 900, 950
     #]
-    roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
+    # roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
+    roi_list = np.unique(at_labels.flatten())
+
     epi_roi_lesion_vols = np.zeros((37, len(roi_list)))
     nonepi_roi_lesion_vols = np.zeros((37, len(roi_list)))
 
@@ -137,7 +139,7 @@ def pointwise_stats(epi_data, nonepi_data):
     epi_data = epi_data.reshape(epi_data.shape[0], -1)
     nonepi_data = nonepi_data.reshape(nonepi_data.shape[0], -1)
 
-    msk = ati.get_data().flatten() > 0
+    msk = np.asanyarray(ati.dataobj).flatten() > 0
     pval_vol = np.ones(ati.shape)
 
     #   rval_vol = sp.zeros(numV)

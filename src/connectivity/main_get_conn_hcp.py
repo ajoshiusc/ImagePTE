@@ -1,3 +1,5 @@
+from get_connectivity import get_connectivity
+from brainsync import normalizeData
 import glob
 import os
 import sys
@@ -11,14 +13,12 @@ from tqdm import tqdm
 #from surfproc import patch_color_attrib, smooth_surf_function
 sys.path.append('../stats')
 
-from brainsync import normalizeData
-from get_connectivity import get_connectivity
 
 BFPPATH = '/home/ajoshi/coding_ground/bfp'
 BrainSuitePath = '/home/ajoshi/BrainSuite19b/svreg'
 NDim = 31
 
-#%%
+# %%
 
 if __name__ == "__main__":
 
