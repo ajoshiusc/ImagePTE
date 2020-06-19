@@ -39,7 +39,7 @@ p_values = norm.sf(abs(z))
 imsave('z_score_conn.png', z,
        vmin=-1.0, vmax=1.0, cmap='jet')
 
-imsave('p_value_conn.png', p_values,
+imsave('p_value_conn.png', 0.05-p_values,
        vmin=0, vmax=0.05, cmap='jet')
 
 
@@ -49,7 +49,7 @@ F = co1.var(axis=2) / (co2.var(axis=2) + 1e-6)
 nsub = co2.shape[2]
 p_values = (1 - ss.f.cdf(F, nsub - 1, nsub - 1))
 
-imsave('p_value_conn_ftest.png', p_values,
+imsave('p_value_conn_ftest.png', 0.05-p_values,
        vmin=0, vmax=0.05, cmap='jet')
 
 
