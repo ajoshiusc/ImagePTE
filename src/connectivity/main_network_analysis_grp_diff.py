@@ -43,20 +43,62 @@ imsave('p_value_conn.png', p_values,
        vmin=0, vmax=0.05, cmap='jet')
 
 
-F = co1.var(axis=2) / (co2.var(axis=2) + 1e-6)
+# f-test on rois
 
+F = co1.var(axis=2) / (co2.var(axis=2) + 1e-6)
 nsub = co2.shape[2]
-p_values = 1 - ss.f.cdf(F, nsub - 1, nsub - 1)
+p_values = (1 - ss.f.cdf(F, nsub - 1, nsub - 1))
 
 imsave('p_value_conn_ftest.png', p_values,
        vmin=0, vmax=0.05, cmap='jet')
 
-_, tmp = fdrcorrection(p_values.flatten())
 
-p_values = tmp.reshape(p_values.shape)
+#_, tmp = fdrcorrection(p_values.flatten())
 
-imsave('p_value_conn_ftest_fdr.png', p_values,
-       vmin=0, vmax=0.05, cmap='jet')
+#p_values_fdr = tmp.reshape(p_values.shape)
+
+# imsave('p_value_conn_ftest_fdr.png', p_values_fdr,
+#       vmin=0, vmax=0.05, cmap='jet')
 
 
-input('Press any key')
+# Save results on ROIs
+
+
+gord_pval = np.zeros(len(gordlab))
+
+for i, id in enumerate(lab_ids):
+    gord_pval[gordlab == id] = np.min(p_values[i, :])
+
+
+visdata_grayord(data=0.05-gord_pval,
+                smooth_iter=100,
+                colorbar_lim=[0, .05],
+                colormap='jet',
+                save_png=True,
+                surf_name='f_test_pte',
+                out_dir='.',
+                bfp_path='/ImagePTE1/ajoshi/code_farm/bfp',
+                fsl_path='/usr/share/fsl')
+
+# FDR correction over ROIs
+
+
+pval_rois = np.min(p_values, axis=1)
+
+_, pval_rois_fdr = fdrcorrection(pval_rois)
+
+gord_pval = np.zeros(len(gordlab))
+
+for i, id in enumerate(lab_ids):
+    gord_pval[gordlab == id] = pval_rois_fdr[i]
+
+
+visdata_grayord(data=0.05-gord_pval,
+                smooth_iter=100,
+                colorbar_lim=[0, .05],
+                colormap='jet',
+                save_png=True,
+                surf_name='f_test_pte_fdr',
+                out_dir='.',
+                bfp_path='/ImagePTE1/ajoshi/code_farm/bfp',
+                fsl_path='/usr/share/fsl')
