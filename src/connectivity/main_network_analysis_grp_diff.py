@@ -6,30 +6,34 @@ import networkx as nx
 import numpy as np
 import scipy.stats as ss
 from matplotlib.image import imsave
-#import scipy.stats
 from scipy.stats import norm
+from sklearn.metrics import auc, plot_roc_curve, roc_auc_score, roc_curve
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
 from statsmodels.stats.multitest import fdrcorrection
+from tqdm import tqdm
 
 from grayord_utils import visdata_grayord
 
+
 population = 'PTE'
 f = np.load(population+'_graphs.npz')
-co1 = f['conn_mat']
+conn_pte = f['conn_mat']
 lab_ids = f['label_ids']
 gordlab = f['labels']
 
 population = 'NONPTE'
 f = np.load(population+'_graphs.npz')
-co2 = f['conn_mat']
+conn_nonpte = f['conn_mat']
 lab_ids = f['label_ids']
 gordlab = f['labels']
 
 
-c1 = np.mean(co1, axis=2)
-c2 = np.mean(co2, axis=2)
+c1 = np.mean(conn_pte, axis=2)
+c2 = np.mean(conn_nonpte, axis=2)
 
-s1 = np.std(co1, axis=2)
-s2 = np.std(co2, axis=2)
+s1 = np.std(conn_pte, axis=2)
+s2 = np.std(conn_nonpte, axis=2)
 
 
 z = np.abs(c1-c2)/((s1+s2)/2)
@@ -45,8 +49,8 @@ imsave('p_value_conn.png', 0.05-p_values,
 
 # f-test on rois
 
-F = co1.var(axis=2) / (co2.var(axis=2) + 1e-6)
-nsub = co2.shape[2]
+F = conn_pte.var(axis=2) / (conn_nonpte.var(axis=2) + 1e-6)
+nsub = conn_nonpte.shape[2]
 p_values = (1 - ss.f.cdf(F, nsub - 1, nsub - 1))
 
 imsave('p_value_conn_ftest.png', 0.05-p_values,
@@ -99,3 +103,6 @@ visdata_grayord(data=0.05-gord_pval,
                 out_dir='.',
                 bfp_path='/ImagePTE1/ajoshi/code_farm/bfp',
                 fsl_path='/usr/share/fsl')
+
+
+print('done')
