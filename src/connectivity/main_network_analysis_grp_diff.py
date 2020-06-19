@@ -82,16 +82,13 @@ visdata_grayord(data=0.05-gord_pval,
 
 # FDR correction over ROIs
 
-
 pval_rois = np.min(p_values, axis=1)
-
 _, pval_rois_fdr = fdrcorrection(pval_rois)
 
 gord_pval = np.zeros(len(gordlab))
 
 for i, id in enumerate(lab_ids):
     gord_pval[gordlab == id] = pval_rois_fdr[i]
-
 
 visdata_grayord(data=0.05-gord_pval,
                 smooth_iter=100,
