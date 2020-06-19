@@ -7,14 +7,13 @@ import numpy as np
 import scipy.stats as ss
 from matplotlib.image import imsave
 from scipy.stats import norm
-from sklearn.metrics import auc, plot_roc_curve, roc_auc_score, roc_curve
+from sklearn.metrics import auc, plot_roc_curve, roc_auc_score, roc_curve, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 from statsmodels.stats.multitest import fdrcorrection
 from tqdm import tqdm
 from sklearn.ensemble import RandomForestClassifier
 from grayord_utils import visdata_grayord
-
 
 population = 'PTE'
 f = np.load(population+'_graphs.npz')
@@ -44,6 +43,9 @@ n_iter = 20
 auc = np.zeros(n_iter)
 auc_t = np.zeros(n_iter)
 n_features = 25
+y_test_true_all = []
+y_test_pred_all = []
+
 for t in range(n_iter):
     X_train, X_test, y_train, y_test = train_test_split(X,
                                                         y,
@@ -56,20 +58,31 @@ for t in range(n_iter):
 
     X_train, X_test, y_train, y_test = train_test_split(X,
                                                         y,
-                                                        test_size=0.33)    
+                                                        test_size=0.33)
     clf.fit(X_train[:, ind_feat[:n_features]], y_train)
 
     #svc_disp = plot_roc_curve(clf, X_test, y_test)
     y_score = clf.predict(X_test[:, ind_feat[:n_features]])
+    y_test_pred_all = y_test_pred_all + list(y_score)
+
+    y_test_true_all = y_test_true_all + list(y_test)
+
     auc[t] = roc_auc_score(y_test, y_score)
     y_score = clf.predict(X_train[:, ind_feat[:n_features]])
     auc_t[t] = roc_auc_score(y_train, y_score)
-    print(auc[t], auc_t[t])
+    #print(auc[t], auc_t[t])
 
 print('running done')
+
+target_names = ['class PTE', 'class nonPTE']
+print(classification_report(y_test_true_all,
+                            y_test_pred_all, target_names=target_names))
+
 
 
 print(np.mean(auc), np.std(auc))
 print(np.mean(auc_t), np.std(auc_t))
 
+auc = roc_auc_score(y_test_true_all, y_test_pred_all)
+print(auc)
 print('done')
