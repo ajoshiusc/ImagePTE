@@ -7,7 +7,7 @@ import numpy as np
 import scipy.stats as ss
 from matplotlib.image import imsave
 from scipy.stats import norm
-from sklearn.metrics import auc, plot_roc_curve, roc_auc_score, roc_curve, classification_report
+from sklearn.metrics import auc, plot_roc_curve, roc_auc_score, roc_curve, classification_report, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 from statsmodels.stats.multitest import fdrcorrection
@@ -39,10 +39,15 @@ X = np.vstack((epi_measures, nonepi_measures))
 y = np.hstack(
     (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
 
-n_iter = 20
+n_iter = 100
 auc = np.zeros(n_iter)
+precision = np.zeros(n_iter)
+recall = np.zeros(n_iter)
+fscore = np.zeros(n_iter)
+support = np.zeros(n_iter)
+
 auc_t = np.zeros(n_iter)
-n_features = 25
+n_features = 21
 y_test_true_all = []
 y_test_pred_all = []
 
@@ -64,8 +69,10 @@ for t in range(n_iter):
     #svc_disp = plot_roc_curve(clf, X_test, y_test)
     y_score = clf.predict(X_test[:, ind_feat[:n_features]])
     y_test_pred_all = y_test_pred_all + list(y_score)
-
     y_test_true_all = y_test_true_all + list(y_test)
+
+    precision[t], recall[t], fscore[t], support[t] = precision_recall_fscore_support(
+        y_test, y_score,average='micro')
 
     auc[t] = roc_auc_score(y_test, y_score)
     y_score = clf.predict(X_train[:, ind_feat[:n_features]])
@@ -78,7 +85,10 @@ target_names = ['class PTE', 'class nonPTE']
 print(classification_report(y_test_true_all,
                             y_test_pred_all, target_names=target_names))
 
-
+print('precision:',np.mean(precision), np.std(precision))
+print('recall:',np.mean(recall), np.std(recall))
+print('fscore:',np.mean(fscore), np.std(fscore))
+print('support:',np.mean(support), np.std(support))
 
 print(np.mean(auc), np.std(auc))
 print(np.mean(auc_t), np.std(auc_t))
