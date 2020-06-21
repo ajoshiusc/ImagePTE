@@ -54,7 +54,7 @@ sub_fname_grp2 = sub_fname[group == 0]
 
 tscore, pval = randpair_groupdiff(sub_fname_grp1,
                                   sub_fname_grp2,
-                                  num_pairs=10,
+                                  num_pairs=1000,
                                   len_time=int(cf.lentime))
 ##%%
 '''
