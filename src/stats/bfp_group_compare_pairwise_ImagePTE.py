@@ -57,13 +57,17 @@ tscore, pval = randpair_groupdiff(sub_fname_grp1,
                                   num_pairs=10,
                                   len_time=int(cf.lentime))
 ##%%
+'''
+vis_grayord_sigcorr(pval, rval, sig_alpha, surf_name, out_dir, smooth_iter,
+                        save_png, bfp_path, fsl_path):
+'''
 
 vis_grayord_sigcorr(pval,
                     tscore,
+                    0.05,
                     cf.outname,
                     cf.out_dir,
                     int(cf.smooth_iter),
-                    cf.save_surfaces,
                     cf.save_figures,
                     bfp_path=cf.bfp_path,
                     fsl_path=cf.fsl_path)
@@ -74,12 +78,11 @@ _, pval_fdr = fdrcorrection(pval)
 
 vis_grayord_sigcorr(pval_fdr,
                     tscore,
+                    0.05,
                     cf.outname + '_fdr',
                     cf.out_dir,
                     int(cf.smooth_iter),
-                    cf.save_surfaces,
                     cf.save_figures,
-                    'False',
                     bfp_path=cf.bfp_path,
                     fsl_path=cf.fsl_path)
 
