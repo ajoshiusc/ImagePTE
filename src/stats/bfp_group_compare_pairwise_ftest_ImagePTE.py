@@ -19,10 +19,9 @@ section = config.sections()
 bfp_path = config.get('inputs', 'bfp_path')
 sys.path.append(os.path.join(bfp_path, 'src/stats/'))
 
-from grayord_utils import vis_grayord_sigcorr
-from stats_utils import randpair_groupdiff, randpair_groupdiff_ftest
 from read_data_utils import load_bfp_data, read_demoCSV, write_text_timestamp, readConfig, read_demoCSV_list
-
+from stats_utils import randpair_groupdiff, randpair_groupdiff_ftest
+from grayord_utils import vis_grayord_sigcorr
 
 
 os.chdir(bfp_path)
@@ -48,17 +47,17 @@ subIDs = np.array(subIDs)
 sub_fname = np.array(sub_fname)
 
 print('Identifying subjects for each group...')
-subIDs_grp1 = subIDs[np.logical_or(group == 3, group == 1, group == 2)]
-sub_fname_grp1 = sub_fname[np.logical_or(group == 3, group == 1, group == 2)]
+subIDs_grp2 = subIDs[group == 1]
+sub_fname_grp2 = sub_fname[group == 1]
 
-subIDs_grp2 = subIDs[group == 0]
-sub_fname_grp2 = sub_fname[group == 0]
+subIDs_grp1 = subIDs[group == 0]
+sub_fname_grp1 = sub_fname[group == 0]
 
 # %% makes file list for subcjects
 
 tscore, pval = randpair_groupdiff_ftest(sub_fname_grp1,
                                         sub_fname_grp2,
-                                        num_pairs=10,
+                                        num_pairs=1000,
                                         len_time=int(cf.lentime))
 # %%
 '''
@@ -68,7 +67,7 @@ vis_grayord_sigcorr(pval, rval, sig_alpha, surf_name, out_dir, smooth_iter,
 
 vis_grayord_sigcorr(pval,
                     tscore,
-                    0.05,
+                    0.1,
                     cf.outname,
                     cf.out_dir,
                     int(cf.smooth_iter),
