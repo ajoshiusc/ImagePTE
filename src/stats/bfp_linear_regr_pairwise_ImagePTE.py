@@ -1,6 +1,6 @@
 #%%
 #config_file = '/NCAdisk/SCD_structural_analysis/MotionCorrTestData/SC0919/sample_config_stats.ini'
-config_file = '/home/ajoshi/coding_ground/ImagePTE/src/stats/sample_config_stats_Maryland.ini'
+config_file = '/deben_disk/coding_ground/ImagePTE/src/stats/sample_config_stats_Maryland.ini'
 
 #%%#%%
 ### Import the required librariesimport configparser

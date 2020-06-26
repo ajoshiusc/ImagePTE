@@ -25,6 +25,7 @@ def main():
 
     epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
     nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
+    train_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_trainlepsy_imgs_training.txt'
 
     with open(epi_txt) as f:
         epiIds = f.readlines()
