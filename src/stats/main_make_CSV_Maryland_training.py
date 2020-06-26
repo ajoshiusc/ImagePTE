@@ -23,43 +23,30 @@ def main():
 
     studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
 
-    epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
-    nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
+    train_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_training.txt'
 
-    with open(epi_txt) as f:
-        epiIds = f.readlines()
 
-    with open(nonepi_txt) as f:
-        nonepiIds = f.readlines()
+    with open(train_txt) as f:
+        trainIds = f.readlines()
 
-    epiIds = list(map(lambda x: x.strip(), epiIds))
-    nonepiIds = list(map(lambda x: x.strip(), nonepiIds))
+    trainIds = list(map(lambda x: x.strip(), trainIds))
 
-    epi_files = list()
-    nonepi_files = list()
+    train_files = list()
 
-    epi_id = list()
-    nonepi_id = list()
+    train_id = list()
 
-    for sub in epiIds:
+    for sub in trainIds:
         fname = os.path.join(studydir, sub, 'BFP', sub, 'func',
                              sub + '_rest_bold.32k.GOrd.mat')
         if os.path.isfile(fname):
-            epi_files.append(fname)
-            epi_id.append(sub)
-
-    for sub in nonepiIds:
-        fname = os.path.join(studydir, sub, 'BFP', sub, 'func',
-                             sub + '_rest_bold.32k.GOrd.mat')
-        if os.path.isfile(fname):
-            nonepi_files.append(fname)
-            nonepi_id.append(sub)
+            train_files.append(fname)
+            train_id.append(sub)
 
     #epi_data = load_bfp_data(epi_files, 171)
-    #nonepi_data = load_bfp_data(nonepi_files, 171)
+    #train_data = load_bfp_data(train_files, 171)
 
-    ids = epi_id + nonepi_id
-    pte = [1] * len(epi_id) + [0] * len(nonepi_id)
+    ids = train_id
+    pte = [0] * len(train_id)
 
     exclude = np.zeros(len(ids), np.int16)
 
@@ -76,7 +63,7 @@ def main():
     df = pd.DataFrame(list(zip(ids, pte, age, gender, exclude)),
                       columns=['subID', 'PTE', 'Age', 'Gender', 'Exclude'])
 
-    df.to_csv('ImagePTE_Maryland_demographics.csv', index=False)
+    df.to_csv('ImagePTE_Maryland_training_demographics.csv', index=False)
 
     print('done')
 
