@@ -15,7 +15,9 @@ from scipy.stats import shapiro
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import plot_roc_curve, roc_curve, auc, roc_auc_score
+#from sklearn.metrics import plot_roc_curve, roc_curve, auc, roc_auc_score
+from sklearn.metrics import auc, plot_roc_curve, roc_auc_score, roc_curve, classification_report, precision_recall_fscore_support
+
 import matplotlib.pyplot as plt
 
 sm = '.smooth3mm'
@@ -59,7 +61,7 @@ def readsubs(studydir, sub_ids):
 
 def roiwise_stats(epi_data, nonepi_data):
 
-    atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/BCI-DNI_brain.label.nii.gz'
     at_labels = np.asanyarray(ni.load_img(atlas_labels).dataobj)
     #roi_list = [
     #    3, 100, 101, 184, 185, 200, 201, 300, 301, 400, 401, 500, 501, 800,
@@ -241,31 +243,70 @@ def main():
     y = np.hstack(
         (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
 
-    n_iter = 10
-    auc = np.zeros(n_iter)
-    auc_t = np.zeros(n_iter)
 
-    for t in tqdm(range(n_iter)):
+
+    n_features=11 # This is chosen by searching over all possibilities
+
+
+    n_iter = 100
+    auc = np.zeros(n_iter)
+    precision = np.zeros(n_iter)
+    recall = np.zeros(n_iter)
+    fscore = np.zeros(n_iter)
+    support = np.zeros(n_iter)
+
+    auc_t = np.zeros(n_iter)
+    y_test_true_all = []
+    y_test_pred_all = []
+
+    for t in range(n_iter):
         X_train, X_test, y_train, y_test = train_test_split(X,
                                                             y,
                                                             test_size=0.33)
-        clf = SVC(kernel='linear', C=1,gamma='auto',tol=1e-6)  #RandomForestClassifier(n_estimators=20)  #
+        clf = RandomForestClassifier()
+
+        #clf = SVC(kernel='linear', C=1, gamma=0.0001, tol=1e-6)
         clf.fit(X_train, y_train)
+        ind_feat = np.argsort(-clf.feature_importances_)
+
+        X_train, X_test, y_train, y_test = train_test_split(X,
+                                                            y,
+                                                            test_size=0.33)
+        clf.fit(X_train[:, ind_feat[:n_features]], y_train)
+
         #svc_disp = plot_roc_curve(clf, X_test, y_test)
-        y_score = clf.predict(X_test)
+        y_score = clf.predict(X_test[:, ind_feat[:n_features]])
+        y_test_pred_all = y_test_pred_all + list(y_score)
+        y_test_true_all = y_test_true_all + list(y_test)
+
+        precision[t], recall[t], fscore[t], support[t] = precision_recall_fscore_support(
+            y_test, y_score,average='micro')
+
         auc[t] = roc_auc_score(y_test, y_score)
-        y_score = clf.predict(X_train)
+        y_score = clf.predict(X_train[:, ind_feat[:n_features]])
         auc_t[t] = roc_auc_score(y_train, y_score)
-        print(auc[t], auc_t[t])
+        #print(auc[t], auc_t[t])
 
+    #print('running done')
 
-#    plt.show()
+    target_names = ['class PTE', 'class nonPTE']
+    '''
+    print(classification_report(y_test_true_all,
+                                y_test_pred_all, target_names=target_names))
+
+    print('precision:',np.mean(precision), np.std(precision))
+    print('recall:',np.mean(recall), np.std(recall))
+    print('fscore:',np.mean(fscore), np.std(fscore))
+    print('support:',np.mean(support), np.std(support))
 
     print(np.mean(auc), np.std(auc))
     print(np.mean(auc_t), np.std(auc_t))
+    '''
 
+    auc = roc_auc_score(y_test_true_all, y_test_pred_all)
+    print(n_features,' auc:',auc)
     print('done')
-    input("Press Enter to continue...")
+
 
 if __name__ == "__main__":
     main()

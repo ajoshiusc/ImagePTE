@@ -57,7 +57,7 @@ sub_fname_grp1 = sub_fname[group == 0]
 
 tscore, pval = randpair_groupdiff_ftest(sub_fname_grp1,
                                         sub_fname_grp2,
-                                        num_pairs=1000,
+                                        num_pairs=100,
                                         len_time=int(cf.lentime))
 # %%
 '''
@@ -65,9 +65,11 @@ vis_grayord_sigcorr(pval, rval, sig_alpha, surf_name, out_dir, smooth_iter,
                         save_png, bfp_path, fsl_path):
 '''
 
+pval[sp.isnan(pval)] = .5
+
 vis_grayord_sigcorr(pval,
                     tscore,
-                    0.1,
+                    0.05,
                     cf.outname,
                     cf.out_dir,
                     int(cf.smooth_iter),
