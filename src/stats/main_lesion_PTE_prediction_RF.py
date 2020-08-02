@@ -4,7 +4,7 @@ import numpy as np
 from shutil import copyfile, copy
 import time
 import nilearn.image as ni
-#from multivariate. import TBM_t2
+# from multivariate. import TBM_t2
 from tqdm import tqdm
 import scipy as sp
 from statsmodels.stats.multitest import fdrcorrection
@@ -63,10 +63,10 @@ def roiwise_stats(epi_data, nonepi_data):
 
     atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/BCI-DNI_brain.label.nii.gz'
     at_labels = np.asanyarray(ni.load_img(atlas_labels).dataobj)
-    #roi_list = [
+    # roi_list = [
     #    3, 100, 101, 184, 185, 200, 201, 300, 301, 400, 401, 500, 501, 800,
     #    850, 900, 950
-    #]
+    # ]
     # roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
     roi_list = np.unique(at_labels.flatten())
 
@@ -104,7 +104,7 @@ def roiwise_stats(epi_data, nonepi_data):
     w, s = shapiro(epi_roi_lesion_vols)
 
     print(w, s)
-    return epi_roi_lesion_vols, nonepi_roi_lesion_vols
+    return epi_roi_lesion_vols, nonepi_roi_lesion_vols, roi_list
 
 
 def pointwise_stats(epi_data, nonepi_data):
@@ -237,16 +237,14 @@ def main():
     #    pointwise_stats(epi_data, nonepi_data)
 
     # Do ROIwise stats
-    epi_measures, nonepi_measures = roiwise_stats(epi_data, nonepi_data)
+    epi_measures, nonepi_measures, roi_list = roiwise_stats(
+        epi_data, nonepi_data)
 
     X = np.vstack((epi_measures, nonepi_measures))
     y = np.hstack(
         (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
 
-
-
-    n_features=11 # This is chosen by searching over all possibilities
-
+    n_features = 11  # This is chosen by searching over all possibilities
 
     n_iter = 100
     auc = np.zeros(n_iter)
@@ -259,7 +257,9 @@ def main():
     y_test_true_all = []
     y_test_pred_all = []
 
-    for t in range(n_iter):
+    feature_importance = 0
+
+    for t in tqdm(range(n_iter)):
         X_train, X_test, y_train, y_test = train_test_split(X,
                                                             y,
                                                             test_size=0.33)
@@ -268,6 +268,7 @@ def main():
         #clf = SVC(kernel='linear', C=1, gamma=0.0001, tol=1e-6)
         clf.fit(X_train, y_train)
         ind_feat = np.argsort(-clf.feature_importances_)
+        feature_importance += clf.feature_importances_
 
         X_train, X_test, y_train, y_test = train_test_split(X,
                                                             y,
@@ -280,7 +281,7 @@ def main():
         y_test_true_all = y_test_true_all + list(y_test)
 
         precision[t], recall[t], fscore[t], support[t] = precision_recall_fscore_support(
-            y_test, y_score,average='micro')
+            y_test, y_score, average='micro')
 
         auc[t] = roc_auc_score(y_test, y_score)
         y_score = clf.predict(X_train[:, ind_feat[:n_features]])
@@ -289,22 +290,25 @@ def main():
 
     #print('running done')
 
+    feature_importance /= n_iter
+    ind_feat = np.argsort(-feature_importance)
+    print(roi_list[ind_feat], feature_importance[ind_feat])
+
     target_names = ['class PTE', 'class nonPTE']
-    '''
+
     print(classification_report(y_test_true_all,
                                 y_test_pred_all, target_names=target_names))
 
-    print('precision:',np.mean(precision), np.std(precision))
-    print('recall:',np.mean(recall), np.std(recall))
-    print('fscore:',np.mean(fscore), np.std(fscore))
-    print('support:',np.mean(support), np.std(support))
+    print('precision:', np.mean(precision), np.std(precision))
+    print('recall:', np.mean(recall), np.std(recall))
+    print('fscore:', np.mean(fscore), np.std(fscore))
+    print('support:', np.mean(support), np.std(support))
 
     print(np.mean(auc), np.std(auc))
     print(np.mean(auc_t), np.std(auc_t))
-    '''
 
     auc = roc_auc_score(y_test_true_all, y_test_pred_all)
-    print(n_features,' auc:',auc)
+    print(n_features, ' auc:', auc)
     print('done')
 
 
