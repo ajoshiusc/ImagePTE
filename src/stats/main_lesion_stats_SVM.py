@@ -261,8 +261,8 @@ def main():
 
 #    plt.show()
 
-    print(np.mean(auc), np.std(auc))
-    print(np.mean(auc_t), np.std(auc_t))
+    print('AUC on testing data:', np.mean(auc), np.std(auc))
+    print('AUC on training data:', np.mean(auc_t), np.std(auc_t))
 
     print('done')
     input("Press Enter to continue...")
