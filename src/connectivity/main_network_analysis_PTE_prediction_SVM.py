@@ -31,7 +31,7 @@ n_rois = conn_pte.shape[0]
 ind = np.tril_indices(n_rois, k=1)
 
 
-# Do Random Forest Analysis
+# Do SVM Analysis
 epi_measures = conn_pte[ind[0], ind[1], :].T
 nonepi_measures = conn_nonpte[ind[0], ind[1], :].T
 
@@ -55,19 +55,20 @@ for t in tqdm(range(n_iter)):
     X_train, X_test, y_train, y_test = train_test_split(X,
                                                         y,
                                                         test_size=0.33)
-    clf = RandomForestClassifier()
+    #clf = RandomForestClassifier()
 
-    #clf = SVC(kernel='linear', C=1, gamma=0.0001, tol=1e-6)
+    clf = SVC(kernel='linear', C=10, gamma=0.1, tol=1e-6)
     clf.fit(X_train, y_train)
-    ind_feat = np.argsort(-clf.feature_importances_)
+    #ind_feat = np.argsort(-clf.feature_importances_)
 
-    X_train, X_test, y_train, y_test = train_test_split(X,
-                                                        y,
-                                                        test_size=0.33)
-    clf.fit(X_train[:, ind_feat[:n_features]], y_train)
+    #X_train, X_test, y_train, y_test = train_test_split(X,
+    #                                                    y,
+    #                                                    test_size=0.33)
+    #clf.fit(X_train[:, ind_feat[:n_features]], y_train)
 
     #svc_disp = plot_roc_curve(clf, X_test, y_test)
-    y_score = clf.predict(X_test[:, ind_feat[:n_features]])
+    #y_score = clf.predict(X_test[:, ind_feat[:n_features]])
+    y_score = clf.predict(X_test)
     y_test_pred_all = y_test_pred_all + list(y_score)
     y_test_true_all = y_test_true_all + list(y_test)
 
@@ -75,7 +76,7 @@ for t in tqdm(range(n_iter)):
         y_test, y_score,average='micro')
 
     auc[t] = roc_auc_score(y_test, y_score)
-    y_score = clf.predict(X_train[:, ind_feat[:n_features]])
+    y_score = clf.predict(X_train)
     auc_t[t] = roc_auc_score(y_train, y_score)
     #print(auc[t], auc_t[t])
 

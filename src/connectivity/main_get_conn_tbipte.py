@@ -11,7 +11,7 @@ import scipy.stats as ss
 from scipy.stats import shapiro
 from statsmodels.stats.multitest import fdrcorrection
 from statsmodels.stats.weightstats import ttest_ind
-#from multivariate. import TBM_t2
+# from multivariate. import TBM_t2
 from tqdm import tqdm
 
 from brainsync import groupBrainSync, normalizeData
@@ -19,6 +19,8 @@ from get_connectivity import get_connectivity
 #from statsmodels.stats import wilcoxon
 from read_data_utils import load_bfp_data
 import scipy.io as spio
+import networkx as nx
+
 
 def main():
 
@@ -36,8 +38,6 @@ def main():
 
     # remove WM label from connectivity analysis
     label_ids = np.setdiff1d(label_ids, (2000, 0))
-
-
 
     with open(epi_txt) as f:
         epiIds = f.readlines()
@@ -68,33 +68,39 @@ def main():
 
     nsub = epi_data.shape[2]
     conn_mat = np.zeros((len(label_ids), len(label_ids), nsub))
+    cent_mat = np.zeros((len(label_ids), nsub))
 
     for subno in range(nsub):
-        conn_mat[:, :, subno] = get_connectivity(epi_data[:,:,subno],
+        conn_mat[:, :, subno] = get_connectivity(epi_data[:, :, subno],
                                                  labels=gord_labels,
                                                  label_ids=label_ids)
 
+        G = nx.convert_matrix.from_numpy_array(np.abs(conn_mat[:, :, subno]))
+        cent = nx.eigenvector_centrality(G, weight='weight')
+        cent_mat[:, subno] = np.array(list(cent.items()))[:,1]
 
     np.savez('PTE_graphs.npz',
              conn_mat=conn_mat,
              label_ids=label_ids,
-             labels=gord_labels)
-
+             labels=gord_labels,
+             cent_mat=cent_mat)
 
     conn_mat = np.zeros((len(label_ids), len(label_ids), nsub))
+    cent_mat = np.zeros((len(label_ids), nsub))
 
     for subno in range(nsub):
-        conn_mat[:, :, subno] = get_connectivity(nonepi_data[:,:,subno],
+        conn_mat[:, :, subno] = get_connectivity(nonepi_data[:, :, subno],
                                                  labels=gord_labels,
                                                  label_ids=label_ids)
-
+        G = nx.convert_matrix.from_numpy_array(np.abs(conn_mat[:, :, subno]))
+        cent = nx.eigenvector_centrality(G, weight='weight')
+        cent_mat[:, subno] = np.array(list(cent.items()))[:,1]
 
     np.savez('NONPTE_graphs.npz',
              conn_mat=conn_mat,
              label_ids=label_ids,
-             labels=gord_labels)
-
-
+             labels=gord_labels,
+             cent_mat=cent_mat)
 
     print('done')
 

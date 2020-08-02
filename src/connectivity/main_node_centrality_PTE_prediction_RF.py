@@ -17,23 +17,23 @@ from grayord_utils import visdata_grayord
 
 population = 'PTE'
 f = np.load(population+'_graphs.npz')
-conn_pte = f['conn_mat']
+conn_pte = f['cent_mat']
 lab_ids = f['label_ids']
 gordlab = f['labels']
 
 population = 'NONPTE'
 f = np.load(population+'_graphs.npz')
-conn_nonpte = f['conn_mat']
+conn_nonpte = f['cent_mat']
 lab_ids = f['label_ids']
 gordlab = f['labels']
 
 n_rois = conn_pte.shape[0]
-ind = np.tril_indices(n_rois, k=1)
+#ind = np.tril_indices(n_rois, k=1)
 
 
 # Do Random Forest Analysis
-epi_measures = conn_pte[ind[0], ind[1], :].T
-nonepi_measures = conn_nonpte[ind[0], ind[1], :].T
+epi_measures = conn_pte #[ind[0], ind[1], :].T
+nonepi_measures = conn_nonpte #[ind[0], ind[1], :].T
 
 X = np.vstack((epi_measures, nonepi_measures))
 y = np.hstack(
