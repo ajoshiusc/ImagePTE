@@ -61,7 +61,7 @@ def readsubs(studydir, sub_ids):
 
 def roiwise_stats(epi_data, nonepi_data):
 
-    atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/BCI-DNI_brain.label.nii.gz'
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
     at_labels = np.asanyarray(ni.load_img(atlas_labels).dataobj)
     # roi_list = [
     #    3, 100, 101, 184, 185, 200, 201, 300, 301, 400, 401, 500, 501, 800,
@@ -244,7 +244,7 @@ def main():
     y = np.hstack(
         (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
 
-    n_features = 11  # This is chosen by searching over all possibilities
+    n_features = 4#11  # This is chosen by searching over all possibilities
 
     n_iter = 100
     auc = np.zeros(n_iter)

@@ -4,7 +4,7 @@ import numpy as np
 from shutil import copyfile, copy
 import time
 import nilearn.image as ni
-#from multivariate. import TBM_t2
+# from multivariate. import TBM_t2
 from tqdm import tqdm
 import scipy as sp
 from statsmodels.stats.multitest import fdrcorrection
@@ -61,10 +61,10 @@ def roiwise_stats(epi_data, nonepi_data):
 
     atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
     at_labels = np.asanyarray(ni.load_img(atlas_labels).dataobj)
-    #roi_list = [
+    # roi_list = [
     #    3, 100, 101, 184, 185, 200, 201, 300, 301, 400, 401, 500, 501, 800,
     #    850, 900, 950
-    #]
+    # ]
     # roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
     roi_list = np.unique(at_labels.flatten())
 
@@ -249,7 +249,8 @@ def main():
         X_train, X_test, y_train, y_test = train_test_split(X,
                                                             y,
                                                             test_size=0.33)
-        clf = SVC(kernel='linear', C=1,gamma='auto',tol=1e-6)  #RandomForestClassifier(n_estimators=20)  #
+        # RandomForestClassifier(n_estimators=20)  #
+        clf = SVC(kernel='linear', C=1, gamma='auto', tol=1e-6)
         clf.fit(X_train, y_train)
         #svc_disp = plot_roc_curve(clf, X_test, y_test)
         y_score = clf.predict(X_test)
@@ -266,6 +267,7 @@ def main():
 
     print('done')
     input("Press Enter to continue...")
+
 
 if __name__ == "__main__":
     main()

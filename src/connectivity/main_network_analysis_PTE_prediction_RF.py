@@ -1,4 +1,3 @@
-
 import sys
 
 import matplotlib.pyplot as plt
@@ -39,6 +38,9 @@ X = np.vstack((epi_measures, nonepi_measures))
 y = np.hstack(
     (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
 
+# Permute the labels to check if AUC becomes 0.5. This check is to make sure that we are not overfitting
+#y = np.random.permutation(y)
+
 n_iter = 100
 auc = np.zeros(n_iter)
 precision = np.zeros(n_iter)
@@ -50,6 +52,7 @@ auc_t = np.zeros(n_iter)
 n_features = 21
 y_test_true_all = []
 y_test_pred_all = []
+feature_importance = 0
 
 for t in tqdm(range(n_iter)):
     X_train, X_test, y_train, y_test = train_test_split(X,
@@ -60,6 +63,8 @@ for t in tqdm(range(n_iter)):
     #clf = SVC(kernel='linear', C=1, gamma=0.0001, tol=1e-6)
     clf.fit(X_train, y_train)
     ind_feat = np.argsort(-clf.feature_importances_)
+
+    feature_importance += clf.feature_importances_
 
     X_train, X_test, y_train, y_test = train_test_split(X,
                                                         y,
@@ -72,7 +77,7 @@ for t in tqdm(range(n_iter)):
     y_test_true_all = y_test_true_all + list(y_test)
 
     precision[t], recall[t], fscore[t], support[t] = precision_recall_fscore_support(
-        y_test, y_score,average='micro')
+        y_test, y_score, average='micro')
 
     auc[t] = roc_auc_score(y_test, y_score)
     y_score = clf.predict(X_train[:, ind_feat[:n_features]])
@@ -85,14 +90,25 @@ target_names = ['class PTE', 'class nonPTE']
 print(classification_report(y_test_true_all,
                             y_test_pred_all, target_names=target_names))
 
-print('precision:',np.mean(precision), np.std(precision))
-print('recall:',np.mean(recall), np.std(recall))
-print('fscore:',np.mean(fscore), np.std(fscore))
-print('support:',np.mean(support), np.std(support))
+print('precision:', np.mean(precision), np.std(precision))
+print('recall:', np.mean(recall), np.std(recall))
+print('fscore:', np.mean(fscore), np.std(fscore))
+print('support:', np.mean(support), np.std(support))
 
 print(np.mean(auc), np.std(auc))
 print(np.mean(auc_t), np.std(auc_t))
 
 auc = roc_auc_score(y_test_true_all, y_test_pred_all)
 print(auc)
+
+feature_importance /= n_iter
+ind_feat = np.argsort(-feature_importance)
+print(lab_ids[ind[0][ind_feat]], lab_ids[ind[1][ind_feat]] , feature_importance[ind_feat])
+
+plt.plot(feature_importance[ind_feat])
+plt.show()
+plt.savefig('centrality_feature_importance.png')
+
+
 print('done')
+ 
