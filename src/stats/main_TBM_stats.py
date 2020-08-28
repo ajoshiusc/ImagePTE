@@ -71,11 +71,11 @@ def readsubs(studydir, sub_ids, nsub=10000):
 
 def main():
 
-    studydir = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1'
+    studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
 
-    epi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
-    nonepi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
-    atlas = '/home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
+    epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
+    nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
+    atlas = '/home/ajoshi/BrainSuite19b/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
 
     ati = ni.load_img(atlas)
 
@@ -88,9 +88,9 @@ def main():
     epiIds = list(map(lambda x: x.strip(), epiIds))
     nonepiIds = list(map(lambda x: x.strip(), nonepiIds))
 
-    epi_data, epi_subids = readsubs(studydir, epiIds, nsub=36)
+    epi_data, epi_subids = readsubs(studydir, epiIds)
 
-    nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds, nsub=36)
+    nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds)
 
     # Save mean over the epilepsy subjects
     epi_data_mean = ni.new_img_like(ati, epi_data.mean(axis=0))

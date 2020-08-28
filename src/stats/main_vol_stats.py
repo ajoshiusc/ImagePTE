@@ -139,12 +139,12 @@ def readsubs(studydir, sub_ids, nsub=10000):
 
 def main():
 
-    studydir = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1'
+    studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
 
-    epi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
-    nonepi_txt = '/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
+    epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
+    nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
 
-    atlas = '/home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
+    atlas = '/home/ajoshi/BrainSuite19b/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
 
     ati = ni.load_img(atlas)
 

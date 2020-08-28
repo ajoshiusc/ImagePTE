@@ -7,6 +7,14 @@
 *.nii.gz
 *.h5
 *.mat
+*.mat
+*.png
+*.jpg
+*.dfs
+*.hdr
+*.img
+*.json
+*.init
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -113,5 +121,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+src/preproc/.vscode/settings.json
 src/preproc/.vscode/settings.json
 src/preproc/.vscode/settings.json

@@ -65,9 +65,9 @@ def readsubs(studydir, sub_ids, read_mask=False, sm='smooth3mm.'):
 def find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
                              nonepi_data):
 
-    atlas_bfc = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.bfc.nii.gz'
+    atlas_bfc = '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/BCI-DNI_brain.bfc.nii.gz'
     ati = ni.load_img(atlas_bfc)
-    atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/BCI-DNI_brain.label.nii.gz'
     at_labels = ni.load_img(atlas_labels).get_data()
 
     epi_data = epi_data.reshape([epi_data.shape[0], -1])
@@ -144,17 +144,19 @@ def find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
 
 def roiwise_stats(epi_data, nonepi_data):
 
-    atlas_bfc = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.bfc.nii.gz'
+    atlas_bfc = '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/BCI-DNI_brain.bfc.nii.gz'
     ati = ni.load_img(atlas_bfc)
-    atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
-    at_labels = ni.load_img(atlas_labels).get_data()
-    vox_size = ni.load_img(atlas_labels).get_header().get_zooms()
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/BCI-DNI_brain.label.nii.gz'
+    at_labels = np.asanyarray(ni.load_img(atlas_labels).dataobj)
+    vox_size = ni.load_img(atlas_labels).header.get_zooms()
     vox_vol = vox_size[0] * vox_size[1] * vox_size[2]
     #roi_list = [
     #    3, 100, 101, 184, 185, 200, 201, 300, 301, 400, 401, 500, 501, 800,
     #    850, 900, 950
     #]
-    roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
+    # roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
+    roi_list = np.unique(at_labels.flatten())
+
     epi_roi_lesion_vols = np.zeros((37, len(roi_list)))
     nonepi_roi_lesion_vols = np.zeros((37, len(roi_list)))
 

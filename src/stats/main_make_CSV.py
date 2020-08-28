@@ -13,10 +13,11 @@ from statsmodels.stats.weightstats import ttest_ind
 import scipy.stats as ss
 from scipy.stats import shapiro
 #from statsmodels.stats import wilcoxon
-from read_data_utils import load_bfp_data
-from brainsync import groupBrainSync, normalizeData
+#from read_data_utils import load_bfp_data
+#from brainsync import groupBrainSync, normalizeData
 import time
 import pandas as pd
+
 
 def main():
 
@@ -37,38 +38,45 @@ def main():
     epi_files = list()
     nonepi_files = list()
 
+    epi_id = list()
+    nonepi_id = list()
+
     for sub in epiIds:
         fname = os.path.join(studydir, sub, 'BFP', sub, 'func',
                              sub + '_rest_bold.32k.GOrd.mat')
         if os.path.isfile(fname):
             epi_files.append(fname)
+            epi_id.append(sub)
 
     for sub in nonepiIds:
         fname = os.path.join(studydir, sub, 'BFP', sub, 'func',
                              sub + '_rest_bold.32k.GOrd.mat')
         if os.path.isfile(fname):
             nonepi_files.append(fname)
+            nonepi_id.append(sub)
 
-    epi_data = load_bfp_data(epi_files, 171)
-    nonepi_data = load_bfp_data(nonepi_files, 171)
+    #epi_data = load_bfp_data(epi_files, 171)
+    #nonepi_data = load_bfp_data(nonepi_files, 171)
 
-    t = time.time()
-    X2, Os, Costdif, TotalError = groupBrainSync(nonepi_data)
+    ids = epi_id + nonepi_id
+    pte = [1] * len(epi_id) + [0] * len(nonepi_id)
 
-    elapsed = time.time() - t
+    exclude = np.zeros(len(ids), np.int16)
 
-    np.savez('grp_atlas2.npz', X2=X2, Os=Os)
+    p = pd.read_csv(
+        '/ImagePTE1/ajoshi/fitbir/maryland_rao/FITBIR Demographics_314/FITBIRdemographics_prospective_modified.csv',
+        index_col='Main Group.GUID')
 
-    atlas_data, _, _ = normalizeData(np.mean(X2, axis=1))
+    #p.loc["TBI_INVVL624DAG"]['Main Group.AgeYrs']
+    #p.loc["TBI_INVVL624DAG"]['Subject Demographics.GenderTyp']
 
-    np.savez('grp_atlas.npz', atlas_data=atlas_data)
+    age = list(p.loc[ids]['Main Group.AgeYrs'])
+    gender = list(p.loc[ids]['Subject Demographics.GenderTyp'])
 
-    # Do Pointwise stats
-    #    pointwise_stats(epi_data, nonepi_data)
+    df = pd.DataFrame(list(zip(ids, pte, age, gender, exclude)),
+                      columns=['subID', 'PTE', 'Age', 'Gender', 'Exclude'])
 
-    vis_grayord_sigcorr(pval, rval, cf.outname, cf.out_dir,
-                        int(cf.smooth_iter), cf.save_surfaces, cf.save_figures,
-                        'True')
+    df.to_csv('ImagePTE_Maryland_demographics_study.csv', index=False)
 
     print('done')
 
