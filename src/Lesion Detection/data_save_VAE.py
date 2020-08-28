@@ -153,6 +153,24 @@ def run_isel(data_dir,ref_dir,sub_names,Out_name):
     plt.show()
     np.savez(Out_name, data=X_reshape)
 
+def run_brats2018(data_dir,ref_dir,sub_names,Out_name):
+    ###initial parameters###
+    window_H = 182
+    window_W = 218
+    window_C= 182
+
+    ###read data###
+    test_isel(data_dir,ref_dir,sub_names,Out_name,window_H,window_W,window_C)
+
+    ###reshape data###
+    reshape_size=[128,128]
+    num_channels=4     ##FLAIR T1 T2 seg
+    X_reshape=reshape(Out_name,reshape_size,num_channels)
+    fig, ax = plt.subplots()
+    im = ax.imshow(X_reshape[50,:,:,0])
+    plt.show()
+    np.savez(Out_name, data=X_reshape)
+
 if __name__ == "__main__":
     
     marryland_train=0
@@ -160,7 +178,8 @@ if __name__ == "__main__":
     marryland_test=0
     TBI_train=0
     TBI_valid=0
-    ISEL_valid=1
+    ISEL_valid=0
+    Brats_2018=1
 
     if marryland_train==1:
         ###data and output directory for merryland dataset###
@@ -209,6 +228,15 @@ if __name__ == "__main__":
         run(data_dir,ref_dir,sub_names,Out_name)
 
     if ISEL_valid==1:
+        ###data and output directory for merryland dataset###
+        data_dir='/big_disk/ajoshi/ISLES2015/preproc/Training/'
+        sub_names='/big_disk/ajoshi/ISLES2015/ISLES2015_Training_done.txt'
+        Out_name='data_ISEL_128_valid.npz'
+        ref_dir='/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1/TBI_INVYU830PA1'
+        run_isel(data_dir,ref_dir,sub_names,Out_name)   
+
+
+    if Brats_2018==1:
         ###data and output directory for merryland dataset###
         data_dir='/big_disk/ajoshi/ISLES2015/preproc/Training/'
         sub_names='/big_disk/ajoshi/ISLES2015/ISLES2015_Training_done.txt'
