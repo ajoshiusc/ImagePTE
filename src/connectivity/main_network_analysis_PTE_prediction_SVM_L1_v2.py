@@ -9,7 +9,7 @@ from matplotlib.image import imsave
 from scipy.stats import norm
 from sklearn.metrics import auc, plot_roc_curve, roc_auc_score, roc_curve, classification_report, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
 from statsmodels.stats.multitest import fdrcorrection
 from tqdm import tqdm
 from sklearn.ensemble import RandomForestClassifier
@@ -54,10 +54,14 @@ y_test_pred_all = []
 for t in tqdm(range(n_iter)):
     X_train, X_test, y_train, y_test = train_test_split(X,
                                                         y,
-                                                        test_size=0.33)
+                                                        test_size=0.19)
     #clf = RandomForestClassifier()
 
-    clf = SVC(kernel='linear', C=0.001, gamma=0.1, tol=1e-6)
+    #X_train, X_test, y_train, y_test = train_test_split(X,
+                                                        #y,
+                                                        #test_size=0.33)
+
+    clf = LinearSVC(penalty='l1',C=0.12, tol=1e-6,dual=False)
     clf.fit(X_train, y_train)
     #ind_feat = np.argsort(-clf.feature_importances_)
 
@@ -68,8 +72,24 @@ for t in tqdm(range(n_iter)):
 
     #svc_disp = plot_roc_curve(clf, X_test, y_test)
     #y_score = clf.predict(X_test[:, ind_feat[:n_features]])
-    param = clf.coef_
-    y_score = clf.predict(X_test)
+
+    #X_train, X_test, y_train, y_test = train_test_split(X,
+                                                        #y,
+                                                        #test_size=0.33)
+    param = clf.coef_.ravel()
+    count=param[param!=0]
+    
+    X_train=X_train[:,param!=0]
+    
+
+    X_test= X_test[:,param!=0]
+    
+
+    clf2 = LinearSVC(penalty='l1',C=10000000, tol=1e-6,dual=False)
+    clf2.fit(X_train, y_train)
+
+    print(count.shape)
+    y_score = clf2.predict(X_test)
     y_test_pred_all = y_test_pred_all + list(y_score)
     y_test_true_all = y_test_true_all + list(y_test)
 
@@ -77,7 +97,7 @@ for t in tqdm(range(n_iter)):
         y_test, y_score,average='micro')
 
     auc[t] = roc_auc_score(y_test, y_score)
-    y_score = clf.predict(X_train)
+    y_score = clf2.predict(X_train)
     auc_t[t] = roc_auc_score(y_train, y_score)
     #print(auc[t], auc_t[t])
 
