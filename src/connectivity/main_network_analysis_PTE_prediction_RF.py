@@ -61,14 +61,14 @@ for t in tqdm(range(n_iter)):
     clf = RandomForestClassifier()
 
     #clf = SVC(kernel='linear', C=1, gamma=0.0001, tol=1e-6)
-    clf.fit(X_train, y_train)
+    clf.fit(X, y)
     ind_feat = np.argsort(-clf.feature_importances_)
 
     feature_importance += clf.feature_importances_
 
-    X_train, X_test, y_train, y_test = train_test_split(X,
-                                                        y,
-                                                        test_size=0.33)
+#    X_train, X_test, y_train, y_test = train_test_split(X,
+#                                                        y,
+#                                                        test_size=0.33)
     clf.fit(X_train[:, ind_feat[:n_features]], y_train)
 
     #svc_disp = plot_roc_curve(clf, X_test, y_test)
