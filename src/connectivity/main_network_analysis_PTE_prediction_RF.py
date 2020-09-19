@@ -66,15 +66,9 @@ for t in tqdm(range(n_iter)):
 
     feature_importance += clf.feature_importances_
 
-<<<<<<< HEAD
     #X_train, X_test, y_train, y_test = train_test_split(X,
     #                                                    y,
     #                                                    test_size=0.33)
-=======
-#    X_train, X_test, y_train, y_test = train_test_split(X,
-#                                                        y,
-#                                                        test_size=0.33)
->>>>>>> 20f02a1e83347030e5f8b292299c6d74e097cb83
     clf.fit(X_train[:, ind_feat[:n_features]], y_train)
 
     #svc_disp = plot_roc_curve(clf, X_test, y_test)
