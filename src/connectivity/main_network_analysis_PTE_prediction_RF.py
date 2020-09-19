@@ -49,7 +49,7 @@ fscore = np.zeros(n_iter)
 support = np.zeros(n_iter)
 
 auc_t = np.zeros(n_iter)
-n_features = 21
+n_features = 11
 y_test_true_all = []
 y_test_pred_all = []
 feature_importance = 0
@@ -66,9 +66,9 @@ for t in tqdm(range(n_iter)):
 
     feature_importance += clf.feature_importances_
 
-    X_train, X_test, y_train, y_test = train_test_split(X,
-                                                        y,
-                                                        test_size=0.33)
+    #X_train, X_test, y_train, y_test = train_test_split(X,
+    #                                                    y,
+    #                                                    test_size=0.33)
     clf.fit(X_train[:, ind_feat[:n_features]], y_train)
 
     #svc_disp = plot_roc_curve(clf, X_test, y_test)

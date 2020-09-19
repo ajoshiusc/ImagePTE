@@ -41,13 +41,13 @@ def get_connectivity(data, labels, label_ids):
 
 if __name__ == "__main__":
 
-    BFPPATH = '/home/ajoshi/coding_ground/bfp'
+    BFPPATH = '/ImagePTE1/ajoshi/code_farm/bfp'
     BrainSuitePath = '/home/ajoshi/BrainSuite19b/svreg'
     NDim = 31
 
     p_dir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1/TBI_INVZV163RWK/BFP/TBI_INVZV163RWK/func/'
     sub = 'TBI_INVZV163RWK'
-    atlas_labels = '/home/ajoshi/projects/bfp/supp_data/USCBrain_grayordinate_labels.mat'
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCBrain_grayordinate_labels.mat'
 
     atlas = spio.loadmat(atlas_labels)
 
