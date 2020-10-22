@@ -52,17 +52,18 @@ y_test_true_all = []
 y_test_pred_all = []
 
 for t in tqdm(range(n_iter)):
+    y=np.random.permutation(y)
     X_train, X_test, y_train, y_test = train_test_split(X,
                                                         y,
-                                                        test_size=0.33)
+                                                        test_size=0.15)
     #clf = RandomForestClassifier()
 
     #X_train, X_test, y_train, y_test = train_test_split(X,
                                                         #y,
                                                         #test_size=0.33)
 
-    clf = LinearSVC(penalty='l1',C=0.2, tol=1e-6,dual=False)
-    clf.fit(X, y)
+    clf = LinearSVC(penalty='l1',C=0.095, tol=1e-10,dual=False)
+    clf.fit(X_train, y_train)
     #ind_feat = np.argsort(-clf.feature_importances_)
 
     #X_train, X_test, y_train, y_test = train_test_split(X,
