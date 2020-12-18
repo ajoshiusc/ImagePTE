@@ -8,7 +8,7 @@ import scipy.io as spio
 import os
 import sys
 config_file = '/ImagePTE1/ajoshi/code_farm/ImagePTE/src/stats/sample_config_stats_Maryland.ini'
-
+BFPPATH = '/ImagePTE1/ajoshi/code_farm/bfp'
 # %%#%%
 # Import the required librariesimport configparser
 
@@ -21,7 +21,7 @@ sys.path.append(os.path.join(bfp_path, 'src/stats/'))
 
 from read_data_utils import load_bfp_data, read_demoCSV, write_text_timestamp, readConfig, read_demoCSV_list
 from stats_utils import randpair_groupdiff, randpair_groupdiff_ftest
-from grayord_utils import vis_grayord_sigcorr
+from grayord_utils import vis_grayord_sigcorr, save2volbord_bci
 
 
 os.chdir(bfp_path)
@@ -66,30 +66,15 @@ vis_grayord_sigcorr(pval, rval, sig_alpha, surf_name, out_dir, smooth_iter,
 '''
 
 pval[sp.isnan(pval)] = .5
-
-vis_grayord_sigcorr(pval,
-                    tscore,
-                    0.05,
-                    cf.outname,
-                    cf.out_dir,
-                    int(cf.smooth_iter),
-                    cf.save_figures,
-                    bfp_path=cf.bfp_path,
-                    fsl_path=cf.fsl_path)
-
-pval[sp.isnan(pval)] = .5
-
 _, pval_fdr = fdrcorrection(pval)
 
-vis_grayord_sigcorr(pval_fdr,
-                    tscore,
-                    0.05,
-                    cf.outname + '_fdr',
-                    cf.out_dir,
-                    int(cf.smooth_iter),
-                    cf.save_figures,
-                    bfp_path=cf.bfp_path,
-                    fsl_path=cf.fsl_path)
+save2volbord_bci(pval, 'pval_bord_PTE_smooth1.5_150_orig.nii.gz', bfp_path=BFPPATH, smooth_std=1.5)
+save2volbord_bci(pval_fdr, 'pval_fdr_bord_PTE_smooth1.5_150_orig.nii.gz', bfp_path=BFPPATH, smooth_std=1.5)
+
+save2volbord_bci((0.05-pval)*np.float32(pval < 0.05), 'pval_bord_PTE_smooth1.5_150.nii.gz', bfp_path=BFPPATH, smooth_std=1.5)
+save2volbord_bci((0.05-pval_fdr)*np.float32(pval_fdr < 0.05), 'pval_fdr_bord_PTE_smooth1.5_150.nii.gz', bfp_path=BFPPATH, smooth_std=1.5)
+
+
 
 write_text_timestamp(log_fname,
                      'BFP Group difference pairwise analysis complete')

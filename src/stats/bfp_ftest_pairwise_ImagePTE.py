@@ -65,6 +65,7 @@ count1 = -1
 subTest_varmain = sp.zeros(numT)
 subTest_varc1 = sp.zeros(numT)
 subTest_varc2 = sp.zeros(numT)
+
 for ind in range(len(sub_ID)):
     varmain = reg_var[ind]
     varc1 = reg_cvar1[ind]

@@ -49,7 +49,7 @@ fscore = np.zeros(n_iter)
 support = np.zeros(n_iter)
 
 auc_t = np.zeros(n_iter)
-n_features = 11
+n_features = 155 # 60
 y_test_true_all = []
 y_test_pred_all = []
 feature_importance = 0
@@ -61,7 +61,7 @@ for t in tqdm(range(n_iter)):
     clf = RandomForestClassifier()
 
     #clf = SVC(kernel='linear', C=1, gamma=0.0001, tol=1e-6)
-    clf.fit(X, y)
+    clf.fit(X_train, y_train)
     ind_feat = np.argsort(-clf.feature_importances_)
 
     feature_importance += clf.feature_importances_
