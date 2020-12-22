@@ -248,7 +248,7 @@ def main():
     for t in tqdm(range(n_iter)):
         X_train, X_test, y_train, y_test = train_test_split(X,
                                                             y,
-                                                            test_size=0.33)
+                                                            test_size=0.1)
         # RandomForestClassifier(n_estimators=20)  #
         clf = SVC(kernel='linear', C=1, gamma='auto', tol=1e-6)
         clf.fit(X_train, y_train)

@@ -24,7 +24,7 @@ def main():
     studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
 
     epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
-    nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
+    nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
 
     with open(epi_txt) as f:
         epiIds = f.readlines()
@@ -76,7 +76,7 @@ def main():
     df = pd.DataFrame(list(zip(ids, pte, age, gender, exclude)),
                       columns=['subID', 'PTE', 'Age', 'Gender', 'Exclude'])
 
-    df.to_csv('ImagePTE_Maryland_demographics_study.csv', index=False)
+    df.to_csv('ImagePTE_Maryland_demographics_study_full.csv', index=False)
 
     print('done')
 

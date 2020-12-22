@@ -60,11 +60,6 @@ tscore, pval = randpair_groupdiff_ftest(sub_fname_grp1,
                                         num_pairs=2000,
                                         len_time=int(cf.lentime))
 # %%
-'''
-vis_grayord_sigcorr(pval, rval, sig_alpha, surf_name, out_dir, smooth_iter,
-                        save_png, bfp_path, fsl_path):
-'''
-
 pval[sp.isnan(pval)] = .5
 _, pval_fdr = fdrcorrection(pval)
 
