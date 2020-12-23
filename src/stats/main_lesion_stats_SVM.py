@@ -17,6 +17,7 @@ from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import plot_roc_curve, roc_curve, auc, roc_auc_score
 import matplotlib.pyplot as plt
+import sys
 
 sm = '.smooth3mm'
 
@@ -250,7 +251,7 @@ def main():
                                                             y,
                                                             test_size=0.1)
         # RandomForestClassifier(n_estimators=20)  #
-        clf = SVC(kernel='linear', C=1, gamma='auto', tol=1e-6)
+        clf = SVC(kernel='linear', C=.0001, gamma='auto', tol=1e-8)
         clf.fit(X_train, y_train)
         #svc_disp = plot_roc_curve(clf, X_test, y_test)
         y_score = clf.predict(X_test)
