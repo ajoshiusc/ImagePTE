@@ -246,8 +246,6 @@ def main():
     y = np.hstack(
         (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
 
-    n_iter = 1000
-
     X /= 3000
 
 #    for cval in [0.0001,0.001,0.01,.1,.3,.6,.9,1,1.5,2,3,5,6,9,10,100,1000]:
