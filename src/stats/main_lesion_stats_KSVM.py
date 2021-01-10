@@ -247,7 +247,7 @@ def main():
         (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
 
     X /= 3000
-
+    #y = np.random.permutation(y)
 #    for cval in [0.0001,0.001,0.01,.1,.3,.6,.9,1,1.5,2,3,5,6,9,10,100,1000]:
     for mygamma in [1, 0.001, 0.05, 0.075, .1, .13, .15, .17, 0.2, 0.3, .5, 1, 5, 10, 100]:
         clf = SVC(kernel='rbf', gamma=mygamma, tol=1e-9)
