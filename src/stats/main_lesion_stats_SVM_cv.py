@@ -28,11 +28,13 @@ def check_imgs_exist(studydir, sub_ids):
     subids_imgs = list()
 
     for id in sub_ids:
-        fname = os.path.join(studydir, id, 'lesion_vae.atlas' + sm + '.nii.gz')
+        fname = os.path.join(studydir, id, 'vae_mse.flair.atlas' + '.nii.gz')
 
         if not os.path.isfile(fname):
             err_msg = 'the file does not exist: ' + fname
-            sys.exit(err_msg)
+            print(err_msg)
+        else:
+            subids_imgs.append(id)
 
     return subids_imgs
 
@@ -41,8 +43,8 @@ def readsubs(studydir, sub_ids):
 
     print(len(sub_ids))
 
-    check_imgs_exist(studydir, sub_ids)
-    nsub = 37
+    sub_ids = check_imgs_exist(studydir, sub_ids)
+    nsub = len(sub_ids)
 
     print('Reading Subjects')
 
@@ -247,9 +249,10 @@ def main():
         (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
 
     X /= 3000
+    #y = np.random.permutation(y)
 
-    for cval in [0.0001,0.001,0.01,.1,.3,.6,.9,1,1.5,2,3,4,5,6,7,9,10,100]:
-#    for mygamma in [1, 0.001, 0.05, 0.075, .1, .15, 0.2, 0.3, .5, 1, 5, 10, 100]:
+    for cval in [0.0001, 0.001, 0.01, .1, .3, .6, .9, 1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 100]:
+        #    for mygamma in [1, 0.001, 0.05, 0.075, .1, .15, 0.2, 0.3, .5, 1, 5, 10, 100]:
         clf = SVC(kernel='linear', C=cval, tol=1e-9)
         my_metric = 'roc_auc'
         auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
