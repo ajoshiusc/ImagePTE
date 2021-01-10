@@ -252,7 +252,7 @@ def main():
 #    for mygamma in [1, 0.001, 0.05, 0.075, .1, .15, 0.2, 0.3, .5, 1, 5, 10, 100]:
         clf = SVC(kernel='linear', C=cval, tol=1e-9)
         my_metric = 'roc_auc'
-        auc = cross_val_score(clf, X, y, cv=30, scoring=my_metric)
+        auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
 
         print('AUC on testing data:', cval, np.mean(auc), np.std(auc))
         #print('AUC on training data:', cval, np.mean(auc_t), np.std(auc_t))
