@@ -252,7 +252,7 @@ def main():
 
 #    for cval in [0.0001,0.001,0.01,.1,.3,.6,.9,1,1.5,2,3,5,6,9,10,100,1000]:
     for mygamma in [1, 0.001, 0.05, 0.075, .1, .15, 0.2, 0.3, .5, 1, 5, 10, 100]:
-        clf = SVC(kernel='rbf', gamma=mygamma, tol=1e-8)
+        clf = SVC(kernel='rbf', gamma=mygamma, tol=1e-9)
         my_metric = 'roc_auc'
         auc = cross_val_score(clf, X, y, cv=30, scoring=my_metric)
 
