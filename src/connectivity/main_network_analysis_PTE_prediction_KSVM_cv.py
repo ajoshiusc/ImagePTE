@@ -52,6 +52,8 @@ support = np.zeros(n_iter)
 
 my_metric = 'roc_auc'
 
+#y = np.random.permutation(y)
+
 for gval in (0.0001, 0.001, 0.01, 0.05, 0.1, .2, .3, 1, 10, 100, 1000):
     clf = SVC(kernel='rbf', gamma=gval, tol=1e-8)
 
@@ -60,11 +62,9 @@ for gval in (0.0001, 0.001, 0.01, 0.05, 0.1, .2, .3, 1, 10, 100, 1000):
           (gval, np.mean(auc), np.std(auc)))
 
 
-for gval in ('auto','scale'):
-    clf = SVC(kernel='rbf', gamma=gval, tol=1e-8)
+for gval in ('auto', 'scale'):
+    clf = SVC(kernel='rbf',  gamma=gval, tol=1e-8)
 
     auc = cross_val_score(clf, X, y, cv=36, scoring=my_metric)
     print('AUC after CV for gamma=%s is %g(%g)' %
           (gval, np.mean(auc), np.std(auc)))
-
-
