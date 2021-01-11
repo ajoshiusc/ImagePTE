@@ -27,7 +27,9 @@ def check_imgs_exist(studydir, sub_ids, sm='smooth3mm.'):
 
         if not os.path.isfile(fname):
             err_msg = 'the file does not exist: ' + fname
-            sys.exit(err_msg)
+            print(err_msg)
+        else:
+            subids_imgs.append(id)
 
     return subids_imgs
 
@@ -36,8 +38,8 @@ def readsubs(studydir, sub_ids, read_mask=False, sm='smooth3mm.'):
 
     print(len(sub_ids))
 
-    check_imgs_exist(studydir, sub_ids)
-    nsub = 37
+    sub_ids = check_imgs_exist(studydir, sub_ids)
+    nsub = len(sub_ids)
 
     print('Reading Subjects')
 
@@ -329,7 +331,7 @@ def main():
     studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
 
     epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
-    nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
+    nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
 
     with open(epi_txt) as f:
         epiIds = f.readlines()
@@ -348,10 +350,9 @@ def main():
 
     epi_data, epi_subids = readsubs(studydir, epiIds, read_mask=False)
     nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds, read_mask=False)
-    '''
+
     find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
                              nonepi_data)
-    '''
 
     # Do ROIwise stats
     roiwise_stats(epi_data, nonepi_data)
