@@ -42,29 +42,22 @@ y = np.hstack(
 # Permute the labels to check if AUC becomes 0.5. This check is to make sure that we are not overfitting
 #y = np.random.permutation(y)
 
-n_iter = 100
-auc = np.zeros(n_iter)
-precision = np.zeros(n_iter)
-recall = np.zeros(n_iter)
-fscore = np.zeros(n_iter)
-support = np.zeros(n_iter)
-
-
 my_metric = 'roc_auc'
 
 #y = np.random.permutation(y)
 
-for gval in (0.0001, 0.001, 0.01, 0.05, 0.1, .2, .3, 1, 10, 100, 1000):
+for gval in (0.0001, 0.001, 0.01, 0.04, 0.05, 0.06, 0.1, .2, .3, 1, 10, 100, 1000):
     clf = SVC(kernel='rbf', gamma=gval, tol=1e-8)
 
     auc = cross_val_score(clf, X, y, cv=36, scoring=my_metric)
-    print('AUC after CV for gamma=%g is %g(%g)' %
-          (gval, np.mean(auc), np.std(auc)))
+    print('AUC after CV for gamma=%g is %g' %
+          (gval, np.mean(auc)))
 
 
-for gval in ('auto', 'scale'):
-    clf = SVC(kernel='rbf',  gamma=gval, tol=1e-8)
+for cval in (0.1,0.9,1,1.1,10):
+    for gval in ('auto', 'scale'):
+        clf = SVC(kernel='rbf',  gamma=gval, C=cval, tol=1e-8)
 
-    auc = cross_val_score(clf, X, y, cv=36, scoring=my_metric)
-    print('AUC after CV for gamma=%s is %g(%g)' %
-          (gval, np.mean(auc), np.std(auc)))
+        auc = cross_val_score(clf, X, y, cv=36, scoring=my_metric)
+        print('AUC after CV for gamma=%s, C=%g is %g' %
+            (gval, cval, np.mean(auc)))
