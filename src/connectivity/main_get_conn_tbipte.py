@@ -29,7 +29,7 @@ def main():
     epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
     nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
 
-    atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCBrain_grayordinate_labels.mat'
     atlas = spio.loadmat(atlas_labels)
 
     gord_labels = atlas['labels'].squeeze()
@@ -56,12 +56,17 @@ def main():
                              sub + '_rest_bold.32k.GOrd.mat')
         if os.path.isfile(fname):
             epi_files.append(fname)
+        else:
+            print('File does not exist: %s'%fname)
+
 
     for sub in nonepiIds:
         fname = os.path.join(studydir, sub, 'BFP', sub, 'func',
                              sub + '_rest_bold.32k.GOrd.mat')
         if os.path.isfile(fname):
             nonepi_files.append(fname)
+        else:
+            print('File does not exist: %s'%fname)
 
     epi_data = load_bfp_data(epi_files, 171)
     nonepi_data = load_bfp_data(nonepi_files, 171)
