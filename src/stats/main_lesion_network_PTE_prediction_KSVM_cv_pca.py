@@ -53,10 +53,10 @@ my_metric = 'roc_auc'
 
 #y = np.random.permutation(y)
 
-for gval in (0.0001, 0.001, 0.01, 0.05, 0.075, 0.1, 0.15, .2, .3, 1, 10, 100, 1000):
-    #clf = SVC(kernel='rbf', gamma=gval, tol=1e-8)
+for gval in (0.0001, 0.001, 0.01, 0.05, 0.070, 0.075, 0.080, 0.1, 0.15, .2, .3, 1, 10, 100, 1000):
+    #pipe = SVC(kernel='rbf', gamma=gval, tol=1e-10)
     pipe = Pipeline([('pca_apply', PCA(n_components=54, whiten=True)),
-                     ('svc', SVC(kernel='rbf', gamma=gval, tol=1e-8))])
+                     ('svc', SVC(kernel='rbf', gamma=gval, tol=1e-10))])
     kfold = StratifiedKFold(n_splits=36, shuffle=False)
     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
     print('AUC after CV for gamma=%g is %g' %
@@ -66,7 +66,7 @@ for gval in (0.0001, 0.001, 0.01, 0.05, 0.075, 0.1, 0.15, .2, .3, 1, 10, 100, 10
 for nf in range(1, 70):
     for gval in ('auto', 'scale'):
         pipe = Pipeline([('pca_apply', PCA(n_components=nf, whiten=True)),
-                         ('svc', SVC(kernel='rbf', gamma=gval, tol=1e-8))])
+                         ('svc', SVC(kernel='rbf', gamma=gval, tol=1e-10))])
         kfold = StratifiedKFold(n_splits=36, shuffle=False)
         auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
 
@@ -75,7 +75,7 @@ for nf in range(1, 70):
 
 for nf in range(1, 70):
         pipe = Pipeline([('pca_apply', PCA(n_components=nf, whiten=True)),
-                         ('svc', SVC(kernel='rbf', gamma=0.075, tol=1e-8))])
+                         ('svc', SVC(kernel='rbf', gamma=0.075, tol=1e-10))])
         kfold = StratifiedKFold(n_splits=36, shuffle=False)
         auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
 
