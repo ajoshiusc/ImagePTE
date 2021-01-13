@@ -29,7 +29,7 @@ def main():
     epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
     nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
 
-    atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/BCI-DNI_brain_grayordinate_labels.mat'
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
     atlas = spio.loadmat(atlas_labels)
 
     gord_labels = atlas['labels'].squeeze()
@@ -50,28 +50,33 @@ def main():
 
     epi_files = list()
     nonepi_files = list()
+    epi_ids = list()
+    nonepi_ids = list()
 
     for sub in epiIds:
         fname = os.path.join(studydir, sub, 'BFP', sub, 'func',
                              sub + '_rest_bold.32k.GOrd.mat')
         if os.path.isfile(fname):
             epi_files.append(fname)
+            epi_ids.append(sub)
         else:
-            print('File does not exist: %s'%fname)
-
+            print('File does not exist: %s' % fname)
 
     for sub in nonepiIds:
         fname = os.path.join(studydir, sub, 'BFP', sub, 'func',
                              sub + '_rest_bold.32k.GOrd.mat')
         if os.path.isfile(fname):
             nonepi_files.append(fname)
+            nonepi_ids.append(sub)
         else:
-            print('File does not exist: %s'%fname)
+            print('File does not exist: %s' % fname)
 
     epi_data = load_bfp_data(epi_files, 171)
     nonepi_data = load_bfp_data(nonepi_files, 171)
 
-    nsub = epi_data.shape[2]
+    nsub = min(epi_data.shape[2], nonepi_data.shape[2])
+    epi_ids = epi_ids[:nsub]
+    nonepi_ids = nonepi_ids[:nsub]
     conn_mat = np.zeros((len(label_ids), len(label_ids), nsub))
     cent_mat = np.zeros((len(label_ids), nsub))
 
@@ -82,13 +87,14 @@ def main():
 
         G = nx.convert_matrix.from_numpy_array(np.abs(conn_mat[:, :, subno]))
         cent = nx.eigenvector_centrality(G, weight='weight')
-        cent_mat[:, subno] = np.array(list(cent.items()))[:,1]
+        cent_mat[:, subno] = np.array(list(cent.items()))[:, 1]
 
     np.savez('PTE_graphs.npz',
              conn_mat=conn_mat,
              label_ids=label_ids,
              labels=gord_labels,
-             cent_mat=cent_mat)
+             cent_mat=cent_mat,
+             sub_ids=epi_ids)
 
     conn_mat = np.zeros((len(label_ids), len(label_ids), nsub))
     cent_mat = np.zeros((len(label_ids), nsub))
@@ -99,13 +105,14 @@ def main():
                                                  label_ids=label_ids)
         G = nx.convert_matrix.from_numpy_array(np.abs(conn_mat[:, :, subno]))
         cent = nx.eigenvector_centrality(G, weight='weight')
-        cent_mat[:, subno] = np.array(list(cent.items()))[:,1]
+        cent_mat[:, subno] = np.array(list(cent.items()))[:, 1]
 
     np.savez('NONPTE_graphs.npz',
              conn_mat=conn_mat,
              label_ids=label_ids,
              labels=gord_labels,
-             cent_mat=cent_mat)
+             cent_mat=cent_mat,
+             sub_ids=nonepi_ids)
 
     print('done')
 
