@@ -55,7 +55,7 @@ my_metric = 'roc_auc'
 
 for gval in (0.0001, 0.001, 0.01, 0.05, 0.075, 0.1, 0.15, .2, .3, 1, 10, 100, 1000):
     #clf = SVC(kernel='rbf', gamma=gval, tol=1e-8)
-    pipe = Pipeline([('pca_apply', PCA(n_components=52, whiten=True)),
+    pipe = Pipeline([('pca_apply', PCA(n_components=54, whiten=True)),
                      ('svc', SVC(kernel='rbf', gamma=gval, tol=1e-8))])
     kfold = StratifiedKFold(n_splits=36, shuffle=False)
     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
@@ -72,3 +72,12 @@ for nf in range(1, 70):
 
         print('AUC after CV for nf=%dgamma=%s is %g' %
               (nf, gval, np.mean(auc)))
+
+for nf in range(1, 70):
+        pipe = Pipeline([('pca_apply', PCA(n_components=nf, whiten=True)),
+                         ('svc', SVC(kernel='rbf', gamma=0.075, tol=1e-8))])
+        kfold = StratifiedKFold(n_splits=36, shuffle=False)
+        auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
+
+        print('AUC after CV for nf=%dgamma=%s is %g' %
+              (nf, 0.075, np.mean(auc)))
