@@ -35,6 +35,7 @@ def main():
     gord_labels = atlas['labels'].squeeze()
 
     label_ids = np.unique(gord_labels)  # unique label ids
+    #label_ids = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
 
     # remove WM label from connectivity analysis
     label_ids = np.setdiff1d(label_ids, (2000, 0))
