@@ -10,6 +10,7 @@ conn_pte = f['conn_mat']
 lab_ids = f['label_ids']
 gordlab = f['labels']
 sub_ids = f['sub_ids']
+cent_mat = f['cent_mat']
 n_rois = conn_pte.shape[0]
 ind = np.tril_indices(n_rois, k=1)
 epi_connectivity = conn_pte[ind[0], ind[1], :].T
@@ -17,7 +18,8 @@ epi_connectivity = conn_pte[ind[0], ind[1], :].T
 a = np.load('PTE_lesion_vols.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 epi_lesion_vols = np.array([a[k] for k in sub_ids])
-epi_measures = np.concatenate((epi_connectivity, epi_lesion_vols), axis=1)
+epi_measures = np.concatenate(
+    (epi_connectivity, epi_lesion_vols), axis=1)
 
 
 f = np.load('../connectivity/NONPTE_graphs.npz')
@@ -25,6 +27,8 @@ conn_nonpte = f['conn_mat']
 lab_ids = f['label_ids']
 gordlab = f['labels']
 sub_ids = f['sub_ids']
+cent_mat = f['cent_mat']
+
 nonepi_connectivity = conn_nonpte[ind[0], ind[1], :].T
 
 a = np.load('NONPTE_lesion_vols.npz', allow_pickle=True)
@@ -39,7 +43,6 @@ y = np.hstack(
     (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
 
 # Permute the labels to check if AUC becomes 0.5. This check is to make sure that we are not overfitting
-#y = np.random.permutation(y)
 
 n_iter = 100
 auc = np.zeros(n_iter)
@@ -81,3 +84,16 @@ for nf in range(1, 70):
 
         print('AUC after CV for nf=%dgamma=%s is %g' %
               (nf, 0.075, np.mean(auc)))
+auc_sum = 0.0
+for i in range(1000):
+    # y = np.random.permutation(y)
+    pipe = Pipeline([('pca_apply', PCA(n_components=53, whiten=True)),
+                     ('svc', SVC(kernel='rbf', C=1e-3, gamma=0.075, tol=1e-10))])
+    kfold = StratifiedKFold(n_splits=36, shuffle=True)
+    auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
+    auc_sum += np.mean(auc)
+    print('AUC after CV for i=%dgamma=%s is %g' %
+          (i, 0.075, np.mean(auc)))
+
+
+print('Average AUC=%g' % (auc_sum/1000))
