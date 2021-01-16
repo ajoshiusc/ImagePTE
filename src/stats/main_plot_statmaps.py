@@ -3,11 +3,11 @@ import nilearn.image as nl
 from matplotlib import cm
 stat_img = 'pval_fdr_ftest_TBMsmooth3mm.nii.gz'
 stat_img = 'pval_fdr_ftest_lesion.smooth3mm.nii.gz'
-stat_img = '/ImagePTE1/ajoshi/code_farm/bfp/pval_fdr_bord_PTE_smooth1.5_150.nii.gz'
-outfile1 = stat_img.replace('.nii.gz','_1_new.png') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
-outfile2 = stat_img.replace('.nii.gz','_2_new.png') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
-outfile3 = stat_img.replace('.nii.gz','_3_new.png') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
-outfile4 = stat_img.replace('.nii.gz','_4_new.png') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
+stat_img = '/ImagePTE1/ajoshi/code_farm/bfp/src/stats/results/pval_fdr_bord_PTE_smooth1.5_20.nii.gz'
+outfile1 = stat_img.replace('.nii.gz','_1.png') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
+outfile2 = stat_img.replace('.nii.gz','_2.png') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
+outfile3 = stat_img.replace('.nii.gz','_3.png') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
+outfile4 = stat_img.replace('.nii.gz','_4.png') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
 
 #img = 0.05 - nl.load_img(stat_img).get_fdata()
 #img[img < 0] = 0

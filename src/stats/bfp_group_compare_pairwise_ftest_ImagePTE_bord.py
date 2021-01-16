@@ -19,10 +19,9 @@ section = config.sections()
 bfp_path = config.get('inputs', 'bfp_path')
 sys.path.append(os.path.join(bfp_path, 'src/stats/'))
 
-from read_data_utils import load_bfp_data, read_demoCSV, write_text_timestamp, readConfig, read_demoCSV_list
-from stats_utils import randpair_groupdiff, randpair_groupdiff_ftest
 from grayord_utils import vis_grayord_sigcorr, save2volbord_bci
-
+from stats_utils import randpair_groupdiff, randpair_groupdiff_ftest
+from read_data_utils import load_bfp_data, read_demoCSV, write_text_timestamp, readConfig, read_demoCSV_list
 
 os.chdir(bfp_path)
 cf = readConfig(config_file)
@@ -63,13 +62,16 @@ tscore, pval = randpair_groupdiff_ftest(sub_fname_grp1,
 pval[sp.isnan(pval)] = .5
 _, pval_fdr = fdrcorrection(pval)
 
-save2volbord_bci(pval, 'pval_bord_PTE_smooth1.5_150_orig.nii.gz', bfp_path=BFPPATH, smooth_std=1.5)
-save2volbord_bci(pval_fdr, 'pval_fdr_bord_PTE_smooth1.5_150_orig.nii.gz', bfp_path=BFPPATH, smooth_std=1.5)
+save2volbord_bci(pval, os.path.join(bfp_path, 'src/stats/results',
+                                    'pval_bord_PTE_smooth1.5_orig_2000.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)
+save2volbord_bci(pval_fdr, os.path.join(bfp_path, 'src/stats/results',
+                                        'pval_fdr_bord_PTE_smooth1.5_orig_2000.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)
 
-save2volbord_bci((0.05-pval)*np.float32(pval < 0.05), 'pval_bord_PTE_smooth1.5_150.nii.gz', bfp_path=BFPPATH, smooth_std=1.5)
-save2volbord_bci((0.05-pval_fdr)*np.float32(pval_fdr < 0.05), 'pval_fdr_bord_PTE_smooth1.5_150.nii.gz', bfp_path=BFPPATH, smooth_std=1.5)
+save2volbord_bci((0.05-pval)*np.float32(pval < 0.05), os.path.join(bfp_path, 'src/stats/results',
+                                                                   'pval_bord_PTE_smooth1.5_2000.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)
+save2volbord_bci((0.05-pval_fdr)*np.float32(pval_fdr < 0.05), os.path.join(bfp_path,
+                                                                           'src/stats/results', 'pval_fdr_bord_PTE_smooth1.5_2000.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)
 
 
-
-write_text_timestamp(log_fname,
-                     'BFP Group difference pairwise analysis complete')
+write_text_timestamp(
+    log_fname, 'BFP Group difference pairwise analysis complete')

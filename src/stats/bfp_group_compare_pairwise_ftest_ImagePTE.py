@@ -7,7 +7,7 @@ import scipy as sp
 import scipy.io as spio
 import os
 import sys
-config_file = '/ImagePTE1/ajoshi/code_farm/ImagePTE/src/stats/sample_config_stats_Maryland.ini'
+config_file = '/ImagePTE1/ajoshi/code_farm/ImagePTE/src/stats/sample_config_stats_Maryland_gord.ini'
 
 # %%#%%
 # Import the required librariesimport configparser
@@ -71,7 +71,7 @@ vis_grayord_sigcorr(pval,
                     tscore,
                     0.05,
                     cf.outname,
-                    cf.out_dir,
+                    os.path.join(bfp_path, 'src/stats/results'),
                     int(cf.smooth_iter),
                     cf.save_figures,
                     bfp_path=cf.bfp_path,
@@ -85,7 +85,7 @@ vis_grayord_sigcorr(pval_fdr,
                     tscore,
                     0.05,
                     cf.outname + '_fdr',
-                    cf.out_dir,
+                    os.path.join(bfp_path, 'src/stats/results'),
                     int(cf.smooth_iter),
                     cf.save_figures,
                     bfp_path=cf.bfp_path,
