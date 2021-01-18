@@ -1,0 +1,179 @@
+from __future__ import division
+from __future__ import print_function
+
+import time
+import argparse
+import numpy as np
+
+import torch
+import torch.nn.functional as F
+import torch.optim as optim
+
+from utils import accuracy
+from models import GCN
+
+# Training settings
+parser = argparse.ArgumentParser()
+parser.add_argument('--no-cuda', action='store_true', default=False,
+                    help='Disables CUDA training.')
+parser.add_argument('--fastmode', action='store_true', default=False,
+                    help='Validate during training pass.')
+parser.add_argument('--seed', type=int, default=42, help='Random seed.')
+parser.add_argument('--epochs', type=int, default=300,
+                    help='Number of epochs to train.')
+parser.add_argument('--lr', type=float, default=0.01,
+                    help='Initial learning rate.')
+parser.add_argument('--weight_decay', type=float, default=5e-4,
+                    help='Weight decay (L2 loss on parameters).')
+# parser.add_argument('--hidden', type=int, default=16,
+                    # help='Number of hidden units.')
+parser.add_argument('--dropout', type=float, default=0.5,
+                    help='Dropout rate (1 - keep probability).')
+parser.add_argument('--batch_size', type=int, default=10, help='Batch Size')
+parser.add_argument('--rate', type=float, default=0.5, help='proportion of training samples')
+
+args = parser.parse_args()
+args.cuda = not args.no_cuda and torch.cuda.is_available()
+
+np.random.seed(args.seed)
+torch.manual_seed(args.seed)
+if args.cuda:
+    torch.cuda.manual_seed(args.seed)
+
+##=======================Load Data================================================
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+# Load data
+# adj, features, labels, idx_train, idx_val, idx_test = load_data()
+
+##======================================================================
+def calc_DAD(data):
+    adj = data['conn_mat']
+    adj[adj > 0] = 1
+    Dl = np.sum(adj, axis=-1)
+    num_node = adj.shape[1]
+    Dn = np.zeros((adj.shape[0], num_node, num_node))
+    for i in range(num_node):
+        Dn[:, i, i] = Dl[:, i] ** (-0.5)
+    DAD = np.matmul(np.matmul(Dn, data['conn_mat']), Dn)
+
+    return DAD
+##=======================================================================
+
+population = 'PTE'
+epidata = np.load(population+'_graphs_gcn.npz')
+adj_epi = torch.from_numpy(calc_DAD(epidata)).float().to(device) # n_subjects*16 *16
+features_epi = torch.from_numpy(epidata['features']).float().to(device)
+
+n_subjects = features_epi.shape[0]
+num_train = int(n_subjects * args.rate)
+train_adj_epi = adj_epi[:num_train, :, :]
+train_features_epi = features_epi[:num_train, :, :]
+test_adj_epi = adj_epi[num_train:, :, :]
+test_features_epi = features_epi[num_train:, :, :]
+
+population = 'NONPTE'
+nonepidata = np.load(population+'_graphs_gcn.npz')
+adj_non = torch.from_numpy(calc_DAD(nonepidata)).float().to(device) 
+features_non = torch.from_numpy(nonepidata['features']).float().to(device) #subjects * 16 * 171
+
+# print("DAD shape:")
+# print(adj_non.shape, adj_epi.shape)
+## for now we are using the same number of epi , non epi training samples.
+# n_subjects = features_non.shape[0]
+train_adj_non = adj_non[:num_train, :, :]
+train_features_non = features_non[:num_train, :, :]
+test_adj_non = adj_non[num_train:, :, :]
+test_features_non = features_non[num_train:, :, :]
+
+print(features_non.shape, features_epi.shape, adj_epi.shape)
+
+##=================================================================================
+# Model and optimizer
+model = GCN(nfeat=features_epi.shape[2],
+            nhid=[200, 200],
+            nclass= 2, #labels.max().item() + 1,
+            dropout=args.dropout)
+optimizer = optim.Adam(model.parameters(),
+                       lr=args.lr, weight_decay=args.weight_decay)
+model.to(device)
+
+# if args.cuda:
+#     # model.cuda()
+#     # features = features.cuda()
+#     # adj = adj.cuda()
+#     # labels = labels.cuda()
+#     idx_train = idx_train.cuda()
+#     idx_val = idx_val.cuda()
+#     idx_test = idx_test.cuda()
+
+
+def train(epoch):
+    batch_size = args.batch_size
+    index_epi = torch.randperm(num_train)[:batch_size//2]
+    index_non = torch.randperm(num_train)[:batch_size//2]
+    features_epi_bc = train_features_epi[index_epi, :, :]
+    features_non_bc = train_features_non[index_non, :, :]
+    features_bc = torch.cat([features_epi_bc, features_non_bc])
+    print(index_epi, index_non)
+    adj_epi_bc = train_adj_epi[index_epi, :, :]
+    adj_non_bc = train_adj_non[index_non, :, :]
+    adj_bc = torch.cat([adj_epi_bc, adj_non_bc])
+    labels = torch.from_numpy(np.hstack((np.ones(batch_size//2), np.zeros(batch_size//2)))).long().to(device)
+    
+    t = time.perf_counter()
+    model.train()
+    optimizer.zero_grad()
+    output = model(features_bc, adj_bc)
+    graph_output = torch.mean(output, dim=1)
+    loss_criterion = torch.nn.CrossEntropyLoss() # this contains activation function, and calc loss
+
+    loss_train = loss_criterion(graph_output, labels)
+    acc_train = accuracy(graph_output, labels, num_train)
+    loss_train.backward()
+    optimizer.step()
+
+    # if not args.fastmode:
+    #     # Evaluate validation set performance separately,
+    #     # deactivates dropout during validation run.
+    #     model.eval()
+    #     output = model(features, adj)
+
+    # loss_val = F.nll_loss(output[idx_val], labels[idx_val])
+    # acc_val = accuracy(output[idx_val], labels[idx_val])
+    print('Epoch: {:04d}'.format(epoch+1),
+          'loss_train: {:.4f}'.format(loss_train.item()),
+          'acc_train: {:.4f}'.format(acc_train.item()),
+          # 'loss_val: {:.4f}'.format(loss_val.item()),
+          # 'acc_val: {:.4f}'.format(acc_val.item()),
+          'time: {:.4f}s'.format(time.perf_counter() - t))
+
+
+def test():
+    model.eval()
+    test_features = torch.cat([test_features_epi, test_features_non])
+    test_adj = torch.cat([test_adj_epi, test_adj_non])
+    test_labels = torch.from_numpy(np.hstack((np.ones(test_adj_epi.shape[0]), np.zeros(test_adj_non.shape[0])))).long().to(device)
+
+    output = model(test_features, test_adj)
+    graph_output = torch.mean(output, dim=1)
+    loss_criterion = torch.nn.CrossEntropyLoss()
+    loss_test = loss_criterion(graph_output, test_labels)
+    acc_test = accuracy(graph_output, test_labels, test_adj_epi.shape[0])
+    print("Test set results:",
+          "loss= {:.4f}".format(loss_test.item()),
+          "accuracy= {:.4f}".format(acc_test.item()))
+
+
+# Train model
+t_total = time.perf_counter()
+for epoch in range(args.epochs):
+    train(epoch)
+    if (epoch > 100) and (epoch % 5 == 0):
+        test()
+
+print("Optimization Finished!")
+print("Total time elapsed: {:.4f}s".format(time.perf_counter() - t_total))
+
+# Testing
+# test()
