@@ -69,8 +69,8 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
 
     epiIds = list(map(lambda x: x.strip(), epiIds))
     nonepiIds = list(map(lambda x: x.strip(), nonepiIds))
-    random.shuffle(epiIds)
-    random.shuffle(nonepiIds)
+    # random.shuffle(epiIds)
+    # random.shuffle(nonepiIds)
     # print(len(epiIds), epiIds)
     epi_files = list()
     nonepi_files = list()
@@ -90,8 +90,13 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
     epi_data = load_bfp_data(epi_files, 171)
     nonepi_data = load_bfp_data(nonepi_files, 171)
 
-    nsub = epi_data.shape[2]
-    print("here")
+    # nsub = epi_data.shape[2]
+    #==============================================================
+    nsub = min(epi_data.shape[2], nonepi_data.shape[2])
+    epiIds = epiIds[:nsub]
+    nonepiIds = nonepiIds[:nsub]
+    #===============================================================
+
     conn_mat = np.zeros((nsub, len(label_ids), len(label_ids)))
     cent_mat = np.zeros((nsub, len(label_ids)))
     input_feat = np.zeros((nsub, len(label_ids), epi_data.shape[0]))
@@ -107,14 +112,15 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
         #cent = nx.eigenvector_centrality(G, weight='weight')
         #cent_mat[subno, :] = np.array(list(cent.items()))[:,1]
 
-    np.savez('/home/wenhuicu/pte_gcn/pygcn/PTE_graphs_gcn.npz',
+    np.savez('PTE_graphs_gcn.npz',
              conn_mat=conn_mat,
              features=input_feat,
              label_ids=label_ids,
              cent_mat=cent_mat)
 ##============================================================================
     print("non_epi")
-    nsub = nonepi_data.shape[2]
+    # nsub = nonepi_data.shape[2]
+    
     conn_mat = np.zeros((nsub, len(label_ids), len(label_ids)))
     cent_mat = np.zeros((nsub, len(label_ids)))
     input_feat = np.zeros((nsub, len(label_ids), nonepi_data.shape[0]))
@@ -128,7 +134,7 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
         #cent = nx.eigenvector_centrality(G, weight='weight')
        # cent_mat[subno, :] = np.array(list(cent.items()))[:,1]
    
-    np.savez('/home/wenhuicu/pte_gcn/pygcn/NONPTE_graphs_gcn.npz',
+    np.savez('NONPTE_graphs_gcn.npz',
              conn_mat=conn_mat, # n_subjects*16*16
              features=input_feat, # n_subjects * 171 x16
              label_ids=label_ids,
@@ -161,12 +167,13 @@ if __name__ == "__main__":
 
     studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
 
-    epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy.txt'
+    # epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy.txt'
     test_epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_test.txt'
-    nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
+    # nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
     test_nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_test.txt'
-
-    atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCBrain_grayordinate_labels.mat'
-
+    epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
+    nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
+    # atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCBrain_grayordinate_labels.mat'
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
     load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, atlas_labels)
     input('press any key')

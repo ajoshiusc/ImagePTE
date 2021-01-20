@@ -63,16 +63,16 @@ def normalize(mx):
     return mx
 
 
-def accuracy(output, labels, num_epi_test):
+def accuracy(output, labels, num_test):
     probabilities = F.softmax(output)
     preds = torch.argmax(probabilities, dim=1).type_as(labels)
-    print(preds, preds.shape)
+    print(preds)
     correct = preds.eq(labels).double()
     correct = correct.sum()
-
-    specificity = preds[num_epi_test:].eq(labels[num_epi_test:]).double().sum() / (labels.shape[0] - num_epi_test)
-    sensitivity = preds[:num_epi_test].eq(labels[:num_epi_test]).double().sum() / num_epi_test
-    print("sensitivity" + str(sensitivity.item()), "   specificity"+str(specificity.item()))
+    # positives = labels.sum().item()
+    # specificity = preds[num_epi_test:].eq(labels[num_epi_test:]).double().sum() / (num_test - positives)
+    # sensitivity = preds[:num_epi_test].eq(labels[:num_epi_test]).double().sum() / positives
+    # print("sensitivity" + str(sensitivity.item()), "   specificity"+str(specificity.item()))
     return correct / len(labels)
 
 
