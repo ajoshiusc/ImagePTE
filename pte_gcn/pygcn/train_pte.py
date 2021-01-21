@@ -20,7 +20,7 @@ parser.add_argument('--no-cuda', action='store_true', default=False,
 parser.add_argument('--fastmode', action='store_true', default=False,
                     help='Validate during training pass.')
 parser.add_argument('--seed', type=int, default=42, help='Random seed.')
-parser.add_argument('--epochs', type=int, default=230,
+parser.add_argument('--epochs', type=int, default=110,
                     help='Number of epochs to train.')
 parser.add_argument('--lr', type=float, default=0.01,
                     help='Initial learning rate.')
@@ -70,7 +70,7 @@ def calc_DAD(data):
 #     idx_test = idx_test.cuda()
 
 
-def train(epoch, model, optimizer, train_features, train_adj, train_labels):
+def train(epoch, model, optimizer, scheduler, train_features, train_adj, train_labels):
 
     batch_size = args.batch_size
     num_train = train_features.shape[0]
@@ -92,14 +92,15 @@ def train(epoch, model, optimizer, train_features, train_adj, train_labels):
     t = time.perf_counter()
     model.train()
     optimizer.zero_grad()
-    output = model(features_bc, adj_bc)
-    graph_output = torch.mean(output, dim=1)
+    graph_output = model(features_bc, adj_bc)
+    # graph_output = torch.mean(output, dim=1)
     loss_criterion = torch.nn.CrossEntropyLoss() # this contains activation function, and calc loss
-
+    # print(graph_output, graph_output.shape)
     loss_train = loss_criterion(graph_output, labels)
     acc_train = accuracy(graph_output, labels, num_train)
     loss_train.backward()
     optimizer.step()
+    scheduler.step()
 
     # if not args.fastmode:
     #     # Evaluate validation set performance separately,
@@ -119,8 +120,8 @@ def train(epoch, model, optimizer, train_features, train_adj, train_labels):
 
 def test(model, test_features, test_adj, test_labels):
     model.eval()
-    output = model(test_features, test_adj)
-    graph_output = torch.mean(output, dim=1)
+    graph_output = model(test_features, test_adj)
+    # graph_output = torch.mean(output, dim=1)
     loss_criterion = torch.nn.CrossEntropyLoss()
     loss_test = loss_criterion(graph_output, test_labels)
     acc_test = accuracy(graph_output, test_labels, test_adj.shape[0])
@@ -139,7 +140,7 @@ def cross_validation():
     population = 'PTE'
     epidata = np.load(population+'_graphs_gcn.npz')
     adj_epi = torch.from_numpy(calc_DAD(epidata)).float().to(device) # n_subjects*16 *16
-    features_epi = torch.from_numpy(epidata['features']).float().to(device)
+    features_epi = torch.from_numpy(epidata['features']).float().to(device) # n_subjectsx16x171
 
     # n_subjects = features_epi.shape[0]
     # num_train = int(n_subjects * args.rate)
@@ -151,7 +152,7 @@ def cross_validation():
     population = 'NONPTE'
     nonepidata = np.load(population+'_graphs_gcn.npz')
     adj_non = torch.from_numpy(calc_DAD(nonepidata)).float().to(device) 
-    features_non = torch.from_numpy(nonepidata['features']).float().to(device) #subjects * 16 * 171
+    features_non = torch.from_numpy(nonepidata['features']).float().to(device) #subjects x 16 x 171
 
     # print("DAD shape:")
     # print(adj_non.shape, adj_epi.shape)
@@ -177,10 +178,12 @@ def cross_validation():
         # Model and optimizer
 
         model = GCN(nfeat=features_epi.shape[2],
-                nhid=[200, 200],
+                nhid=[200, 200, 100, 50],
                 nclass= 2, #labels.max().item() + 1,
                 dropout=args.dropout)
         optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-7, last_epoch=-1)
+        
         model.to(device)
 
 
@@ -194,7 +197,7 @@ def cross_validation():
         test_labels = labels[test_ind]
 
         for epoch in range(args.epochs):
-            train(epoch, model, optimizer, train_features, train_adj, train_labels)
+            train(epoch, model, optimizer, scheduler, train_features, train_adj, train_labels)
 
         acc.append(test(model, test_features, test_adj, test_labels))
 
@@ -205,9 +208,9 @@ def cross_validation():
 
         del model
         del optimizer
+        # input("any key")
 
-
-    with open('../results/accuracy_1.txt', 'w') as f:
+    with open('../results/accuracy.txt', 'w') as f:
         f.write(str(acc))
     f.close()
 
