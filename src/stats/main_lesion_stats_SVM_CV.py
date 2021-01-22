@@ -17,9 +17,9 @@ from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import plot_roc_curve, roc_curve, auc, roc_auc_score
 import matplotlib.pyplot as plt
-import sys
-from sklearn.preprocessing import normalize
-from sklearn.model_selection import cross_val_score, LeaveOneOut
+from sklearn.datasets import make_classification
+from sklearn.svm import SVC
+from sklearn.model_selection import GridSearchCV
 
 sm = '.smooth3mm'
 
@@ -28,13 +28,11 @@ def check_imgs_exist(studydir, sub_ids):
     subids_imgs = list()
 
     for id in sub_ids:
-        fname = os.path.join(studydir, id, 'vae_mse.flair.atlas' + '.nii.gz')
+        fname = os.path.join(studydir, id, 'lesion_vae.atlas' + sm + '.nii.gz')
 
         if not os.path.isfile(fname):
             err_msg = 'the file does not exist: ' + fname
-            print(err_msg)
-        else:
-            subids_imgs.append(id)
+            sys.exit(err_msg)
 
     return subids_imgs
 
@@ -43,15 +41,14 @@ def readsubs(studydir, sub_ids):
 
     print(len(sub_ids))
 
-    sub_ids = check_imgs_exist(studydir, sub_ids)
-    nsub = len(sub_ids)
+    check_imgs_exist(studydir, sub_ids)
+    nsub = 37
 
     print('Reading Subjects')
 
     for n, id in enumerate(sub_ids):
-        # vae_mse.flair.mask
-        # vae_mse.flair.atlas.mask
-        fname = os.path.join(studydir, id, 'vae_mse.flair.atlas' + '.nii.gz')
+
+        fname = os.path.join(studydir, id, 'lesion_vae.atlas' + sm + '.nii.gz')
         print('sub:', n, 'Reading', id)
         im = ni.load_img(fname)
 
@@ -71,9 +68,8 @@ def roiwise_stats(epi_data, nonepi_data):
     #    3, 100, 101, 184, 185, 200, 201, 300, 301, 400, 401, 500, 501, 800,
     #    850, 900, 950
     # ]
-    roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
-    #roi_list = [300,301]
-    #roi_list = np.unique(at_labels.flatten())
+    # roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
+    roi_list = np.unique(at_labels.flatten())
 
     epi_roi_lesion_vols = np.zeros((37, len(roi_list)))
     nonepi_roi_lesion_vols = np.zeros((37, len(roi_list)))
@@ -248,23 +244,45 @@ def main():
     y = np.hstack(
         (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
 
-    X /= 3000
-    #y = np.random.permutation(y)
-    #p = np.random.permutation(len(y))
-    #y = y[p]
-    #X = X[p, :]
+    n_iter = 10
+    auc = np.zeros(n_iter)
+    auc_t = np.zeros(n_iter)
+    rand_current=[i for i in range(10)]
 
-    for cval in [0.0001, 0.001, 0.01, .1, .3, .6, .9, 1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 100]:
-        #    for mygamma in [1, 0.001, 0.05, 0.075, .1, .15, 0.2, 0.3, .5, 1, 5, 10, 100]:
-        clf = SVC(kernel='linear', C=cval, tol=1e-9)
-        my_metric = 'roc_auc'
-        auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
+    for t in tqdm(range(n_iter)):
+        
+        X_train, X_test, y_train, y_test = train_test_split(X,
+                                                            y,
+                                                            test_size=0.33,random_state=rand_current[t])
 
-        print('AUC on testing data:', cval, np.mean(auc), np.std(auc))
-        #print('AUC on training data:', cval, np.mean(auc_t), np.std(auc_t))
+        param_grid = [
+        {'C': [0.001,0.01,0.1, 10, 100, 1000], 'kernel': ['linear']},
+        {'C': [0.001,0.01,0.1, 10, 100, 1000], 'gamma': [0.0001,0.001,0.01,0.1, 10, 100, 1000], 'kernel': ['rbf']},
+        ]
 
+    
+
+        clf = GridSearchCV(
+        SVC(), param_grid,cv=20)
+        clf.fit(X_train, y_train)
+        print(clf.best_params_)
+        #svc_disp = plot_roc_curve(clf, X_test, y_test)
+        y_score = clf.predict(X_test)
+        auc[t] = roc_auc_score(y_test, y_score)
+        y_score = clf.predict(X_train)
+        auc_t[t] = roc_auc_score(y_train, y_score)
+        print(auc[t], auc_t[t])    
+
+     
+                                                         
+        
+
+
+#    plt.show()
+
+    print('AUC on testing data:', np.mean(auc), np.std(auc))
+   
     print('done')
-    #input("Press Enter to continue...")
 
 
 if __name__ == "__main__":

@@ -44,27 +44,23 @@ y = np.hstack(
 
 # Permute the labels to check if AUC becomes 0.5. This check is to make sure that we are not overfitting
 
-n_iter = 100
-auc = np.zeros(n_iter)
-precision = np.zeros(n_iter)
-recall = np.zeros(n_iter)
-fscore = np.zeros(n_iter)
-support = np.zeros(n_iter)
+
 
 
 my_metric = 'roc_auc'
 
 #y = np.random.permutation(y)
 
-#######################selecting gamma################
-## Following part of the code do a grid search to find best value of gamma using a one fold cross validation
+#######################selecting maximum depth################
+## Following part of the code do a grid search to find best value of maximum depth 
+#  using a leave one out cross validation.
 ## the metric for comparing the performance is AUC
 ####################################################
 best_gamma=0
 max_AUC=0
 gamma_range=[1, 0.001, 0.05, 0.075, .1, .13, .15, .17, 0.2, 0.3, .5, 1, 5, 10, 100]
 for current_gamma in gamma_range:
-    clf = SVC(kernel='rbf', gamma=current_gamma, tol=1e-9)
+    clf = RandomForestClassifier()
     my_metric = 'roc_auc'
     #auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
     kfold = StratifiedKFold(n_splits=36, shuffle=False)
@@ -76,19 +72,7 @@ for current_gamma in gamma_range:
 
 print('best gamma=%g is' %(best_gamma))
 
-C_range=[0.0001, 0.001, 0.01, .1, .3, .6, .9, 1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 100]  
-for current_C in C_range:
-    clf = SVC(kernel='rbf', C=current_C,gamma=best_gamma, tol=1e-9)
-    my_metric = 'roc_auc'
-    #auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
-    kfold = StratifiedKFold(n_splits=36, shuffle=False)
-    auc = cross_val_score(clf, X, y, cv=kfold, scoring=my_metric)
-    #print('AUC on testing data:gamma=%g, auc=%g' % (current_gamma, np.mean(auc)))
-    if np.mean(auc)>= max_AUC:
-        max_AUC=np.mean(auc)
-        best_C=current_C
-
-print('best C=%g is' %(best_C))
+    
 
 '''
 for mygamma in ['auto', 'scale']:
@@ -107,7 +91,7 @@ max_AUC=0
 max_component=min((X.shape[0]-1),X.shape[1])
 for nf in range(1, max_component):
     pipe = Pipeline([('pca_apply', PCA(n_components=nf, whiten=True)),
-                        ('svc', SVC(kernel='rbf', C=best_C,gamma=best_gamma, tol=1e-9))])
+                        ('svc', RandomForestClassifier())])
     kfold = StratifiedKFold(n_splits=36, shuffle=False)
     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
 
@@ -121,12 +105,12 @@ print('n_components=%d is' %(best_com))
 #######################selecting gamma################
 ## Random permutation of pairs of training subject for 1000 iterations
 ####################################################
-iteration_num=100
+iteration_num=1000
 auc_sum = np.zeros((iteration_num))
 for i in range(iteration_num):
 # y = np.random.permutation(y)
     pipe = Pipeline([('pca_apply', PCA(n_components=best_com, whiten=True)),
-                    ('svc', SVC(kernel='rbf',C=best_C, gamma=best_gamma, tol=1e-9))])
+                    ('svc', RandomForestClassifier())])
     kfold = StratifiedKFold(n_splits=36, shuffle=True)
     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
     auc_sum [i]= np.mean(auc)
@@ -134,12 +118,12 @@ for i in range(iteration_num):
         #(i, best_gamma,best_com, np.mean(auc)))
 
 
-print('Average AUC with PCA=%g , Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)))
+print('Average AUC with PCA=%g , Std AUC=%g' % np.mean(auc_sum),np.std(auc_sum))
 
 auc_sum = np.zeros((iteration_num))
 for i in range(iteration_num):
 # y = np.random.permutation(y)
-    pipe = SVC(kernel='rbf', C=best_C,gamma=best_gamma, tol=1e-9)
+    pipe = RandomForestClassifier()
     kfold = StratifiedKFold(n_splits=36, shuffle=True)
     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
     auc_sum [i]= np.mean(auc)
@@ -147,7 +131,7 @@ for i in range(iteration_num):
         #(i, best_gamma, np.mean(auc)))
 
 
-print('Average AUC=%g , Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)))
+print('Average AUC=%g , Std AUC=%g' % np.mean(auc_sum),np.std(auc_sum))
 
 
 
