@@ -74,7 +74,7 @@ def create_model():
     return model
 
 
-model = KerasClassifier(build_fn=create_model, epochs=200, batch_size=8,verbose=0)   
+model = KerasClassifier(build_fn=create_model, epochs=100, batch_size=20,verbose=0)   
 my_metric = 'roc_auc'
 kfold = StratifiedKFold(n_splits=36, shuffle=False)
 auc = cross_val_score(model, X, y, cv=kfold,scoring=my_metric)
