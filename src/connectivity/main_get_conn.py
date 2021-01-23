@@ -9,7 +9,7 @@ from brainsync import normalizeData
 #from dfsio import readdfs, writedfs
 from scipy import io as spio
 
-BFPPATH = '/home/ajoshi/coding_ground/bfp'
+BFPPATH = '/home/ajoshi/projects/bfp'
 BrainSuitePath = '/home/ajoshi/BrainSuite19b/svreg'
 NDim = 31
 

@@ -17,6 +17,20 @@ from keras.wrappers.scikit_learn import KerasClassifier
 from keras.models import Sequential
 from keras.layers import Dense,Dropout
 from keras.optimizers import Adam
+from keras import backend as K
+
+import os
+import importlib
+
+def set_keras_backend(backend):
+
+    if K.backend() != backend:
+        os.environ['KERAS_BACKEND'] = backend
+        importlib.reload(K)
+        assert K.backend() == backend
+
+set_keras_backend("theano")
+
 
 def main():
 
@@ -70,6 +84,8 @@ def main():
         kfold = StratifiedKFold(n_splits=36, shuffle=True)
         auc = cross_val_score(model, X, y, cv=kfold, scoring=my_metric)
         auc_sum [i]= np.mean(auc)
+
+        print('iter=%d, auc=%g'%(i,auc_sum[i]))
         #print('AUC after CV for i=%dgamma=%s is %g' %
             #(i, best_gamma, np.mean(auc)))
 
@@ -84,8 +100,7 @@ def main():
         kfold = StratifiedKFold(n_splits=36, shuffle=True)
         auc = cross_val_score(model, X, y, cv=kfold, scoring=my_metric)
         auc_sum [i]= np.mean(auc)
-        #print('AUC after CV for i=%dgamma=%s is %g' %
-            #(i, best_gamma, np.mean(auc)))
+        print('iter=%d, auc=%g'%(i,auc_sum[i]))
 
 
     print('Average AUC=%g , Std AUC=%g' % (np.mean(auc_sum), np.std(auc_sum)))
