@@ -48,7 +48,8 @@ def main():
     a = np.load('../stats/PTE_lesion_vols.npz', allow_pickle=True)
     a = a['lesion_vols'].item()
     epi_lesion_vols = np.array([a[k] for k in sub_ids])
-    epi_measures = epi_lesion_vols
+    epi_measures = np.concatenate(
+        (epi_connectivity, epi_lesion_vols), axis=1)
 
 
     f = np.load('../connectivity/NONPTE_graphs.npz')
@@ -63,7 +64,8 @@ def main():
     a = np.load('../stats/NONPTE_lesion_vols.npz', allow_pickle=True)
     a = a['lesion_vols'].item()
     nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
-    nonepi_measures = nonepi_lesion_vols
+    nonepi_measures = np.concatenate(
+        (nonepi_connectivity, nonepi_lesion_vols), axis=1)
 
 
     X = np.vstack((epi_measures, nonepi_measures))
@@ -74,7 +76,6 @@ def main():
 
 
     my_metric = 'roc_auc'
-
 
 
 
