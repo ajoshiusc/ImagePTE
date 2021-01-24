@@ -15,7 +15,7 @@ n_rois = conn_pte.shape[0]
 ind = np.tril_indices(n_rois, k=1)
 epi_connectivity = conn_pte[ind[0], ind[1], :].T
 
-a = np.load('PTE_lesion_vols.npz', allow_pickle=True)
+a = np.load('../stats/PTE_lesion_vols.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 epi_lesion_vols = np.array([a[k] for k in sub_ids])
 epi_measures = np.concatenate(
@@ -31,7 +31,7 @@ cent_mat = f['cent_mat']
 
 nonepi_connectivity = conn_nonpte[ind[0], ind[1], :].T
 
-a = np.load('NONPTE_lesion_vols.npz', allow_pickle=True)
+a = np.load('../stats/NONPTE_lesion_vols.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
 nonepi_measures = np.concatenate(
@@ -43,13 +43,6 @@ y = np.hstack(
     (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
 
 # Permute the labels to check if AUC becomes 0.5. This check is to make sure that we are not overfitting
-
-n_iter = 100
-auc = np.zeros(n_iter)
-precision = np.zeros(n_iter)
-recall = np.zeros(n_iter)
-fscore = np.zeros(n_iter)
-support = np.zeros(n_iter)
 
 
 my_metric = 'roc_auc'
@@ -67,7 +60,7 @@ for current_c in C_range:
     clf = SVC(kernel='linear', C=current_c, tol=1e-9)
     my_metric = 'roc_auc'
     #auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
-    kfold = StratifiedKFold(n_splits=37, shuffle=False)
+    kfold = StratifiedKFold(n_splits=36, shuffle=False)
     auc = cross_val_score(clf, X, y, cv=kfold, scoring=my_metric)
     #print('AUC on testing data:gamma=%g, auc=%g' % (current_c, np.mean(auc)))
     if np.mean(auc)>= max_AUC:
@@ -103,7 +96,7 @@ for nf in range(1, max_component):
 #######################selecting gamma################
 ## Random permutation of pairs of training subject for 1000 iterations
 ####################################################
-iteration_num=1000
+iteration_num=100
 auc_sum = np.zeros((iteration_num))
 for i in range(iteration_num):
 # y = np.random.permutation(y)
@@ -116,7 +109,7 @@ for i in range(iteration_num):
         #(i, best_gamma, np.mean(auc)))
 
 
-print('Average AUC=%g , Std AUC=%g' % np.mean(auc_sum),np.std(auc_sum))
+print('Average AUC=%g , Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)))
 
 for i in range(iteration_num):
 # y = np.random.permutation(y)
@@ -128,4 +121,4 @@ for i in range(iteration_num):
         #(i, best_gamma, np.mean(auc)))
 
 
-print('Average AUC=%g , Std AUC=%g' % np.mean(auc_sum),np.std(auc_sum))
+print('Average AUC=%g , Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)))
