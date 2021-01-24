@@ -10,8 +10,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 from utils import accuracy
-from models import GCN
+from models_hcf import GCN
 from sklearn.model_selection import StratifiedKFold
+import pdb
 
 # Training settings
 parser = argparse.ArgumentParser()
@@ -20,7 +21,7 @@ parser.add_argument('--no-cuda', action='store_true', default=False,
 parser.add_argument('--fastmode', action='store_true', default=False,
                     help='Validate during training pass.')
 parser.add_argument('--seed', type=int, default=42, help='Random seed.')
-parser.add_argument('--epochs', type=int, default=105,
+parser.add_argument('--epochs', type=int, default=130,
                     help='Number of epochs to train.')
 parser.add_argument('--lr', type=float, default=0.01,
                     help='Initial learning rate.')
@@ -47,19 +48,14 @@ if args.cuda:
 
 ##======================================================================
 def calc_DAD(data):
-    thr = 0.4
     adj = data['conn_mat']
-    adj[adj < thr] = 0 ## threshold the weakly connected edges
     adj[adj > 0] = 1
     Dl = np.sum(adj, axis=-1)
     num_node = adj.shape[1]
     Dn = np.zeros((adj.shape[0], num_node, num_node))
     for i in range(num_node):
         Dn[:, i, i] = Dl[:, i] ** (-0.5)
-
-    adj_ori = data['conn_mat']
-    adj_ori[adj_ori < thr] = 0
-    DAD = np.matmul(np.matmul(Dn, adj_ori), Dn)
+    DAD = np.matmul(np.matmul(Dn, data['conn_mat']), Dn)
 
     return DAD
 ##=======================================================================
@@ -136,6 +132,22 @@ def test(model, test_features, test_adj, test_labels):
     return acc_test.item()
 
 
+def engineer_features(data):
+    adj_temp = data['conn_mat']
+    print(len(adj_temp[adj_temp < 0.25]), len(adj_temp[adj_temp<0.3]), len(adj_temp[adj_temp<0.4]))
+    pdb.set_trace()
+    adj_temp[adj_temp < 0.2] = 0
+    adj_temp[adj_temp > 0] = 1
+    features = np.zeros((adj_temp.shape[0], adj_temp.shape[1], 3)) # n_subjects x 16 x num_features
+
+    features[:, :, 0] = np.mean(data['features'], axis=-1, keepdims=False)
+    features[:, :, 1] = np.std(data['features'], axis=-1, keepdims=False)
+    features[:, :, 2] = np.sum(adj_temp, axis=-1, keepdims=False)
+    print(features)
+    
+    return features
+
+
 def cross_validation():
     ##=======================Load Data================================================
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -145,7 +157,7 @@ def cross_validation():
     population = 'PTE'
     epidata = np.load(population+'_graphs_gcn.npz')
     adj_epi = torch.from_numpy(calc_DAD(epidata)).float().to(device) # n_subjects*16 *16
-    features_epi = torch.from_numpy(epidata['features']).float().to(device) # n_subjectsx16x171
+    features_epi = torch.from_numpy(engineer_features(epidata)).float().to(device) # n_subjectsx16x171
 
     # n_subjects = features_epi.shape[0]
     # num_train = int(n_subjects * args.rate)
@@ -157,7 +169,7 @@ def cross_validation():
     population = 'NONPTE'
     nonepidata = np.load(population+'_graphs_gcn.npz')
     adj_non = torch.from_numpy(calc_DAD(nonepidata)).float().to(device) 
-    features_non = torch.from_numpy(nonepidata['features']).float().to(device) #subjects x 16 x 171
+    features_non = torch.from_numpy(engineer_features(nonepidata)).float().to(device) #subjects x 16 x 171
 
     # print("DAD shape:")
     # print(adj_non.shape, adj_epi.shape)
@@ -179,13 +191,11 @@ def cross_validation():
     # the folds are made by preserving the percentage of samples for each class.
     
     acc = []
-    max_epochs = []
-    # epochs_choices = []
     for train_ind, test_ind in kfold.split(features.cpu().numpy(), labels.cpu().numpy()):
         # Model and optimizer
 
         model = GCN(nfeat=features_epi.shape[2],
-                nhid=[200, 200, 100, 50],
+                nhid=[84, 16, 16],
                 nclass= 2, #labels.max().item() + 1,
                 dropout=args.dropout)
         optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
@@ -203,28 +213,21 @@ def cross_validation():
         test_adj = adj[test_ind, :, :]
         test_labels = labels[test_ind]
 
-        acc_test = []
-        
         for epoch in range(args.epochs):
             train(epoch, model, optimizer, scheduler, train_features, train_adj, train_labels)
-            # if (epoch >= 80) and (epoch % 10 == 0):
-                    # acc_test.append(test(model, test_features, test_adj, test_labels))
 
-        acc_test.append(test(model, test_features, test_adj, test_labels))
+        acc.append(test(model, test_features, test_adj, test_labels))
 
-        max_epochs.append(np.argmax(acc_test)*10 + 90)
-        acc.append(np.max(acc_test))
-
-        torch.save({'epoch': args.epochs,
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
-            }, args.model_path+"model_cv_" + str(len(acc)) + ".pth")
+        # torch.save({'epoch': args.epochs,
+        #     'model_state_dict': model.state_dict(),
+        #     'optimizer_state_dict': optimizer.state_dict(),
+        #     }, args.model_path+"model_cv_" + str(len(acc)) + ".pth")
 
         del model
         del optimizer
         # input("any key")
-    print(acc, max_epochs)
-    with open('../results/accuracy_0.4thr_105e.txt', 'w') as f:
+
+    with open('../results/accuracy.txt', 'w') as f:
         f.write(str(acc))
     f.close()
 

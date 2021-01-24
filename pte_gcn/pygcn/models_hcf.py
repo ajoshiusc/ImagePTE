@@ -20,8 +20,8 @@ class GCN(nn.Module):
         self.gc3 = GraphConvolution(nhid[1], nhid[2])
         self.bc3 = nn.BatchNorm1d(nhid[2])
 
-        self.gc4 = GraphConvolution(nhid[2], nhid[3])
-        self.bc4 = nn.BatchNorm1d(nhid[3])
+        # self.gc4 = GraphConvolution(nhid[2], nhid[3])
+        # self.bc4 = nn.BatchNorm1d(nhid[3])
 
         self.fc = GraphConvolution(nhid[-1], nclass)
         self.activation = nn.PReLU()
@@ -31,10 +31,9 @@ class GCN(nn.Module):
             # nn.PReLU(),
             # nn.Linear(200, 100),
             # nn.PReLU(),
-            nn.Linear(100, 50),
-            # nn.BatchNorm1d(50)
+            nn.Linear(16, 8),
             nn.PReLU(),
-            nn.Linear(50, nclass))
+            nn.Linear(8, nclass))
 
         self.dropout = dropout
 
@@ -47,8 +46,8 @@ class GCN(nn.Module):
         # x = self.activation(self.bc4(self.gc4(x, adj).permute(0, 2, 1)).permute(0, 2, 1))
         x = F.dropout(x, self.dropout, training=self.training) # batch_sizex16x200
         x = self.activation(self.bc3(self.gc3(x, adj).permute(0, 2, 1)).permute(0, 2, 1))
-        # x = F.dropout(x, self.dropout, training=self.training)
-        x = self.activation(self.bc4(self.gc4(x, adj).permute(0, 2, 1)).permute(0, 2, 1))
+
+        # x = self.activation(self.bc4(self.gc4(x, adj).permute(0, 2, 1)).permute(0, 2, 1))
 
 
         flattened_x = torch.cat([torch.mean(x, dim=1), torch.max(x, dim=1)[0]], 1) # batch_size x 400
