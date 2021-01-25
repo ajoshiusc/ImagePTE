@@ -77,7 +77,7 @@ def main():
             best_depth=m_depth+1
 
     
-
+    print('best_depth is %d' % best_depth)
     '''
     for mygamma in ['auto', 'scale']:
     clf = SVC(kernel='rbf', gamma=mygamma, tol=1e-9)
@@ -132,7 +132,7 @@ def main():
             #(i, best_gamma, np.mean(auc)))
 
 
-    print('Average AUC=%g , Std AUC=%g' % np.mean(auc_sum),np.std(auc_sum))
+    print('Average AUC=%g , Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)))
 
 
 if __name__ == "__main__":

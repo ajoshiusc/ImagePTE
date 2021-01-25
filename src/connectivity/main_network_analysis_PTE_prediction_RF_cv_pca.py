@@ -1,13 +1,20 @@
+"""
+
+@author: Anand, Haleh
+"""
+
+'''This code used 11 lobe lesion volumes generated with VAE to predict epileptic subjects in a TBI population
+36 subject in PTE class and 36 subjects in non PTE class
+'''
 import numpy as np
+import nilearn.image as ni
+from sklearn.model_selection import StratifiedKFold
 from sklearn.svm import SVC
 from sklearn.model_selection import cross_val_score
-from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
+from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import StratifiedKFold
 import math
-
-
 
 def main():
 
@@ -25,8 +32,7 @@ def main():
     a = np.load('../stats/PTE_lesion_vols.npz', allow_pickle=True)
     a = a['lesion_vols'].item()
     epi_lesion_vols = np.array([a[k] for k in sub_ids])
-    epi_measures = np.concatenate(
-        (epi_connectivity, epi_lesion_vols), axis=1)
+    epi_measures = epi_connectivity
 
 
     f = np.load('../connectivity/NONPTE_graphs.npz')
@@ -41,18 +47,12 @@ def main():
     a = np.load('../stats/NONPTE_lesion_vols.npz', allow_pickle=True)
     a = a['lesion_vols'].item()
     nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
-    nonepi_measures = np.concatenate(
-        (nonepi_connectivity, nonepi_lesion_vols), axis=1)
+    nonepi_measures = nonepi_connectivity
 
 
     X = np.vstack((epi_measures, nonepi_measures))
     y = np.hstack(
         (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
-
-    # Permute the labels to check if AUC becomes 0.5. This check is to make sure that we are not overfitting
-
-
-    my_metric = 'roc_auc'
 
 
 #######################selecting gamma################
