@@ -14,7 +14,7 @@ from statsmodels.stats.multitest import fdrcorrection
 from tqdm import tqdm
 
 from grayord_utils import visdata_grayord
-
+from scipy.ndimage import zoom
 
 population = 'PTE'
 f = np.load(population+'_graphs.npz')
@@ -31,6 +31,15 @@ gordlab = f['labels']
 
 c1 = np.mean(conn_pte, axis=2)
 c2 = np.mean(conn_nonpte, axis=2)
+
+c1_img = c1.repeat(64,axis=0).repeat(64,axis=1)
+c2_img = c2.repeat(64,axis=0).repeat(64,axis=1)
+
+
+imsave('pte_conn.png', c1_img,
+       vmin=-1.0, vmax=1.0, cmap='jet')
+imsave('nonpte_conn.png', c2_img,
+       vmin=-1.0, vmax=1.0, cmap='jet')
 
 s1 = np.std(conn_pte, axis=2)
 s2 = np.std(conn_nonpte, axis=2)

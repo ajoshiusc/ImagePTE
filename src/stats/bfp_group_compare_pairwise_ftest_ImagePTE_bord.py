@@ -62,6 +62,29 @@ tscore, pval = randpair_groupdiff_ftest(sub_fname_grp1,
 pval[sp.isnan(pval)] = .5
 _, pval_fdr = fdrcorrection(pval)
 
+
+save2volbord_bci(pval, os.path.join(bfp_path, 'src/stats/results',
+                                    'pval_bord_PTE_smooth0.5_orig_2000.nii.gz'), bfp_path=BFPPATH, smooth_std=0.5)
+save2volbord_bci(pval_fdr, os.path.join(bfp_path, 'src/stats/results',
+                                        'pval_fdr_bord_PTE_smooth0.5_orig_2000.nii.gz'), bfp_path=BFPPATH, smooth_std=0.5)
+
+save2volbord_bci((0.05-pval)*np.float32(pval < 0.05), os.path.join(bfp_path, 'src/stats/results',
+                                                                   'pval_bord_PTE_smooth0.5_2000.nii.gz'), bfp_path=BFPPATH, smooth_std=0.5)
+save2volbord_bci((0.05-pval_fdr)*np.float32(pval_fdr < 0.05), os.path.join(bfp_path,
+                                                                           'src/stats/results', 'pval_fdr_bord_PTE_smooth0.5_2000.nii.gz'), bfp_path=BFPPATH, smooth_std=0.5)
+
+
+save2volbord_bci(pval, os.path.join(bfp_path, 'src/stats/results',
+                                    'pval_bord_PTE_smooth0_orig_2000.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
+save2volbord_bci(pval_fdr, os.path.join(bfp_path, 'src/stats/results',
+                                        'pval_fdr_bord_PTE_smooth0_orig_2000.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
+
+save2volbord_bci((0.05-pval)*np.float32(pval < 0.05), os.path.join(bfp_path, 'src/stats/results',
+                                                                   'pval_bord_PTE_smooth0_2000.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
+save2volbord_bci((0.05-pval_fdr)*np.float32(pval_fdr < 0.05), os.path.join(bfp_path,
+                                                                           'src/stats/results', 'pval_fdr_bord_PTE_smooth0_2000.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
+
+
 save2volbord_bci(pval, os.path.join(bfp_path, 'src/stats/results',
                                     'pval_bord_PTE_smooth1.5_orig_2000.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)
 save2volbord_bci(pval_fdr, os.path.join(bfp_path, 'src/stats/results',
