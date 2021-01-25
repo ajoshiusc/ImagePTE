@@ -18,8 +18,7 @@ epi_connectivity = conn_pte[ind[0], ind[1], :].T
 a = np.load('../stats/PTE_lesion_vols.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 epi_lesion_vols = np.array([a[k] for k in sub_ids])
-epi_measures = np.concatenate(
-    (epi_connectivity, epi_lesion_vols), axis=1)
+epi_measures = epi_connectivity
 
 
 f = np.load('../connectivity/NONPTE_graphs.npz')
@@ -34,8 +33,7 @@ nonepi_connectivity = conn_nonpte[ind[0], ind[1], :].T
 a = np.load('../stats/NONPTE_lesion_vols.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
-nonepi_measures = np.concatenate(
-    (nonepi_connectivity, nonepi_lesion_vols), axis=1)
+nonepi_measures = nonepi_connectivity
 
 
 X = np.vstack((epi_measures, nonepi_measures))
