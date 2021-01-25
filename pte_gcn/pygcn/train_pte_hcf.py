@@ -134,7 +134,7 @@ def test(model, test_features, test_adj, test_labels):
 
 def engineer_features(data):
     adj_temp = data['conn_mat']
-    print(len(adj_temp[adj_temp < 0.25]), len(adj_temp[adj_temp<0.3]), len(adj_temp[adj_temp<0.4]))
+    print(len(adj_temp[adj_temp < 0.6]), len(adj_temp[adj_temp<0.5]), len(adj_temp[adj_temp<0.4]))
     pdb.set_trace()
     adj_temp[adj_temp < 0.2] = 0
     adj_temp[adj_temp > 0] = 1

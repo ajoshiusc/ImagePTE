@@ -12,6 +12,7 @@ import torch.optim as optim
 from utils import accuracy
 from models import GCN
 from sklearn.model_selection import StratifiedKFold
+import pdb
 
 # Training settings
 parser = argparse.ArgumentParser()
@@ -20,17 +21,18 @@ parser.add_argument('--no-cuda', action='store_true', default=False,
 parser.add_argument('--fastmode', action='store_true', default=False,
                     help='Validate during training pass.')
 parser.add_argument('--seed', type=int, default=42, help='Random seed.')
-parser.add_argument('--epochs', type=int, default=105,
+parser.add_argument('--epochs', type=int, default=15,
                     help='Number of epochs to train.')
+parser.add_argument('--mode', type=bool, default=False, help='select best epoch mode')
 parser.add_argument('--lr', type=float, default=0.01,
-                    help='Initial learning rate.')
+                    help='Initial learning rate.')  
 parser.add_argument('--weight_decay', type=float, default=5e-4,
                     help='Weight decay (L2 loss on parameters).')
 # parser.add_argument('--hidden', type=int, default=16,
                     # help='Number of hidden units.')
 parser.add_argument('--dropout', type=float, default=0.5,
                     help='Dropout rate (1 - keep probability).')
-parser.add_argument('--batch_size', type=int, default=20, help='Batch Size')
+parser.add_argument('--batch_size', type=int, default=10, help='Batch Size')
 parser.add_argument('--rate', type=float, default=1.0, help='proportion of training samples')
 parser.add_argument('--model_path', type=str, default="../models/", help='path to saved models.')
 
@@ -75,11 +77,10 @@ def calc_DAD(data):
 #     idx_test = idx_test.cuda()
 
 
-def train(epoch, model, optimizer, scheduler, train_features, train_adj, train_labels):
-
+def train(epoch, model, optimizer, scheduler, train_features, train_adj, train_labels): 
     batch_size = args.batch_size
     num_train = train_features.shape[0]
-    index = torch.randperm(num_train)[:batch_size]
+    # index = torch.randperm(num_train)[:batch_size]
     # index_epi = torch.randperm(num_train)[:batch_size//2]
     # index_non = torch.randperm(num_train_non)[:batch_size//2]
     # features_epi_bc = train_features_epi[index_epi, :, :]
@@ -90,22 +91,26 @@ def train(epoch, model, optimizer, scheduler, train_features, train_adj, train_l
     # adj_non_bc = train_adj_non[index_non, :, :]
     # adj_bc = torch.cat([adj_epi_bc, adj_non_bc])
     # labels = torch.from_numpy(np.hstack((np.ones(batch_size//2), np.zeros(batch_size//2)))).long().to(device)
-    features_bc = train_features[index, :, :]
-    adj_bc = train_adj[index, :, :]
-    labels = train_labels[index]
 
-    t = time.perf_counter()
-    model.train()
-    optimizer.zero_grad()
-    graph_output = model(features_bc, adj_bc)
-    # graph_output = torch.mean(output, dim=1)
-    loss_criterion = torch.nn.CrossEntropyLoss() # this contains activation function, and calc loss
-    # print(graph_output, graph_output.shape)
-    loss_train = loss_criterion(graph_output, labels)
-    acc_train = accuracy(graph_output, labels, num_train)
-    loss_train.backward()
-    optimizer.step()
-    scheduler.step()
+    num_batches = num_train // batch_size
+
+    for i in range(num_batches):
+        features_bc = train_features[i*batch_size:(i + 1) * batch_size, :, :]
+        adj_bc = train_adj[i*batch_size:(i + 1) * batch_size, :, :]
+        labels = train_labels[i*batch_size:(i + 1) * batch_size]
+        
+        t = time.perf_counter()
+        model.train()
+        optimizer.zero_grad()
+        graph_output = model(features_bc, adj_bc)
+        # graph_output = torch.mean(output, dim=1)
+        loss_criterion = torch.nn.CrossEntropyLoss() # this contains activation function, and calc loss
+        # print(graph_output, graph_output.shape)
+        loss_train = loss_criterion(graph_output, labels)
+        acc_train = accuracy(graph_output, labels, num_train)
+        loss_train.backward()
+        optimizer.step()
+        scheduler.step()
 
     # if not args.fastmode:
     #     # Evaluate validation set performance separately,
@@ -169,11 +174,12 @@ def cross_validation():
     # test_adj_non = adj_non[num_train_non:, :, :]
     # test_features_non = features_non[num_train_non:, :, :]
 
-    print(features_non.shape, features_epi.shape, adj_epi.shape)
-
+    
     features = torch.cat([features_epi, features_non])
     adj = torch.cat([adj_epi, adj_non])
     labels = torch.from_numpy(np.hstack((np.ones(adj_epi.shape[0]), np.zeros(adj_non.shape[0])))).long().to(device)
+
+    print(features.shape, adj.shape, labels.shape)
 
     kfold = StratifiedKFold(n_splits=36, shuffle=False)
     # the folds are made by preserving the percentage of samples for each class.
@@ -181,11 +187,15 @@ def cross_validation():
     acc = []
     max_epochs = []
     # epochs_choices = []
-    for train_ind, test_ind in kfold.split(features.cpu().numpy(), labels.cpu().numpy()):
+    features_numpy = features.cpu().numpy()
+    labels_numpy = labels.cpu().numpy()
+    adj_numpy = adj.cpu().numpy()
+    for train_ind, test_ind in kfold.split(features_numpy, labels_numpy):
         # Model and optimizer
 
         model = GCN(nfeat=features_epi.shape[2],
-                nhid=[200, 200, 100, 50],
+                nhid = [200, 200, 50],
+                # nhid=[200, 200, 100, 50],
                 nclass= 2, #labels.max().item() + 1,
                 dropout=args.dropout)
         optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
@@ -195,40 +205,53 @@ def cross_validation():
         model.to(device)
 
         # 72 subjects in total, during CV, training has 70, testing has 2, one epi, one nonepi
-        train_features = features[train_ind, :, :] 
-        train_adj = adj[train_ind, :, :]
-        train_labels = labels[train_ind]
+        train_features = features_numpy[train_ind, :, :] 
+        train_adj = adj_numpy[train_ind, :, :]
+        train_labels = labels_numpy[train_ind]
+
+        state = np.random.get_state()
+        np.random.shuffle(train_features)
+        np.random.set_state(state)
+        np.random.shuffle(train_adj)
+        np.random.set_state(state)
+        np.random.shuffle(train_labels)
         
         test_features = features[test_ind, :, :]
         test_adj = adj[test_ind, :, :]
         test_labels = labels[test_ind]
 
         acc_test = []
+        start_epoch = 13
+        gap = 1
+        mode_on = args.mode
         
         for epoch in range(args.epochs):
-            train(epoch, model, optimizer, scheduler, train_features, train_adj, train_labels)
-            # if (epoch >= 80) and (epoch % 10 == 0):
-                    # acc_test.append(test(model, test_features, test_adj, test_labels))
+            train(epoch, model, optimizer, scheduler, 
+                torch.from_numpy(train_features).float().to(device), 
+                torch.from_numpy(train_adj).float().to(device), 
+                torch.from_numpy(train_labels).long().to(device))
+            if (epoch >= start_epoch) and (epoch % gap == 0) and (mode_on == True):
+                    acc_test.append(test(model, test_features, test_adj, test_labels))
 
         acc_test.append(test(model, test_features, test_adj, test_labels))
 
-        max_epochs.append(np.argmax(acc_test)*10 + 90)
+        max_epochs.append(np.argmax(acc_test)*gap + start_epoch)
         acc.append(np.max(acc_test))
 
         torch.save({'epoch': args.epochs,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
-            }, args.model_path+"model_cv_" + str(len(acc)) + ".pth")
+            }, args.model_path+"model_cv_2002005010050" + str(len(acc)) + ".pth")
 
         del model
         del optimizer
         # input("any key")
     print(acc, max_epochs)
-    with open('../results/accuracy_0.4thr_105e.txt', 'w') as f:
+    with open('../results/accuracy_0.4thr_15e_5layers.txt', 'w') as f:
         f.write(str(acc))
     f.close()
 
-    print(len(acc), np.mean(acc))
+    print(np.mean(acc))
 
 # Train model
 # t_total = time.perf_counter()
