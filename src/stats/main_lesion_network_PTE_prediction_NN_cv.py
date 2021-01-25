@@ -61,7 +61,7 @@ def main():
     kfold = StratifiedKFold(n_splits=36, shuffle=False)
 
 
-    iteration_num=100
+    iteration_num=1
     auc_sum = np.zeros((iteration_num))
     for i in range(iteration_num):
     # y = np.random.permutation(y)

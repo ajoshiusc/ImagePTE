@@ -3,7 +3,7 @@ import nilearn.image as nl
 from matplotlib import cm
 stat_img = 'pval_fdr_ftest_TBMsmooth3mm.nii.gz'
 stat_img = 'pval_fdr_ftest_lesion.smooth3mm.nii.gz'
-stat_img = '/ImagePTE1/ajoshi/code_farm/bfp/src/stats/results/pval_fdr_bord_PTE_smooth1.5_2000.nii.gz'
+stat_img = '/ImagePTE1/ajoshi/code_farm/bfp/src/stats/results/pval_fdr_bord_PTE_smooth0.5_2000.nii.gz'
 outfile1 = stat_img.replace('.nii.gz','_1.png') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
 outfile2 = stat_img.replace('.nii.gz','_2.png') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
 outfile3 = stat_img.replace('.nii.gz','_3.png') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
