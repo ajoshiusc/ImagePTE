@@ -76,7 +76,7 @@ for current_gamma in gamma_range:
 
 print('best gamma=%g is' %(best_gamma))
 
-C_range=[0.0001, 0.001, 0.01, .1, .3, .6, .9, 1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 100]  
+C_range=[0.0001, 0.001, 0.01, .1, .3, .6, 0.7,0.9, 1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 100]  
 for current_C in C_range:
     clf = SVC(kernel='rbf', C=current_C,gamma=best_gamma, tol=1e-9)
     my_metric = 'roc_auc'

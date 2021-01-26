@@ -5,11 +5,12 @@ import random
 sys.path.append('/ImagePTE1/ajoshi/code_farm/ImagePTE/src/stats/')
 
 #from surfproc import patch_color_attrib, smooth_surf_function
-from brainsync import normalizeData
+from brainsync import normalizeData, groupBrainSync, brainSync
 
 #from dfsio import readdfs, writedfs
 from scipy import io as spio
 from read_data_utils import load_bfp_data
+import pdb
 #%%
 
 
@@ -28,7 +29,6 @@ def get_connectivity(data, labels, label_ids): # compute adj matrix
     for i, id in enumerate(label_ids):
 
         idx = labels == id
-
         rtseries[:, i] = np.mean(data[:, idx], axis=1)
 
     rtseries, _, _ = normalizeData(rtseries) 
@@ -45,7 +45,7 @@ def get_connectivity(data, labels, label_ids): # compute adj matrix
     ##================##
     ## the adjacency matrix here is not binary. we use the correlation coefficient directly.
     #print(conn.shape, rtseries.T.shape)
-    return conn, rtseries.T # 16x171, row is ROI/Node. 16*16 for conn
+    return conn, rtseries.T # 16x171, ROI/Node. 16*16 for conn
 
 
 def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, atlas_labels):
@@ -58,8 +58,6 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
 
     # remove WM label from connectivity analysis
     label_ids = np.setdiff1d(label_ids, (2000, 0))
-
-    print(len(label_ids))
 
     with open(epi_txt) as f:
         epiIds = f.readlines()
@@ -103,40 +101,48 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
     print(conn_mat.shape, input_feat.shape)
     print(epi_data.shape, nonepi_data.shape, gord_labels.shape)
 
+    _, ref_sub = get_connectivity(nonepi_data[:, :, 0],
+                            labels=gord_labels,
+                            label_ids=label_ids)
+
+
     for subno in range(nsub): # num of subjects
-        conn_mat[subno, :, :], input_feat[subno, :, :] = get_connectivity(epi_data[:, :, subno],
+        conn_mat[subno, :, :], time_series = get_connectivity(epi_data[:, :, subno],
                                                  labels=gord_labels,
                                                  label_ids=label_ids)
 
         #G = nx.convert_matrix.from_numpy_array(np.abs(conn_mat[subno, :, :]))
         #cent = nx.eigenvector_centrality(G, weight='weight')
         #cent_mat[subno, :] = np.array(list(cent.items()))[:,1]
+        # print(ref_sub.shape, time_series.shape)
+        input_feat[subno, :, :] = np.transpose(brainSync(ref_sub.T, time_series.T)[0])
 
     np.savez('PTE_graphs_gcn.npz',
              conn_mat=conn_mat,
-             features=input_feat,
+             features=input_feat, # 36x16x171
              label_ids=label_ids,
              cent_mat=cent_mat)
 ##============================================================================
     print("non_epi")
     # nsub = nonepi_data.shape[2]
-    
+
     conn_mat = np.zeros((nsub, len(label_ids), len(label_ids)))
     cent_mat = np.zeros((nsub, len(label_ids)))
     input_feat = np.zeros((nsub, len(label_ids), nonepi_data.shape[0]))
     print(conn_mat.shape, input_feat.shape)
     # here we are using same number of training subjects for epi and nonepi.
     for subno in range(nsub):
-        conn_mat[subno, :, :], input_feat[subno, :, :] = get_connectivity(nonepi_data[:, :, subno],
+        conn_mat[subno, :, :], time_series = get_connectivity(nonepi_data[:, :, subno],
                                                  labels=gord_labels,
                                                  label_ids=label_ids)
         #G = nx.convert_matrix.from_numpy_array(np.abs(conn_mat[subno, :, :]))
         #cent = nx.eigenvector_centrality(G, weight='weight')
        # cent_mat[subno, :] = np.array(list(cent.items()))[:,1]
-   
+        input_feat[subno, :, :] = np.transpose(brainSync(ref_sub.T, time_series.T)[0])
+
     np.savez('NONPTE_graphs_gcn.npz',
              conn_mat=conn_mat, # n_subjects*16*16
-             features=input_feat, # n_subjects * 171 x16
+             features=input_feat, # n_subjects * 16 x 171
              label_ids=label_ids,
              cent_mat=cent_mat)
 

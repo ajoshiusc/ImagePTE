@@ -31,11 +31,9 @@ class GCN(nn.Module):
             # nn.PReLU(),
             # nn.Linear(200, 100),
             # nn.PReLU(),
-            nn.Linear(100, 50),
-            # nn.BatchNorm1d(50),
+            nn.Linear(16, 8),
             nn.PReLU(),
-            # nn.Dropout(),
-            nn.Linear(50, nclass))
+            nn.Linear(8, nclass))
 
         self.dropout = dropout
 
@@ -48,7 +46,7 @@ class GCN(nn.Module):
         # x = self.activation(self.bc4(self.gc4(x, adj).permute(0, 2, 1)).permute(0, 2, 1))
         x = F.dropout(x, self.dropout, training=self.training) # batch_sizex16x200
         x = self.activation(self.bc3(self.gc3(x, adj).permute(0, 2, 1)).permute(0, 2, 1))
-        # x = F.dropout(x, self.dropout, training=self.training)
+
         # x = self.activation(self.bc4(self.gc4(x, adj).permute(0, 2, 1)).permute(0, 2, 1))
 
 

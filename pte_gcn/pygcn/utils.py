@@ -66,7 +66,6 @@ def normalize(mx):
 def accuracy(output, labels, num_test):
     probabilities = F.softmax(output)
     preds = torch.argmax(probabilities, dim=1).type_as(labels)
-    print(preds)
     correct = preds.eq(labels).double()
     correct = correct.sum()
     # positives = labels.sum().item()
