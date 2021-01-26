@@ -71,7 +71,7 @@ def main():
         if np.mean(auc)>= max_AUC:
             max_AUC=np.mean(auc)
             best_c=current_c
-    print('best c=%d is' %(best_c))
+    print('best c=%g is' %(best_c))
     
 
     '''
