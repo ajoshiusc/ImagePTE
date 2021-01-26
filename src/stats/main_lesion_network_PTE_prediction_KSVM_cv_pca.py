@@ -118,6 +118,10 @@ for nf in range(1, max_component):
         best_com=nf
 
 print('n_components=%d is' %(best_com))
+
+#best_com=53
+#best_gamma=0.075
+#best_C=.1
 #######################selecting gamma################
 ## Random permutation of pairs of training subject for 1000 iterations
 ####################################################
@@ -130,11 +134,11 @@ for i in range(iteration_num):
     kfold = StratifiedKFold(n_splits=36, shuffle=True)
     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
     auc_sum [i]= np.mean(auc)
-    #print('AUC after CV for i=%dgamma=%s number of components=%d is %g' %
-        #(i, best_gamma,best_com, np.mean(auc)))
+    print('AUC after CV for i=%dgamma=%s number of components=%d is %g' % (i, best_gamma,best_com, np.mean(auc)))
 
 
 print('Average AUC with PCA=%g , Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)))
+
 
 auc_sum = np.zeros((iteration_num))
 for i in range(iteration_num):
