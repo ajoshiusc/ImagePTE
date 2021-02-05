@@ -65,9 +65,9 @@ def main():
         clf = SVC(kernel='linear', C=current_c, tol=1e-9)
         my_metric = 'roc_auc'
         #auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
-        kfold = StratifiedKFold(n_splits=36, shuffle=False)
+        kfold = StratifiedKFold(n_splits=36, shuffle=True,random_state=1211)
         auc = cross_val_score(clf, X, y, cv=kfold, scoring=my_metric)
-        #print('AUC on testing data:gamma=%g, auc=%g' % (current_c, np.mean(auc)))
+        print('AUC on testing data:gamma=%g, auc=%g' % (current_c, np.mean(auc)))
         if np.mean(auc)>= max_AUC:
             max_AUC=np.mean(auc)
             best_c=current_c
@@ -92,7 +92,8 @@ def main():
     for nf in range(1, max_component):
         pipe = Pipeline([('pca_apply', PCA(n_components=nf, whiten=True)),
                          ('svc', SVC(kernel='linear', C= best_c, tol=1e-9))])
-        kfold = StratifiedKFold(n_splits=36, shuffle=False)
+        my_metric='roc_auc'
+        kfold = StratifiedKFold(n_splits=36, shuffle=True,random_state=1211)
         auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
 
         #print('AUC after CV for nf=%dgamma=%s is %g' %
@@ -111,8 +112,9 @@ def main():
         pipe = Pipeline([('pca_apply', PCA(n_components=best_com, whiten=True)),
                      ('svc', SVC(kernel='linear', C= best_c, tol=1e-9))])
         kfold = StratifiedKFold(n_splits=36, shuffle=True)
+        my_metric='roc_auc'
         auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
-        auc_sum [i]= np.mean(auc)
+        auc_sum[i]= np.mean(auc)
         #print('AUC after CV for i=%dgamma=%s is %g' %
             #(i, best_gamma, np.mean(auc)))
 
@@ -123,8 +125,9 @@ def main():
     # y = np.random.permutation(y)
         pipe = SVC(kernel='linear', C= best_c, tol=1e-9)
         kfold = StratifiedKFold(n_splits=36, shuffle=True)
+        my_metric='roc_auc'
         auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
-        auc_sum [i]= np.mean(auc)
+        auc_sum[i]= np.mean(auc)
         #print('AUC after CV for i=%dgamma=%s is %g' %
             #(i, best_gamma, np.mean(auc)))
 

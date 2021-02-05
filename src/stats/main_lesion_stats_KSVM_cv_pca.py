@@ -68,7 +68,7 @@ def main():
         clf = SVC(kernel='rbf', gamma=current_gamma, tol=1e-9)
         my_metric = 'roc_auc'
         #auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
-        kfold = StratifiedKFold(n_splits=36, shuffle=False)
+        kfold = StratifiedKFold(n_splits=36, shuffle=True,random_state=1211)
         auc = cross_val_score(clf, X, y, cv=kfold, scoring=my_metric)
         #print('AUC on testing data:gamma=%g, auc=%g' % (current_gamma, np.mean(auc)))
         if np.mean(auc)>= max_AUC:
@@ -98,7 +98,7 @@ def main():
         clf = SVC(kernel='rbf',C=current_c , gamma=current_gamma, tol=1e-9)
         my_metric = 'roc_auc'
         #auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
-        kfold = StratifiedKFold(n_splits=36, shuffle=False)
+        kfold = StratifiedKFold(n_splits=36, shuffle=True,random_state=1211)
         auc = cross_val_score(clf, X, y, cv=kfold, scoring=my_metric)
         #print('AUC on testing data:gamma=%g, auc=%g' % (current_c, np.mean(auc)))
         if np.mean(auc)>= max_AUC:
@@ -115,7 +115,7 @@ def main():
     for nf in range(1, max_component):
         pipe = Pipeline([('pca_apply', PCA(n_components=nf, whiten=True)),
                          ('svc', SVC(kernel='rbf',C=best_gamma, gamma=best_gamma, tol=1e-9))])
-        kfold = StratifiedKFold(n_splits=36, shuffle=False)
+        kfold = StratifiedKFold(n_splits=36, shuffle=True,random_state=1211)
         auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
 
         #print('AUC after CV for nf=%dgamma=%s is %g' %
