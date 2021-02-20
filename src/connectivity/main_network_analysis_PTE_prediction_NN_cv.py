@@ -48,8 +48,7 @@ def main():
     a = np.load('../stats/PTE_lesion_vols.npz', allow_pickle=True)
     a = a['lesion_vols'].item()
     epi_lesion_vols = np.array([a[k] for k in sub_ids])
-    epi_measures = epi_lesion_vols
-      
+    epi_measures = epi_connectivity
 
 
     f = np.load('../connectivity/NONPTE_graphs.npz')
@@ -64,7 +63,7 @@ def main():
     a = np.load('../stats/NONPTE_lesion_vols.npz', allow_pickle=True)
     a = a['lesion_vols'].item()
     nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
-    nonepi_measures = nonepi_lesion_vols
+    nonepi_measures = nonepi_connectivity
 
 
     X = np.vstack((epi_measures, nonepi_measures))

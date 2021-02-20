@@ -38,6 +38,7 @@ def main():
     #label_ids = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
     label_ids = [3, 100, 101, 184, 185, 200, 201, 300,
                  301, 400, 401, 500, 501, 800, 850, 900]
+    #label_ids=[301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
     # remove WM label from connectivity analysis
     label_ids = np.setdiff1d(label_ids, (2000, 0))
 

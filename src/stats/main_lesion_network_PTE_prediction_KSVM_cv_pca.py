@@ -67,7 +67,7 @@ for current_gamma in gamma_range:
     clf = SVC(kernel='rbf', gamma=current_gamma, tol=1e-9)
     my_metric = 'roc_auc'
     #auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
-    kfold = StratifiedKFold(n_splits=36, shuffle=False)
+    kfold = StratifiedKFold(n_splits=36, shuffle=True,random_state=1211)
     auc = cross_val_score(clf, X, y, cv=kfold, scoring=my_metric)
     #print('AUC on testing data:gamma=%g, auc=%g' % (current_gamma, np.mean(auc)))
     if np.mean(auc)>= max_AUC:
@@ -76,12 +76,12 @@ for current_gamma in gamma_range:
 
 print('best gamma=%g is' %(best_gamma))
 
-C_range=[0.0001, 0.001, 0.01, .1, .3, .6, .9, 1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 100]  
+C_range=[0.0001, 0.001, 0.01, .1, .3, .6, 0.7,0.9, 1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 100]  
 for current_C in C_range:
     clf = SVC(kernel='rbf', C=current_C,gamma=best_gamma, tol=1e-9)
     my_metric = 'roc_auc'
     #auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
-    kfold = StratifiedKFold(n_splits=36, shuffle=False)
+    kfold = StratifiedKFold(n_splits=36, shuffle=True,random_state=1211)
     auc = cross_val_score(clf, X, y, cv=kfold, scoring=my_metric)
     #print('AUC on testing data:gamma=%g, auc=%g' % (current_gamma, np.mean(auc)))
     if np.mean(auc)>= max_AUC:
@@ -108,7 +108,7 @@ max_component=min((X.shape[0]-1),X.shape[1])
 for nf in range(1, max_component):
     pipe = Pipeline([('pca_apply', PCA(n_components=nf, whiten=True)),
                         ('svc', SVC(kernel='rbf', C=best_C,gamma=best_gamma, tol=1e-9))])
-    kfold = StratifiedKFold(n_splits=36, shuffle=False)
+    kfold = StratifiedKFold(n_splits=36, shuffle=True,random_state=1211)
     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
 
     #print('AUC after CV for nf=%dgamma=%s is %g' %
@@ -118,6 +118,10 @@ for nf in range(1, max_component):
         best_com=nf
 
 print('n_components=%d is' %(best_com))
+
+#best_com=53
+#best_gamma=0.075
+#best_C=.1
 #######################selecting gamma################
 ## Random permutation of pairs of training subject for 1000 iterations
 ####################################################
@@ -130,11 +134,11 @@ for i in range(iteration_num):
     kfold = StratifiedKFold(n_splits=36, shuffle=True)
     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
     auc_sum [i]= np.mean(auc)
-    #print('AUC after CV for i=%dgamma=%s number of components=%d is %g' %
-        #(i, best_gamma,best_com, np.mean(auc)))
+    print('AUC after CV for i=%dgamma=%s number of components=%d is %g' % (i, best_gamma,best_com, np.mean(auc)))
 
 
 print('Average AUC with PCA=%g , Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)))
+
 
 auc_sum = np.zeros((iteration_num))
 for i in range(iteration_num):

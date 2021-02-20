@@ -48,24 +48,23 @@ y = np.hstack(
 my_metric = 'roc_auc'
 
 
-
 #######################selecting gamma################
-## Following part of the code do a grid search to find best value of gamma using a one fold cross validation
-## the metric for comparing the performance is AUC
+# Following part of the code do a grid search to find best value of gamma using a one fold cross validation
+# the metric for comparing the performance is AUC
 ####################################################
-best_c=0
-max_AUC=0
-C_range=[0.0001, 0.001, 0.01, .1, .3, .6, .9, 1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 100]
+best_c = 0
+max_AUC = 0
+C_range = [0.0001, 0.001, 0.01, .1, .3, .6, .9,
+           1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 100]
 for current_c in C_range:
     clf = SVC(kernel='linear', C=current_c, tol=1e-9)
     my_metric = 'roc_auc'
     #auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
-    kfold = StratifiedKFold(n_splits=36, shuffle=False)
+    kfold = StratifiedKFold(n_splits=36, shuffle=True, random_state=1211)
     auc = cross_val_score(clf, X, y, cv=kfold, scoring=my_metric)
     #print('AUC on testing data:gamma=%g, auc=%g' % (current_c, np.mean(auc)))
-    if np.mean(auc)>= max_AUC:
-        best_c=current_c
-
+    if np.mean(auc) >= max_AUC:
+        best_c = current_c
 
 
 '''
@@ -77,48 +76,48 @@ auc = cross_val_score(clf, X, y, cv=kfold, scoring=my_metric)
 print('AUC on testing data:gamma=%s, auc=%g' % (mygamma, np.mean(auc)))
 '''
 #######################selecting gamma################
-## Following part of the code do a grid search to find best number of PCA component
-## the metric for comparing the performance is AUC
+# Following part of the code do a grid search to find best number of PCA component
+# the metric for comparing the performance is AUC
 ####################################################
-best_com=0
-max_AUC=0
-max_component=min((X.shape[0]-1),X.shape[1])
+best_com = 0
+max_AUC = 0
+max_component = min((X.shape[0]-1), X.shape[1])
 for nf in range(1, max_component):
     pipe = Pipeline([('pca_apply', PCA(n_components=nf, whiten=True)),
-                        ('svc', SVC(kernel='linear', C= best_c, tol=1e-9))])
-    kfold = StratifiedKFold(n_splits=36, shuffle=False)
+                     ('svc', SVC(kernel='linear', C=best_c, tol=1e-9))])
+    kfold = StratifiedKFold(n_splits=36, shuffle=True, random_state=1211)
     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
 
-    #print('AUC after CV for nf=%dgamma=%s is %g' %
-            #(nf, best_c, np.mean(auc)))
-    if np.mean(auc)>= max_AUC:
-        best_com=nf
+    # print('AUC after CV for nf=%dgamma=%s is %g' %
+    # (nf, best_c, np.mean(auc)))
+    if np.mean(auc) >= max_AUC:
+        best_com = nf
 #######################selecting gamma################
-## Random permutation of pairs of training subject for 1000 iterations
+# Random permutation of pairs of training subject for 1000 iterations
 ####################################################
-iteration_num=100
+iteration_num = 100
 auc_sum = np.zeros((iteration_num))
 for i in range(iteration_num):
-# y = np.random.permutation(y)
+    # y = np.random.permutation(y)
     pipe = Pipeline([('pca_apply', PCA(n_components=best_com, whiten=True)),
-                    ('svc', SVC(kernel='linear', C= best_c, tol=1e-9))])
+                     ('svc', SVC(kernel='linear', C=best_c, tol=1e-9))])
     kfold = StratifiedKFold(n_splits=36, shuffle=True)
     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
-    auc_sum [i]= np.mean(auc)
-    #print('AUC after CV for i=%dgamma=%s is %g' %
-        #(i, best_gamma, np.mean(auc)))
+    auc_sum[i] = np.mean(auc)
+    # print('AUC after CV for i=%dgamma=%s is %g' %
+    # (i, best_gamma, np.mean(auc)))
 
 
-print('Average AUC=%g , Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)))
+print('Average AUC with pca=%g , Std AUC=%g' % (np.mean(auc_sum), np.std(auc_sum)))
 
 for i in range(iteration_num):
-# y = np.random.permutation(y)
-    pipe = SVC(kernel='linear', C= best_c, tol=1e-9)
+    # y = np.random.permutation(y)
+    pipe = SVC(kernel='linear', C=best_c, tol=1e-9)
     kfold = StratifiedKFold(n_splits=36, shuffle=True)
     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
-    auc_sum [i]= np.mean(auc)
-    #print('AUC after CV for i=%dgamma=%s is %g' %
-        #(i, best_gamma, np.mean(auc)))
+    auc_sum[i] = np.mean(auc)
+    # print('AUC after CV for i=%dgamma=%s is %g' %
+    # (i, best_gamma, np.mean(auc)))
 
 
-print('Average AUC=%g , Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)))
+print('Average AUC=%g , Std AUC=%g' % (np.mean(auc_sum), np.std(auc_sum)))
