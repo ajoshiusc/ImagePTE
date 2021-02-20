@@ -2,6 +2,7 @@ import numpy as np
 import scipy.sparse as sp
 import torch
 import torch.nn.functional as F
+import pdb
 
 def encode_onehot(labels):
     classes = set(labels)
@@ -64,7 +65,9 @@ def normalize(mx):
 
 
 def accuracy(output, labels, num_test):
-    probabilities = F.softmax(output)
+    # print(output.shape)
+    probabilities = F.softmax(output, dim=-1)
+    # pdb.set_trace()
     preds = torch.argmax(probabilities, dim=1).type_as(labels)
     correct = preds.eq(labels).double()
     correct = correct.sum()

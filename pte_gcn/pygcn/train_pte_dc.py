@@ -38,6 +38,7 @@ parser.add_argument('--batch_size', type=int, default=10, help='Batch Size')
 parser.add_argument('--rate', type=float, default=1.0, help='proportion of training samples')
 parser.add_argument('--model_path', type=str, default="../models/", help='path to saved models.')
 parser.add_argument('--iters', type=int, default=3, help='number of cross_validation iterations')
+parser.add_argument('--ngroup', type=int, default=3, help='number of groups')
 
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
@@ -79,8 +80,22 @@ def calc_DAD(data):
 #     idx_val = idx_val.cuda()
 #     idx_test = idx_test.cuda()
 
+def split(feature, adj):
+    features_all = torch.zeros([args.batch_size*args.ngroup, feature.shape[1], feature.shape[-1]//args.ngroup], dtype=torch.float)
+    adj_all = torch.zeros([args.batch_size*args.ngroup, adj.shape[1], adj.shape[-1]], dtype=torch.float)
+    adj = adj.repeat(args.ngroup, 1, 1)
+    print(adj.type(), adj_all.type())
+    gl = feature.shape[-1] // args.ngroup
+    i = 0
+    while i < features_all.shape[0]:
+        for j in range(args.ngroup):
+            features_all[i, :, :] = feature[i, :, j*gl:(j+1)*gl]
+            adj_all[i, :, :] = adj[i + j*10, :, :]
+            i = i + 1
+    return features_all, adj_all
 
-def train(epoch, model, optimizer, scheduler, train_features, train_adj, train_labels): 
+
+def train(epoch, model, optimizer, scheduler, train_features, train_adj, train_labels, device): 
     batch_size = args.batch_size
     num_train = train_features.shape[0]
     # index = torch.randperm(num_train)[:batch_size]
@@ -96,12 +111,16 @@ def train(epoch, model, optimizer, scheduler, train_features, train_adj, train_l
     # labels = torch.from_numpy(np.hstack((np.ones(batch_size//2), np.zeros(batch_size//2)))).long().to(device)
 
     num_batches = num_train // batch_size
+    aft_sp_feat, aft_sp_adj = split(train_features, train_adj)
 
     for i in range(num_batches):
-        features_bc = train_features[i*batch_size:(i + 1) * batch_size, :, :]
-        adj_bc = train_adj[i*batch_size:(i + 1) * batch_size, :, :]
-        labels = train_labels[i*batch_size:(i + 1) * batch_size]
+        features_bc = aft_sp_feat[i*batch_size:(i+1)*batch_size, :, :]
+        adj_bc = aft_sp_adj[i*batch_size:(i+1)*batch_size, :, :]
+        labels_bc = train_labels[i*batch_size:(i+1)*batch_size]
         
+
+        #print("after spliting")
+       # print(adj_bc.shape, features_bc.shape, labels.shape, labels)
         t = time.perf_counter()
         model.train()
         optimizer.zero_grad()
@@ -109,8 +128,8 @@ def train(epoch, model, optimizer, scheduler, train_features, train_adj, train_l
         # graph_output = torch.mean(output, dim=1)
         loss_criterion = torch.nn.CrossEntropyLoss() # this contains activation function, and calc loss
         # print(graph_output, graph_output.shape)
-        loss_train = loss_criterion(graph_output, labels)
-        acc_train = accuracy(graph_output, labels, num_train)
+        loss_train = loss_criterion(graph_output, labels_bc)
+        acc_train = accuracy(graph_output, labels_bc, num_train)
         loss_train.backward()
         optimizer.step()
         scheduler.step()
@@ -133,6 +152,8 @@ def train(epoch, model, optimizer, scheduler, train_features, train_adj, train_l
 
 def test(model, test_features, test_adj, test_labels):
     model.eval()
+    test_features, test_adj = split(test_features, test_adj)
+
     graph_output = model(test_features, test_adj)
     # graph_output = torch.mean(output, dim=1)
     loss_criterion = torch.nn.CrossEntropyLoss()
@@ -204,7 +225,7 @@ def cross_validation():
         for train_ind, test_ind in kfold.split(features_numpy, labels_numpy):
             # Model and optimizer
 
-            model = GCN(nfeat=features_epi.shape[2],
+            model = GCN(nfeat=features_epi.shape[2]//args.ngroup,
                     nhid = [200, 200, 50],
                     # nhid=[200, 200, 100, 50],
                     nclass= 2, #labels.max().item() + 1,
@@ -240,7 +261,7 @@ def cross_validation():
                 train(epoch, model, optimizer, scheduler, 
                     torch.from_numpy(train_features).float().to(device), 
                     torch.from_numpy(train_adj).float().to(device), 
-                    torch.from_numpy(train_labels).long().to(device))
+                    torch.from_numpy(train_labels).long().to(device), device)
                 if (epoch >= start_epoch) and (epoch % gap == 0) and (mode_on == True):
                         acc_test.append(test(model, test_features, test_adj, test_labels))
 

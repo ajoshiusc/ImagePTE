@@ -32,6 +32,7 @@ class GCN(nn.Module):
             # nn.Linear(200, 100),
             # nn.PReLU(),
             nn.Linear(16, 8),
+            # nn.BatchNorm1d(8),
             nn.PReLU(),
             nn.Linear(8, nclass))
 
