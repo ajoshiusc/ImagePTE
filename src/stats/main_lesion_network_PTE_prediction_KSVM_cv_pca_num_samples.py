@@ -4,6 +4,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import StratifiedKFold
+from numpy.random import permutation
 
 f = np.load('../connectivity/PTE_graphs.npz')
 conn_pte = f['conn_mat']
@@ -45,9 +46,7 @@ n_iter = 100
 auc_sub_all = np.zeros((num_sub_all, n_iter))
 
 for num_sub in range(2, num_sub_all):
-    X = np.vstack((epi_measures[:num_sub, ], nonepi_measures[:num_sub, ]))
-    y = np.hstack(
-        (np.ones(num_sub), np.zeros(num_sub)))
+
 
     # Permute the labels to check if AUC becomes 0.5. This check is to make sure that we are not overfitting
 
@@ -69,7 +68,7 @@ for num_sub in range(2, num_sub_all):
     max_AUC = 0
 
     best_com = 53
-    best_gamma = 0.075
+    best_gamma = 0.075 # 0.075
     best_C = .1
     #######################selecting gamma################
     # Random permutation of pairs of training subject for 1000 iterations
@@ -77,6 +76,11 @@ for num_sub in range(2, num_sub_all):
     iteration_num = 100
     auc_sum = np.zeros((iteration_num))
     for i in range(iteration_num):
+        p = permutation(num_sub_all)
+        X = np.vstack((epi_measures[p[:num_sub], ], nonepi_measures[p[:num_sub], ]))
+        y = np.hstack(
+            (np.ones(num_sub), np.zeros(num_sub)))
+
         # y = np.random.permutation(y)
         if 2*(num_sub-1) < 53:
             pipe = Pipeline(
@@ -87,8 +91,8 @@ for num_sub in range(2, num_sub_all):
         kfold = StratifiedKFold(n_splits=num_sub, shuffle=True)
         auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
         auc_sum[i] = np.mean(auc)
-        print('AUC after CV for i=%dgamma=%s number of components=%d is %g' %
-              (i, best_gamma, best_com, np.mean(auc)))
+        #print('AUC after CV for i=%dgamma=%s number of components=%d is %g' %
+        #      (i, best_gamma, best_com, np.mean(auc)))
 
     print('Num_Sub = %d, Average AUC=%g , Std AUC=%g' %
           (num_sub, np.mean(auc_sum), np.std(auc_sum)))
@@ -101,5 +105,5 @@ for num_sub in range(2, num_sub_all):
 print(auc_mean_sub)
 print(auc_std_sub)
 
-np.savez('auc_num_sub.npz', auc_mean_sub=auc_mean_sub,
+np.savez('auc_num_sub3.npz', auc_mean_sub=auc_mean_sub,
          auc_std_sub=auc_std_sub, auc_sub_all=auc_sub_all)
