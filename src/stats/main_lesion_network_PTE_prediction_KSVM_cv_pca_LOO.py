@@ -106,7 +106,8 @@ for train, test in tqdm(cv.split(X, y)):
     max_AUC = 0
     best_c = 0
     for current_c in C_range:
-        clf = Pipeline([('svc', SVC(kernel='rbf', C=current_c, tol=1e-9))])
+        clf = Pipeline(
+            [('svc', SVC(kernel='rbf', gamma=best_gamma, C=current_c, tol=1e-9))])
         my_metric = 'roc_auc'
 
         cv = StratifiedKFold(n_splits=35, shuffle=True, random_state=1211)
@@ -122,7 +123,7 @@ for train, test in tqdm(cv.split(X, y)):
 
     for nf in range(5, max_component):
         pipe = Pipeline([('pca_apply', PCA(n_components=nf, whiten=True)),
-                         ('svc', SVC(kernel='rbf', C=best_c, tol=1e-9))])
+                         ('svc', SVC(kernel='rbf', gamma=best_gamma, C=best_c, tol=1e-9))])
         kfold = StratifiedKFold(n_splits=35, shuffle=True, random_state=1211)
         auc = cross_val_score(
             pipe, X[train], y[train], cv=kfold, scoring=my_metric)
@@ -132,7 +133,7 @@ for train, test in tqdm(cv.split(X, y)):
             max_AUC = np.mean(auc)
 
     clf = Pipeline([('pca_apply', PCA(n_components=best_com, whiten=True)),
-                    ('svc', SVC(kernel='rbf', C=best_c, tol=1e-9))])
+                    ('svc', SVC(kernel='rbf', gamma=best_gamma, C=best_c, tol=1e-9))])
 
     clf.fit(X[train], y[train])
     ytest = clf.predict(X[test])
