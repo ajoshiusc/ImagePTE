@@ -6,6 +6,7 @@ from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import StratifiedKFold, LeaveOneOut
 from sklearn.metrics import roc_auc_score
+from sklearn.utils import shuffle
 from tqdm import tqdm
 
 f = np.load('../connectivity/PTE_graphs.npz')
@@ -48,6 +49,20 @@ y = np.hstack(
 # Permute the labels to check if AUC becomes 0.5. This check is to make sure that we are not overfitting
 #y = np.random.permutation(y)
 
+def cross_val_score_loo(pipe, X, y):
+    cv = StratifiedKFold(int((X.shape[0]-1)/2),shuffle=True)
+    #cv = LeaveOneOut()
+    y_pred = np.zeros(y.shape)
+
+    for train, test in cv.split(X, y):
+        pipe.fit(X[train],y[train])
+        y_pred[test] = pipe.predict(X[test])
+
+    auc = roc_auc_score(y, y_pred)
+
+    return auc
+
+
 my_metric = 'roc_auc'
 
 
@@ -57,8 +72,8 @@ my_metric = 'roc_auc'
 ####################################################
 best_c = 0
 max_AUC = 0
-C_range = [0.0001, 0.001, 0.01, .1, .3, .6, .9,
-           1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 100]
+C_range = [0.05, 0.075, 0.085, 0.1, 0.15, 0.2] #[0.0001, 0.001, 0.01, .1, .3, .6, .9,
+          # 1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 100]
 '''
 for mygamma in ['auto', 'scale']:
 clf = SVC(kernel='rbf', gamma=mygamma, tol=1e-9)
@@ -82,7 +97,8 @@ auc_sum = np.zeros((iteration_num))
 # y = np.random.permutation(y)
 #kfold = StratifiedKFold(n_splits=36, shuffle=True)
 #auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
-cv = LeaveOneOut()  # StratifiedKFold(n_splits=36, shuffle=True)
+cv = LeaveOneOut()  # 
+#cv = StratifiedKFold(n_splits=36, shuffle=True)
 
 y_pred = np.zeros(y.shape)
 for train, test in tqdm(cv.split(X, y)):
@@ -92,23 +108,20 @@ for train, test in tqdm(cv.split(X, y)):
         clf = Pipeline([('svc', SVC(kernel='linear', C=current_c, tol=1e-9))])
         my_metric = 'roc_auc'
 
-        cv = StratifiedKFold(n_splits=35, shuffle=True, random_state=1211)
-        auc = cross_val_score(
-            clf, X[train], y[train], cv=cv, scoring=my_metric)
+        auc = cross_val_score_loo(clf, X[train], y[train])
         if np.mean(auc) >= max_AUC:
             best_c = current_c
             max_AUC = np.mean(auc)
 
     max_AUC = 0
 
-    max_component = min((X.shape[0]-4), X.shape[1])
+    max_component = 20 #min((X.shape[0]-3), X.shape[1])
 
-    for nf in range(5, max_component):
+    for nf in range(10, max_component):
         pipe = Pipeline([('pca_apply', PCA(n_components=nf, whiten=True)),
                          ('svc', SVC(kernel='linear', C=best_c, tol=1e-9))])
-        kfold = StratifiedKFold(n_splits=35, shuffle=True, random_state=1211)
-        auc = cross_val_score(
-            pipe, X[train], y[train], cv=kfold, scoring=my_metric)
+        
+        auc = cross_val_score_loo(pipe, X[train], y[train])
 
         if np.mean(auc) >= max_AUC:
             best_com = nf
@@ -120,6 +133,8 @@ for train, test in tqdm(cv.split(X, y)):
     clf.fit(X[train], y[train])
     ytest = clf.predict(X[test])
     y_pred[test] = ytest
+
+    print(best_com, best_c, ytest, y[test])
 
 auc = roc_auc_score(y, y_pred)
 auc_sum = np.mean(auc)
