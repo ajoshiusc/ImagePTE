@@ -149,8 +149,7 @@ def test(model, test_features, test_adj, test_labels):
 
 def boxcox_transform(features):
     transformed_feature = np.zeros_like(features)
-    
-    
+
     for sub_id in range(features.shape[0]):
         mean_feature = features[sub_id, :, 0]
         transformed_feature[sub_id, :, 0] = (mean_feature - np.mean(mean_feature)) / np.std(mean_feature)
@@ -182,20 +181,18 @@ def engineer_features(data):
     threshold = 0.4
     adj_temp[adj_temp < threshold] = 0
     adj_temp[adj_temp > 0] = 1
-    features = np.zeros((adj_temp.shape[0], adj_temp.shape[1], 4)) # n_subjects x 16 x num_features
+    features = np.zeros((adj_temp.shape[0], adj_temp.shape[1], 3)) # n_subjects x 16 x num_features
 
     features[:, :, 0] = np.mean(data['features'], axis=-1, keepdims=False)
     features[:, :, 1] = np.std(data['features'], axis=-1, keepdims=False)
     features[:, :, 2] = np.sum(adj_temp, axis=-1, keepdims=False) # degree
-    features[:, :, 3] = data['cent_coords'] # central coordinates of ROI
-    print(features)
+    # features[:, :, 3] = data['cent_coords'] # central coordinates of ROI
+    # print(normalize(features))
     # pdb.set_trace()
     # return boxcox_transform(features)
     return normalize(features)
     # pdb.set_trace()
     # return features
-
-
 
 
 def cross_validation():
@@ -246,7 +243,6 @@ def cross_validation():
 
         kfold = StratifiedKFold(n_splits=36, shuffle=True)
         # the folds are made by preserving the percentage of samples for each class.
-        
         acc = []
         max_epochs = []
         test_true = []
@@ -302,7 +298,7 @@ def cross_validation():
 
             # max_epochs.append(np.argmax(acc_test)*gap + start_epoch)
             # acc.append(np.max(acc_test))
-            acc.append(test(model, test_features, test_adj, test_labels)[-1])
+            acc.append(test(model, test_features, test_adj, test_labels)[:, -1])
             test_true.append(test_labels.cpu().numpy())
 
             # torch.save({'epoch': args.epochs,

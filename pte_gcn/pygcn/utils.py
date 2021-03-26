@@ -77,6 +77,24 @@ def accuracy(output, labels, num_test):
     # print("sensitivity" + str(sensitivity.item()), "   specificity"+str(specificity.item()))
     return correct / len(labels)
 
+def accuracy_dc(output, labels, ngroup, device):
+    probabilities = F.softmax(output, dim=-1)
+    # pdb.set_trace()
+    preds = torch.argmax(probabilities, dim=1).type_as(labels)
+    preds_vote = torch.zeros([preds.shape[0]//ngroup]).long().to(device)
+    k = 0
+    for i in range(0, preds.shape[0], ngroup):
+        preds_vote[k] = 1 if torch.mean(preds[i:i+ngroup].float()) >= 0.5 else 0
+        k = k + 1
+
+    labels = labels[::ngroup]
+    correct = preds_vote.eq(labels).double()
+    correct = correct.sum()
+    # positives = labels.sum().item()
+    # specificity = preds[num_epi_test:].eq(labels[num_epi_test:]).double().sum() / (num_test - positives)
+    # sensitivity = preds[:num_epi_test].eq(labels[:num_epi_test]).double().sum() / positives
+    # print("sensitivity" + str(sensitivity.item()), "   specificity"+str(specificity.item()))
+    return correct / len(labels), labels
 
 def sparse_mx_to_torch_sparse_tensor(sparse_mx):
     """Convert a scipy sparse matrix to a torch sparse tensor."""

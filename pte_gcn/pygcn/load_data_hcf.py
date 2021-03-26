@@ -90,6 +90,8 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
             nonepi_files.append(fname)
 
     epi_data = load_bfp_data(epi_files, 171)
+    print(epi_data.shape)
+    pdb.set_trace()
     nonepi_data = load_bfp_data(nonepi_files, 171)
 
     # nsub = epi_data.shape[2]
