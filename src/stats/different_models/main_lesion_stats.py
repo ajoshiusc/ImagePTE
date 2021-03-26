@@ -164,7 +164,7 @@ def roiwise_stats(epi_data, nonepi_data):
 
     for i, roi in enumerate(roi_list):
         msk = at_labels == roi
-        epi_roi_lesion_vols[:, i] = vox_vol * np.sum(epi_data[:, msk], axis=1)
+        epi_roi_lesion_vols[:, i] = vox_vol * np.sum(epi_data[:, msk], axis=1) # 37 x 16
         nonepi_roi_lesion_vols[:, i] = vox_vol * np.sum(nonepi_data[:, msk],
                                                         axis=1)
         roi_vols[i] = vox_vol * np.sum(at_labels.flatten() == roi)
@@ -349,7 +349,9 @@ def main():
     #roiwise_stats_OneclassSVM(epi_data, nonepi_data)
 
     epi_data, epi_subids = readsubs(studydir, epiIds, read_mask=False)
+
     nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds, read_mask=False)
+
 
     find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
                              nonepi_data)
