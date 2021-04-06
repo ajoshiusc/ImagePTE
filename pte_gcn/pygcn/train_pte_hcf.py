@@ -83,17 +83,6 @@ def calc_DAD(data):
 def train(epoch, model, optimizer, scheduler, train_features, train_adj, train_labels): 
     batch_size = args.batch_size
     num_train = train_features.shape[0]
-    # index = torch.randperm(num_train)[:batch_size]
-    # index_epi = torch.randperm(num_train)[:batch_size//2]
-    # index_non = torch.randperm(num_train_non)[:batch_size//2]
-    # features_epi_bc = train_features_epi[index_epi, :, :]
-    # features_non_bc = train_features_non[index_non, :, :]
-    # features_bc = torch.cat([features_epi_bc, features_non_bc])
-    
-    # adj_epi_bc = train_adj_epi[index_epi, :, :]
-    # adj_non_bc = train_adj_non[index_non, :, :]
-    # adj_bc = torch.cat([adj_epi_bc, adj_non_bc])
-    # labels = torch.from_numpy(np.hstack((np.ones(batch_size//2), np.zeros(batch_size//2)))).long().to(device)
 
     num_batches = num_train // batch_size
 
@@ -202,7 +191,7 @@ def cross_validation():
     # Load data
 
     population = 'PTE'
-    epidata = np.load(population+'_graphs_gcn_hcf.npz')
+    epidata = np.load(population+'_graphs_gcn_hcf_BCI-DNI.npz')
     adj_epi = torch.from_numpy(calc_DAD(epidata)).float().to(device) # n_subjects*16 *16
     features_epi = torch.from_numpy(engineer_features(epidata)).float().to(device) # n_subjectsx16x171
 
@@ -214,21 +203,9 @@ def cross_validation():
     # test_features_epi = features_epi[num_train:, :, :]
 
     population = 'NONPTE'
-    nonepidata = np.load(population+'_graphs_gcn_hcf.npz')
+    nonepidata = np.load(population+'_graphs_gcn_hcf_BCI-DNI.npz')
     adj_non = torch.from_numpy(calc_DAD(nonepidata)).float().to(device) 
     features_non = torch.from_numpy(engineer_features(nonepidata)).float().to(device) #subjects x 16 x 4
-   
-    # print("DAD shape:")
-    # print(adj_non.shape, adj_epi.shape)
-    ## for now we are using the same number of epi , non epi training samples.
-    # n_subjects_non = features_non.shape[0]
-    # num_train_non = int(n_subjects_non * args.rate)
-    # train_adj_non = adj_non[:num_train_non, :, :]
-    # train_features_non = features_non[:num_train_non, :, :]
-    # test_adj_non = adj_non[num_train_non:, :, :]
-    # test_features_non = features_non[num_train_non:, :, :]
-
-   
 
     features = torch.cat([features_epi, features_non])
     adj = torch.cat([adj_epi, adj_non])

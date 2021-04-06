@@ -90,8 +90,6 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
             nonepi_files.append(fname)
 
     epi_data = load_bfp_data(epi_files, 171)
-    print(epi_data.shape)
-    pdb.set_trace()
     nonepi_data = load_bfp_data(nonepi_files, 171)
 
     # nsub = epi_data.shape[2]
@@ -125,7 +123,7 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
 
     print(cent_coords, cent_coords.shape)
 
-    np.savez('PTE_graphs_gcn_hcf.npz',
+    np.savez('PTE_graphs_gcn_hcf_BCI-DNI.npz',
              conn_mat=conn_mat,
              features=input_feat, # 36x16x171
              label_ids=label_ids,
@@ -150,7 +148,7 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
         # input_feat[subno, :, :] = time_series
         input_feat[subno, :, :] = np.transpose(brainSync(ref_sub.T, time_series.T)[0])
 
-    np.savez('NONPTE_graphs_gcn_hcf.npz',
+    np.savez('NONPTE_graphs_gcn_hcf_BCI-DNI.npz',
              conn_mat=conn_mat, # n_subjects*16*16
              features=input_feat, # n_subjects * 16 x 171
              label_ids=label_ids,
@@ -191,6 +189,8 @@ if __name__ == "__main__":
     epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
     nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
     # atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCBrain_grayordinate_labels.mat'
-    atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
+    # atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
+
+    atlas_labels = '../BCI-DNI_brain_grayordinate_labels.mat'
     load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, atlas_labels)
     input('press any key')

@@ -37,7 +37,7 @@ parser.add_argument('--dropout', type=float, default=0.5,
 parser.add_argument('--batch_size', type=int, default=10, help='Batch Size')
 parser.add_argument('--rate', type=float, default=1.0, help='proportion of training samples')
 parser.add_argument('--model_path', type=str, default="../models/", help='path to saved models.')
-parser.add_argument('--iters', type=int, default=100, help='number of cross_validation iterations')
+parser.add_argument('--iters', type=int, default=3, help='number of cross_validation iterations')
 
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
@@ -52,17 +52,19 @@ if args.cuda:
 
 ##======================================================================
 def calc_DAD(data):
-    thr = 0.4
+    thr = 0.6
     adj = data['conn_mat']
     adj[adj < thr] = 0 ## threshold the weakly connected edges
     adj[adj > 0] = 1
-    # print(adj)
-    # pdb.set_trace()
+
     Dl = np.sum(adj, axis=-1)
+
+    Dl[Dl < 2] = 0
     num_node = adj.shape[1]
     Dn = np.zeros((adj.shape[0], num_node, num_node))
     for i in range(num_node):
         Dn[:, i, i] = Dl[:, i] ** (-0.5)
+    Dn[Dn == np.inf] = 0
 
     adj_ori = data['conn_mat']
     adj_ori[adj_ori < thr] = 0
@@ -143,12 +145,12 @@ def cross_validation():
     # Load data
 
     population = 'PTE'
-    epidata = np.load(population+'_graphs_gcn.npz')
+    epidata = np.load(population+'_graphs_gcn_BCI-DNI.npz')
     adj_epi = torch.from_numpy(calc_DAD(epidata)).float().to(device) # n_subjects*16 *16
     features_epi = torch.from_numpy(epidata['features']).float().to(device) # n_subjectsx16x171
 
     population = 'NONPTE'
-    nonepidata = np.load(population+'_graphs_gcn.npz')
+    nonepidata = np.load(population+'_graphs_gcn_BCI-DNI.npz')
     adj_non = torch.from_numpy(calc_DAD(nonepidata)).float().to(device) 
     features_non = torch.from_numpy(nonepidata['features']).float().to(device) #subjects x 16 x 171
     
@@ -178,7 +180,7 @@ def cross_validation():
 
             model = GCN(nfeat=features_epi.shape[2],
                     nhid = [200, 200, 50],
-                    # nhid=[200, 200, 100, 50],
+                    # nhid=[400, 200, 50],
                     nclass= 2, #labels.max().item() + 1,
                     dropout=args.dropout)
             optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)

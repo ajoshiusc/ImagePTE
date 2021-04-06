@@ -18,7 +18,6 @@ from sklearn.svm import OneClassSVM
 
 
 def get_connectivity(data, labels, label_ids): # compute adj matrix
-    #%%
     if type(data) == str:
         df = spio.loadmat(data)
         data = df['dtseries'].T
@@ -27,7 +26,7 @@ def get_connectivity(data, labels, label_ids): # compute adj matrix
 
     num_rois = len(label_ids)
 
-    rtseries = np.zeros((num_time, num_rois)) # 171x158
+    rtseries = np.zeros((num_time, num_rois)) # 171x16/ 95 /158
 
     for i, id in enumerate(label_ids):
 
@@ -40,7 +39,7 @@ def get_connectivity(data, labels, label_ids): # compute adj matrix
 
     conn[~np.isfinite(conn)] = 0  # define the infinite value edges as no connection
 
-    ##======Added=======##
+    ##===================Added===========================##
     for i in range(conn.shape[0]):
         conn[i, i] = 1.0
         for j in range(conn.shape[1]):
@@ -54,12 +53,9 @@ def get_connectivity(data, labels, label_ids): # compute adj matrix
 def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, atlas_labels):
 
     atlas = spio.loadmat(atlas_labels)
-    # at_labels = ni.load_img(atlas_labels).get_data() # 18 labels?
-    # print(at_labels)
 
     gord_labels = atlas['labels'].squeeze()
-    print(gord_labels.shape)
-    pdb.set_trace()
+
     label_ids = np.unique(gord_labels)  # unique label ids
 
     # remove WM label from connectivity analysis
@@ -123,7 +119,7 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
         # print(ref_sub.shape, time_series.shape)
         input_feat[subno, :, :] = np.transpose(brainSync(ref_sub.T, time_series.T)[0])
 
-    np.savez('PTE_graphs_gcn_brain.npz',
+    np.savez('PTE_graphs_gcn_BCI-DNI.npz',
              conn_mat=conn_mat,
              features=input_feat, # 36x16x171
              label_ids=label_ids,
@@ -146,7 +142,7 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
        # cent_mat[subno, :] = np.array(list(cent.items()))[:,1]
         input_feat[subno, :, :] = np.transpose(brainSync(ref_sub.T, time_series.T)[0])
 
-    np.savez('NONPTE_graphs_gcn_brain.npz',
+    np.savez('NONPTE_graphs_gcn_BCI-DNI.npz',
              conn_mat=conn_mat, # n_subjects*16*16
              features=input_feat, # n_subjects * 16 x 171
              label_ids=label_ids,
@@ -167,6 +163,6 @@ if __name__ == "__main__":
     nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
     # atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCBrain_grayordinate_labels.mat'
     # atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
-    atlas_labels = '../atlases/USCLobes/BCI-DNI_brain.label.nii.gz'
+    atlas_labels = '../BCI-DNI_brain_grayordinate_labels.mat'
     load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, atlas_labels)
     input('press any key')
