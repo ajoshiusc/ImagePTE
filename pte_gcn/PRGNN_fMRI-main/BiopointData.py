@@ -1,25 +1,25 @@
 import torch
-from torch_geometric.data import InMemoryDataset,Data
+from torch_geometric.data import InMemoryDataset, Data
 from os.path import join, isfile
 from os import listdir
 import numpy as np
 import os.path as osp
 from utils.construct_graph import read_data
 
-
+## create our own dataset inheriting the built-in class
 class BiopointDataset(InMemoryDataset):
     def __init__(self, root, name, transform=None, pre_transform=None):
         self.root = root
         self.name = name
-        super(BiopointDataset, self).__init__(root,transform, pre_transform)
+        super(BiopointDataset, self).__init__(root, transform, pre_transform)
         self.data, self.slices = torch.load(self.processed_paths[0])
 
     @property
     def raw_file_names(self):
-        data_dir = osp.join(self.root,'raw')
-        onlyfiles = [f for f in listdir(data_dir) if osp.isfile(osp.join(data_dir, f))]
-        onlyfiles.sort()
-        return onlyfiles
+        # data_dir = osp.join(self.root, 'raw')
+        # onlyfiles = [f for f in listdir(data_dir) if osp.isfile(osp.join(data_dir, f))]
+        # onlyfiles.sort()
+        return []
     @property
     def processed_file_names(self):
         return  'data.pt'

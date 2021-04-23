@@ -18,6 +18,7 @@ from net.brain_networks import LI_Net,NNGAT_Net
 
 from utils.utils import normal_transform_train,normal_transform_test,train_val_test_split
 from utils.mmd_loss import MMD_loss
+from sklearn.model_selection import StratifiedKFold
 
 
 torch.manual_seed(123)
@@ -29,7 +30,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 parser = argparse.ArgumentParser()
 parser.add_argument('--epoch', type=int, default=1, help='starting epoch')
 parser.add_argument('--n_epochs', type=int, default=20, help='number of epochs of training')
-parser.add_argument('--batchSize', type=int, default=100, help='size of the batches')
+parser.add_argument('--batchSize', type=int, default=30, help='size of the batches')
 parser.add_argument('--dataroot', type=str, default='data/praug_30/', help='root directory of the dataset')
 parser.add_argument('--matroot', type=str, default='MAT/clear_subjects.mat', help='root directory of the subject ID')
 parser.add_argument('--fold', type=int, default=1, help='training which fold')
@@ -49,10 +50,10 @@ parser.add_argument('--distL', type=str, default='bce', help='bce || mmd')
 parser.add_argument('--poolmethod', type=str, default='topk', help='topk || sag')
 parser.add_argument('--optimizer', type=str, default='Adam', help='Adam || SGD')
 parser.add_argument('--layer', type=int, default=2, help='number of GNN layers')
-parser.add_argument('--nodes', type=int, default=84, help='number of nodes')
+parser.add_argument('--nodes', type=int, default=93, help='number of nodes')
 parser.add_argument('--ratio', type=float, default=0.5, help='pooling ratio')
 parser.add_argument('--net', type=str, default='NNGAT', help='model name: NNGAT || LI_NET')
-parser.add_argument('--indim', type=int, default=84, help='feature dim')
+parser.add_argument('--indim', type=int, default=93, help='feature dim')
 parser.add_argument('--nclass', type=int, default=2, help='feature dim')
 parser.add_argument('--save_model', action='store_true')
 parser.add_argument('--normalization', action='store_true')
@@ -64,19 +65,35 @@ opt = parser.parse_args()
 
 
 #################### Parameter Initialization #######################
-name = 'Biopoint'
-writer = SummaryWriter(os.path.join('./log/{}_fold{}_consis{}'.format(opt.net,opt.fold,opt.lamb5)))
-
-
+name = 'ADHD_data'
+writer = SummaryWriter(os.path.join('./log/{}_fold{}_consis{}'.format(opt.net, opt.fold, opt.lamb5)))
 
 ############# Define Dataloader -- need costumize#####################
 dataset = BiopointDataset(opt.dataroot, name)
 
 ############### split train, val, and test set -- need costumize########################
-tr_index,te_index,val_index = train_val_test_split(mat_dir=opt.matroot,fold=opt.fold,rep = opt.rep)
+# tr_index, te_index, val_index = train_val_test_split(mat_dir=opt.matroot, fold=opt.fold, rep=opt.rep)
+num_folds = 3
+kfold = StratifiedKFold(n_splits=num_folds, shuffle=True)
+tr_index = []
+te_index = []
+val_index = []
+ADHD_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN_fMRI-main/ADHD_parPearson_BCI-DNI.npz")
+TDC_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN_fMRI-main/TDC_parPearson_BCI-DNI.npz")
+adhd_features = ADHD_data['conn_mat']
+tdc_features = TDC_data['conn_mat']
+x_features = np.concatenate([adhd_features, tdc_features], axis=0)
+labels = np.hstack((np.ones(adhd_features.shape[0]), np.zeros(tdc_features.shape[0])))
+# x_ind?, y_ind?
+for a, b in kfold.split(x_features, labels):
+    te_index.append(b)
+    tr_index.append(a)
+tr_index = np.concatenate(tr_index)
+te_index = np.concatenate(te_index)
+val_index = te_index
 ########### skip these two lines for cv.. ############################
-val_index = np.concatenate([te_index,val_index])
-te_index = val_index
+# val_index = np.concatenate([te_index, val_index])
+# te_index = val_index
 ######################################################################
 train_mask = torch.zeros(len(dataset), dtype=torch.uint8)
 test_mask = torch.zeros(len(dataset), dtype=torch.uint8)
@@ -94,13 +111,12 @@ val_dataset = dataset[val_mask]
 if opt.normalization:
     for i in range(train_dataset.data.x.shape[1]):
         train_dataset.data.x[:, i], lamb, xmean, xstd = normal_transform_train(train_dataset.data.x[:, i])
-        test_dataset.data.x[:, i] = normal_transform_test(test_dataset.data.x[:, i],lamb, xmean, xstd)
+        test_dataset.data.x[:, i] = normal_transform_test(test_dataset.data.x[:, i], lamb, xmean, xstd)
         val_dataset.data.x[:, i] = normal_transform_test(val_dataset.data.x[:, i], lamb, xmean, xstd)
 
-test_loader = DataLoader(test_dataset,batch_size=opt.batchSize,shuffle = False)
+test_loader = DataLoader(test_dataset, batch_size=opt.batchSize, shuffle=False)
 val_loader = DataLoader(val_dataset, batch_size=opt.batchSize, shuffle=False)
-train_loader = DataLoader(train_dataset,batch_size=opt.batchSize, shuffle= True)
-
+train_loader = DataLoader(train_dataset, batch_size=opt.batchSize, shuffle=True)
 
 
 ############### Define Graph Deep Learning Network ##########################
@@ -111,7 +127,7 @@ elif opt.net == 'NNGAT':
 
 
 print(model)
-print('ground_truth: ', test_dataset.data.y, 'total: ', len(test_dataset.data.y), 'positive: ',sum(test_dataset.data.y))
+print('ground_truth: ', test_dataset.data.y, 'total: ', len(test_dataset.data.y), 'positive: ', sum(test_dataset.data.y))
 if opt.optimizer == 'Adam':
     optimizer = torch.optim.Adam(model.parameters(), lr= opt.lr, weight_decay=opt.weightdecay)
 elif opt.optimizer == 'SGD':
@@ -184,7 +200,7 @@ def train(epoch):
         writer.add_scalar('train/classification_loss', loss_c, epoch * len(train_loader) + i)
         writer.add_scalar('train/entropy_loss1', loss_dist1, epoch * len(train_loader) + i)
         writer.add_scalar('train/entropy_loss2', loss_dist2, epoch * len(train_loader) + i)
-        writer.add_scalar('train/consistance_loss', loss_consist, epoch * len(train_loader) + i)
+        writer.add_scalar('train/consistence_loss', loss_consist, epoch * len(train_loader) + i)
 
         i = i + 1
 
@@ -217,7 +233,7 @@ def test_acc(loader):
     correct = 0
     for data in loader:
         data = data.to(device)
-        output,_,_= model(data.x, data.edge_index, data.batch, data.edge_attr)
+        output, _, _ = model(data.x, data.edge_index, data.batch, data.edge_attr)
         pred = output.max(dim=1)[1]
         correct += pred.eq(data.y).sum().item()
     return correct / len(loader.dataset)
@@ -253,11 +269,11 @@ def test_loss(loader,epoch):
 best_model_wts = copy.deepcopy(model.state_dict())
 best_loss = 1e10
 for epoch in range(0, opt.n_epochs):
-    since  = time.time()
-    tr_loss, s1_arr, s2_arr,le1,le2 = train(epoch)
+    since = time.time()
+    tr_loss, s1_arr, s2_arr, le1, le2 = train(epoch)
     tr_acc = test_acc(train_loader)
     val_acc = test_acc(val_loader)
-    val_loss = test_loss(val_loader,epoch)
+    val_loss = test_loss(val_loader, epoch)
     time_elapsed = time.time() - since
     print('*====**')
     print('{:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
@@ -271,7 +287,6 @@ for epoch in range(0, opt.n_epochs):
     writer.add_scalar('Ent/ent2', le2, epoch)
     writer.add_histogram('Hist/hist_s1', s1_arr, epoch)
     writer.add_histogram('Hist/hist_s2', s2_arr, epoch)
-
 
     if val_loss < best_loss and epoch > 5:
         print("saving best model")
@@ -289,7 +304,7 @@ for epoch in range(0, opt.n_epochs):
 model.load_state_dict(best_model_wts)
 model.eval()
 test_accuracy = test_acc(test_loader)
-test_l= test_loss(test_loader,0)
+test_l = test_loss(test_loader, 0)
 print("===========================")
 print("Test Acc: {:.7f}, Test Loss: {:.7f} ".format(test_accuracy, test_l))
 print(opt)

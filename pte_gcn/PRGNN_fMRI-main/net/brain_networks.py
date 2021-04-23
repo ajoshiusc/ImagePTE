@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
-from torch_geometric.nn import GATConv,NNConv
+from torch_geometric.nn import GATConv, NNConv
 from torch_geometric.nn import global_mean_pool as gap, global_max_pool as gmp, global_sort_pool as gsp
 from torch_geometric.utils import (add_self_loops, sort_edge_index,
                                    remove_self_loops)

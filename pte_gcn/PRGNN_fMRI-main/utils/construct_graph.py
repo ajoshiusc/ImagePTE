@@ -17,6 +17,7 @@ import multiprocessing
 from torch_sparse import coalesce
 from torch_geometric.utils import remove_self_loops
 from functools import partial
+import pdb
 
 def split(data, batch):
     node_slice = torch.cumsum(torch.from_numpy(np.bincount(batch)), 0)
@@ -66,42 +67,52 @@ class NoDaemonContext(type(multiprocessing.get_context())):
 
 
 def read_data(data_dir):
-    onlyfiles = [f for f in listdir(data_dir) if osp.isfile(osp.join(data_dir, f))]
-    onlyfiles.sort()
+    # onlyfiles = [f for f in listdir(data_dir) if osp.isfile(osp.join(data_dir, f))]
+    # onlyfiles.sort()
+    ADHD_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN_fMRI-main/ADHD_parPearson_BCI-DNI.npz")
+    TDC_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN_fMRI-main/TDC_parPearson_BCI-DNI.npz")
+
     batch = []
     y_list = []
     pseudo = []
-    edge_att_list, edge_index_list,att_list = [], [], []
+    edge_att_list, edge_index_list, att_list = [], [], []
 
-    #res = read_sigle_data(data_dir, onlyfiles[0])
+    # # parallar computing
+    # cores = multiprocessing.cpu_count()
+    # pool = multiprocessing.Pool(processes=cores)
+    # func = partial(read_sigle_data, data_dir)
+    #
+    # import timeit
+    #
+    # start = timeit.default_timer()
+    #
+    # res = pool.map(func, onlyfiles)
+    #
+    # pool.close()
+    # pool.join()
+    #
+    # stop = timeit.default_timer()
+    #
+    # print('Time: ', stop - start)
 
-    # parallar computing
-    cores = multiprocessing.cpu_count()
-    pool = multiprocessing.Pool(processes=cores)
-    func = partial(read_sigle_data, data_dir)
+    label = 1
+    temp = ADHD_data
+    num_sub_adhd = ADHD_data["conn_mat"].shape[0]
+    for j in range(num_sub_adhd + TDC_data["conn_mat"].shape[0]):
+        if j >= num_sub_adhd:
+            temp = TDC_data
+            label = 0
+            ind = j - num_sub_adhd
+        else:
+            ind = j
 
-    import timeit
-
-    start = timeit.default_timer()
-
-    res = pool.map(func, onlyfiles)
-
-    pool.close()
-    pool.join()
-
-    stop = timeit.default_timer()
-
-    print('Time: ', stop - start)
-
-
-
-    for j in range(len(res)):
-        edge_att_list.append(res[j][0])
-        edge_index_list.append(res[j][1]+j*res[j][4])
-        att_list.append(res[j][2])
-        y_list.append(res[j][3])
-        batch.append([j]*res[j][4])
-        pseudo.append(np.diag(np.ones(res[j][4])))
+        res = process_sigle_data(temp, ind)
+        edge_att_list.append(res[0])
+        edge_index_list.append(res[1]+j*res[-1])
+        att_list.append(res[2]) # node attribute
+        y_list.append(label)
+        batch.append([j]*res[-1])
+        pseudo.append(np.diag(np.ones(res[-1])))
 
     edge_att_arr = np.concatenate(edge_att_list)
     edge_index_arr = np.concatenate(edge_index_list, axis=1)
@@ -109,6 +120,7 @@ def read_data(data_dir):
     y_arr = np.stack(y_list)
     pseudo_arr = np.concatenate(pseudo, axis=0)
     #edge_att_torch = torch.from_numpy(edge_att_arr.reshape(len(edge_att_arr), 1)).float()
+
     edge_att_torch = torch.from_numpy(edge_att_arr).float()
     att_torch = torch.from_numpy(att_arr).float()
     y_torch = torch.from_numpy(y_arr).long()  # classification
@@ -116,20 +128,23 @@ def read_data(data_dir):
     edge_index_torch = torch.from_numpy(edge_index_arr).long()
     #data = Data(x=att_torch, edge_index=edge_index_torch, y=y_torch, edge_attr=edge_att_torch)
     pseudo_torch = torch.from_numpy(pseudo_arr).float()
-    data = Data(x=att_torch, edge_index=edge_index_torch, y=y_torch, edge_attr=edge_att_torch, pos = pseudo_torch )
+
+    data = Data(x=att_torch, edge_index=edge_index_torch, y=y_torch, edge_attr=edge_att_torch, pos=pseudo_torch )
+    # x: node feature matrix, edge_index: graph connectivity in COO format with shape[2, num_edges], y: labels/targets
+    # edge_attr: edge feature matrix with shape[num_e, num_e_feat];
+    # pos: node position matrix with shape[num_nodes, num_dimensions]
+
     data, slices = split(data, batch_torch)
 
     return data, slices
 
 
-def read_sigle_data(data_dir,filename):
-
-    temp = h5py.File(osp.join(data_dir, filename), 'r')
-
-    # read edge and edge attribute
-    pcorr = np.abs(temp['pcorr'].value)
+def process_sigle_data(data, index):
+    # key to how we adapt to our model
+    # read edge and edge attribute, partial correlation
+    pcorr = np.abs(data['partial_mat'][index])
     # only keep the top 10% edges
-    th = np.percentile(pcorr.reshape(-1),95)
+    th = np.percentile(pcorr.reshape(-1), 95)
     pcorr[pcorr < th] = 0  # set a threshold
     num_nodes = pcorr.shape[0]
 
@@ -141,11 +156,14 @@ def read_sigle_data(data_dir,filename):
         edge_att[i] = pcorr[adj.row[i], adj.col[i]]
     edge_index = np.stack([adj.row, adj.col])
     edge_index, edge_att = remove_self_loops(torch.from_numpy(edge_index).long(), torch.from_numpy(edge_att).float())
-    edge_index, edge_att = coalesce(edge_index, edge_att, num_nodes,
-                                    num_nodes)
+    edge_index, edge_att = coalesce(edge_index, edge_att, num_nodes, num_nodes)
 
-    att = temp['corr'].value
+    # node attribute, Pearson correlation
+    node_att = data["conn_mat"][index]
+    # print(edge_att.data.numpy(), edge_index.data.numpy(), node_att, num_nodes)
+    # pdb.set_trace()
 
-    return edge_att.data.numpy(),edge_index.data.numpy(),att,temp['indicator'].value, num_nodes
+    return edge_att.data.numpy(), edge_index.data.numpy(), node_att, num_nodes
 
 
+read_data("")
