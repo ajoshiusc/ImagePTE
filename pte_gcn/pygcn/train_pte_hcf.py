@@ -195,13 +195,6 @@ def cross_validation():
     adj_epi = torch.from_numpy(calc_DAD(epidata)).float().to(device) # n_subjects*16 *16
     features_epi = torch.from_numpy(engineer_features(epidata)).float().to(device) # n_subjectsx16x171
 
-    # n_subjects = features_epi.shape[0]
-    # num_train = int(n_subjects * args.rate)
-    # train_adj_epi = adj_epi[:num_train, :, :]
-    # train_features_epi = features_epi[:num_train, :, :]
-    # test_adj_epi = adj_epi[num_train:, :, :]
-    # test_features_epi = features_epi[num_train:, :, :]
-
     population = 'NONPTE'
     nonepidata = np.load(population+'_graphs_gcn_hcf_BCI-DNI.npz')
     adj_non = torch.from_numpy(calc_DAD(nonepidata)).float().to(device) 
