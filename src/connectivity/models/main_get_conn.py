@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
     p_dir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1/TBI_INVZV163RWK/BFP/TBI_INVZV163RWK/func/'
     sub = 'TBI_INVZV163RWK'
-    atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCBrain_grayordinate_labels.mat'
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/BCI-DNI_brain_grayordinate_labels.mat'
 
     atlas = spio.loadmat(atlas_labels)
 
