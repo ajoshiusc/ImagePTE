@@ -12,7 +12,7 @@ from scipy.stats import shapiro
 from sklearn.svm import OneClassSVM
 from statsmodels.stats.multitest import fdrcorrection
 from statsmodels.stats.weightstats import ttest_ind
-# from multivariate. import TBM_t2
+#from multivariate. import TBM_t2
 from tqdm import tqdm
 
 #from statsmodels.stats import wilcoxon
@@ -59,7 +59,7 @@ def readsubs(studydir, sub_ids, read_mask=False, sm='smooth3mm.'):
         if n == 0:
             data = np.zeros((min(len(sub_ids), nsub), ) + im.shape)
 
-        data[n, :, :, :] = im.get_fdata()
+        data[n, :, :, :] = im.get_data()
 
     return data, sub_ids
 
@@ -70,7 +70,7 @@ def find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
     atlas_bfc = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.bfc.nii.gz'
     ati = ni.load_img(atlas_bfc)
     atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
-    at_labels = ni.load_img(atlas_labels).get_fdata()
+    at_labels = ni.load_img(atlas_labels).get_data()
 
     epi_data = epi_data.reshape([epi_data.shape[0], -1])
     nonepi_data = nonepi_data.reshape([nonepi_data.shape[0], -1])
@@ -149,13 +149,13 @@ def roiwise_stats(epi_data, nonepi_data):
     atlas_bfc = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.bfc.nii.gz'
     ati = ni.load_img(atlas_bfc)
     atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
-    at_labels = ni.load_img(atlas_labels).get_fdata()
-    vox_size = ni.load_img(atlas_labels).header.get_zooms()
+    at_labels = ni.load_img(atlas_labels).get_data()
+    vox_size = ni.load_img(atlas_labels).get_header().get_zooms()
     vox_vol = vox_size[0] * vox_size[1] * vox_size[2]
-    # roi_list = [
+    #roi_list = [
     #    3, 100, 101, 184, 185, 200, 201, 300, 301, 400, 401, 500, 501, 800,
     #    850, 900, 950
-    # ]
+    #]
     roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
     epi_roi_lesion_vols = np.zeros((37, len(roi_list)))
     nonepi_roi_lesion_vols = np.zeros((37, len(roi_list)))
@@ -164,7 +164,7 @@ def roiwise_stats(epi_data, nonepi_data):
 
     for i, roi in enumerate(roi_list):
         msk = at_labels == roi
-        epi_roi_lesion_vols[:, i] = vox_vol * np.sum(epi_data[:, msk], axis=1)
+        epi_roi_lesion_vols[:, i] = vox_vol * np.sum(epi_data[:, msk], axis=1) # 37 x 16
         nonepi_roi_lesion_vols[:, i] = vox_vol * np.sum(nonepi_data[:, msk],
                                                         axis=1)
         roi_vols[i] = vox_vol * np.sum(at_labels.flatten() == roi)
@@ -253,7 +253,7 @@ def pointwise_stats(epi_data, nonepi_data):
     epi_data = epi_data.reshape(epi_data.shape[0], -1)
     nonepi_data = nonepi_data.reshape(nonepi_data.shape[0], -1)
 
-    msk = ati.get_fdata().flatten() > 0
+    msk = ati.get_data().flatten() > 0
     pval_vol = np.ones(ati.shape)
 
     #   rval_vol = sp.zeros(numV)
@@ -331,7 +331,7 @@ def main():
     studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
 
     epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
-    nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
+    nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
 
     with open(epi_txt) as f:
         epiIds = f.readlines()
@@ -349,10 +349,12 @@ def main():
     #roiwise_stats_OneclassSVM(epi_data, nonepi_data)
 
     epi_data, epi_subids = readsubs(studydir, epiIds, read_mask=False)
+
     nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds, read_mask=False)
 
-    #epi_data, nonepi_data = find_lesions_OneclassSVM(
-    #    studydir, epi_subids, epi_data, nonepi_subids, nonepi_data)
+
+    find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
+                             nonepi_data)
 
     # Do ROIwise stats
     roiwise_stats(epi_data, nonepi_data)

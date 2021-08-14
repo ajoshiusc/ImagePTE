@@ -4,7 +4,7 @@ import torch
 
 from torch.nn.parameter import Parameter
 from torch.nn.modules.module import Module
-
+import pdb
 
 class GraphConvolution(Module):
     """
@@ -30,7 +30,7 @@ class GraphConvolution(Module):
 
     def forward(self, input, adj):
         # support = torch.mm(input, self.weight)  
-        support = torch.matmul(input, self.weight) 
+        support = torch.matmul(input, self.weight)
         ## torch.matmul is a better option, it suits for higher-dimensional matrix
         # output = torch.spmm(adj, support)
         output = torch.matmul(adj, support)

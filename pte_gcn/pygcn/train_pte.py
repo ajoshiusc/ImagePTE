@@ -52,15 +52,19 @@ if args.cuda:
 
 ##======================================================================
 def calc_DAD(data):
-    thr = 0.4
+    thr = 0.6
     adj = data['conn_mat']
     adj[adj < thr] = 0 ## threshold the weakly connected edges
     adj[adj > 0] = 1
+
     Dl = np.sum(adj, axis=-1)
+
+    Dl[Dl < 2] = 0
     num_node = adj.shape[1]
     Dn = np.zeros((adj.shape[0], num_node, num_node))
     for i in range(num_node):
         Dn[:, i, i] = Dl[:, i] ** (-0.5)
+    Dn[Dn == np.inf] = 0
 
     adj_ori = data['conn_mat']
     adj_ori[adj_ori < thr] = 0
@@ -70,7 +74,7 @@ def calc_DAD(data):
 ##=======================================================================
 
 
-# if args.cuda:
+# if args.cuda:【
 #     # model.cuda()
 #     # features = features.cuda()
 #     # adj = adj.cuda()
@@ -83,18 +87,6 @@ def calc_DAD(data):
 def train(epoch, model, optimizer, scheduler, train_features, train_adj, train_labels): 
     batch_size = args.batch_size
     num_train = train_features.shape[0]
-    # index = torch.randperm(num_train)[:batch_size]
-    # index_epi = torch.randperm(num_train)[:batch_size//2]
-    # index_non = torch.randperm(num_train_non)[:batch_size//2]
-    # features_epi_bc = train_features_epi[index_epi, :, :]
-    # features_non_bc = train_features_non[index_non, :, :]
-    # features_bc = torch.cat([features_epi_bc, features_non_bc])
-    
-    # adj_epi_bc = train_adj_epi[index_epi, :, :]
-    # adj_non_bc = train_adj_non[index_non, :, :]
-    # adj_bc = torch.cat([adj_epi_bc, adj_non_bc])
-    # labels = torch.from_numpy(np.hstack((np.ones(batch_size//2), np.zeros(batch_size//2)))).long().to(device)
-
     num_batches = num_train // batch_size
 
     for i in range(num_batches):
@@ -142,7 +134,7 @@ def test(model, test_features, test_adj, test_labels):
     print("Test set results:",
           "loss= {:.4f}".format(loss_test.item()),
           "accuracy= {:.4f}".format(acc_test.item()))
-    return probabilities.cpu().detach().numpy()
+    return probabilities.cpu().detach().numpy(), acc_test.item()
     # return acc_test.item()
 
 
@@ -153,32 +145,14 @@ def cross_validation():
     # Load data
 
     population = 'PTE'
-    epidata = np.load(population+'_graphs_gcn.npz')
+    epidata = np.load(population+'_graphs_gcn_BCI-DNI.npz')
     adj_epi = torch.from_numpy(calc_DAD(epidata)).float().to(device) # n_subjects*16 *16
     features_epi = torch.from_numpy(epidata['features']).float().to(device) # n_subjectsx16x171
 
-    # n_subjects = features_epi.shape[0]
-    # num_train = int(n_subjects * args.rate)
-    # train_adj_epi = adj_epi[:num_train, :, :]
-    # train_features_epi = features_epi[:num_train, :, :]
-    # test_adj_epi = adj_epi[num_train:, :, :]
-    # test_features_epi = features_epi[num_train:, :, :]
-
     population = 'NONPTE'
-    nonepidata = np.load(population+'_graphs_gcn.npz')
+    nonepidata = np.load(population+'_graphs_gcn_BCI-DNI.npz')
     adj_non = torch.from_numpy(calc_DAD(nonepidata)).float().to(device) 
     features_non = torch.from_numpy(nonepidata['features']).float().to(device) #subjects x 16 x 171
-
-    # print("DAD shape:")
-    # print(adj_non.shape, adj_epi.shape)
-    ## for now we are using the same number of epi , non epi training samples.
-    # n_subjects_non = features_non.shape[0]
-    # num_train_non = int(n_subjects_non * args.rate)
-    # train_adj_non = adj_non[:num_train_non, :, :]
-    # train_features_non = features_non[:num_train_non, :, :]
-    # test_adj_non = adj_non[num_train_non:, :, :]
-    # test_features_non = features_non[num_train_non:, :, :]
-
     
     features = torch.cat([features_epi, features_non])
     adj = torch.cat([adj_epi, adj_non])
@@ -190,14 +164,14 @@ def cross_validation():
     acc_iter = []
     auc_iter = []
     for i in range(iterations):
-
         kfold = StratifiedKFold(n_splits=36, shuffle=True)
         # the folds are made by preserving the percentage of samples for each class.
         
         acc = []
         max_epochs = []
         test_true = []
-        # epochs_choices = []
+        probs_fold = []
+
         features_numpy = features.cpu().numpy()
         labels_numpy = labels.cpu().numpy()
         adj_numpy = adj.cpu().numpy()
@@ -205,8 +179,8 @@ def cross_validation():
             # Model and optimizer
 
             model = GCN(nfeat=features_epi.shape[2],
-                    nhid = [200, 200, 50],
-                    # nhid=[200, 200, 100, 50],
+                    # nhid = [200, 200, 50],
+                    nhid=[400, 400, 100],
                     nclass= 2, #labels.max().item() + 1,
                     dropout=args.dropout)
             optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
@@ -244,13 +218,13 @@ def cross_validation():
                 if (epoch >= start_epoch) and (epoch % gap == 0) and (mode_on == True):
                         acc_test.append(test(model, test_features, test_adj, test_labels))
 
-            # acc_test.append(test(model, test_features, test_adj, test_labels))
-
-            # max_epochs.append(np.argmax(acc_test)*gap + start_epoch)
-            # acc.append(np.max(acc_test))
-
-            acc.append(test(model, test_features, test_adj, test_labels)[-1])
+            test_prob, test_accur = test(model, test_features, test_adj, test_labels)
+            acc_test.append(test_accur)
+            acc.append(np.max(acc_test))
+            ##=============================================
+            probs_fold.append(test_prob[:, -1])
             test_true.append(test_labels.cpu().numpy())
+
 
             # torch.save({'epoch': args.epochs,
             #     'model_state_dict': model.state_dict(),
@@ -264,26 +238,19 @@ def cross_validation():
         # with open('../results/accuracy_0.4thr_15e_5layers.txt', 'w') as f:
         #     f.write(str(acc))
         # f.close()
-        probs = np.array(acc).flatten()
+        probs = np.array(probs_fold).flatten()
         print(probs)
         auc = sklearn.metrics.roc_auc_score(np.array(test_true).flatten(), probs)
         print(auc)
 
         # print(np.mean(acc))
-        # acc_iter.append(np.mean(acc))
+        acc_iter.append(np.mean(acc))
         auc_iter.append(auc)
 
-    # print(acc_iter, np.mean(acc_iter), np.std(acc_iter))
+    print("----------Mean AUC-------------")
     print(auc_iter, np.mean(auc_iter), np.std(auc_iter))
-
-# Train model
-# t_total = time.perf_counter()
-# for epoch in range(args.epochs):
-#     train(epoch)
-#     if (epoch > 100) and (epoch % 5 == 0):
-#         test()
-
-
+    print("----------Accuracy-------------")
+    print(acc_iter, np.mean(acc_iter), np.std(acc_iter))
 
 cross_validation()
 
