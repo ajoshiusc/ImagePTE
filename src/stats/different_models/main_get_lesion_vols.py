@@ -228,7 +228,7 @@ def main():
     studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
 
     epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
-    nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
+    nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
 
     with open(epi_txt) as f:
         epiIds = f.readlines()
@@ -256,14 +256,14 @@ def main():
     for i, subid in enumerate(keys):
         lesion_vols[subid] = epi_measures[i]
 
-    np.savez('PTE_lesion_vols.npz', lesion_vols=lesion_vols)
+    np.savez('PTE_lesion_vols_all.npz', lesion_vols=lesion_vols)
 
     lesion_vols = {}
     keys = nonepi_subids
     for i, subid in enumerate(keys):
         lesion_vols[subid] = nonepi_measures[i]
 
-    np.savez('NONPTE_lesion_vols.npz', lesion_vols=lesion_vols)
+    np.savez('NONPTE_lesion_vols_all.npz', lesion_vols=lesion_vols)
 
     print('done')
 
