@@ -59,9 +59,9 @@ def main():
 
 
 
-    #pool = Pool(processes=12)
+    pool = Pool(processes=4)
 
-    regparfun(subIds[2])
+    #regparfun(subIds[2])
 
     print('++++++++++++++')
     pool.map(regparfun, subIds)
