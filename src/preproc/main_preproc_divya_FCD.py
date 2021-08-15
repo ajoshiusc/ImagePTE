@@ -13,7 +13,7 @@ def main():
 
     outdir = '/ImagePTE1/ajoshi/FCD_divya/preproc'
 
-    subdirs = glob.glob(study_dir + '/*.nii.gz')
+    subdirs = glob.glob(study_dir + '/*bfc.nii.gz')
 
     for sub in tqdm(subdirs):
         _, f = os.path.split(sub)
