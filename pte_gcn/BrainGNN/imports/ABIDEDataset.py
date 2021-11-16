@@ -4,22 +4,22 @@ from os.path import join, isfile
 from os import listdir
 import numpy as np
 import os.path as osp
-from utils.construct_graph import read_data
+from imports.read_abide_stats_parall import read_data
 
 
-class BiopointDataset(InMemoryDataset):
+class ABIDEDataset(InMemoryDataset):
     def __init__(self, root, name, transform=None, pre_transform=None):
         self.root = root
         self.name = name
-        super(BiopointDataset, self).__init__(root,transform, pre_transform)
+        super(ABIDEDataset, self).__init__(root,transform, pre_transform)
         self.data, self.slices = torch.load(self.processed_paths[0])
 
     @property
     def raw_file_names(self):
-        data_dir = osp.join(self.root,'raw')
-        onlyfiles = [f for f in listdir(data_dir) if osp.isfile(osp.join(data_dir, f))]
-        onlyfiles.sort()
-        return onlyfiles
+        # data_dir = osp.join(self.root, 'raw')
+        # onlyfiles = [f for f in listdir(data_dir) if osp.isfile(osp.join(data_dir, f))]
+        # onlyfiles.sort()
+        return []
     @property
     def processed_file_names(self):
         return  'data.pt'
@@ -31,6 +31,7 @@ class BiopointDataset(InMemoryDataset):
     def process(self):
         # Read data into huge `Data` list.
         self.data, self.slices = read_data(self.raw_dir)
+        # data_list = read_data(self.raw_dir)
 
         if self.pre_filter is not None:
             data_list = [self.get(idx) for idx in range(len(self))]

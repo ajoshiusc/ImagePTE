@@ -33,10 +33,10 @@ def boxcox_transform_train(x):
     xt_mean = torch.mean(xt_torch).float()
     xt_std = torch.std(xt_torch).float()
     xt_norm = (xt_torch-xt_mean)/xt_std
-    return xt_norm,lamb,xt_mean, xt_std
+    return xt_norm, lamb, xt_mean, xt_std
 
 
-def boxcox_transform_test(x,lamb, xt_mean, xt_std):
+def boxcox_transform_test(x, lamb, xt_mean, xt_std):
     if lamb == 0:
         y = torch.log(x)
     elif lamb!=0:
@@ -54,8 +54,8 @@ def normal_transform_train(x):
     #xt_torch = xt
     xt_mean = torch.mean(x).float()
     xt_std = torch.std(x).float()
-    xt_norm = (x-xt_mean)/xt_std
-    return xt_norm,lamb,xt_mean, xt_std
+    xt_norm = (x - xt_mean)/xt_std
+    return xt_norm, lamb, xt_mean, xt_std
 
 
 def normal_transform_test(x,lamb, xt_mean, xt_std):
@@ -76,7 +76,6 @@ def train_test_split_noaug(mat_dir, kfold = 10, fold = 0):
     sub_list = pat_id + con_id
     label = list(np.ones(len(pat_id)))+list(np.zeros(len(con_id)))
     list1, list2 = (list(t) for t in zip(*sorted(zip(sub_list, label))))
-
 
     x_ind = range(len(sub_list))
     y_ind = np.array(list2)
@@ -99,7 +98,7 @@ def train_test_split_noaug(mat_dir, kfold = 10, fold = 0):
             rep = 1
         else:
             rep = 1
-        ll = list(range(count,count+rep))
+        ll = list(range(count, count+rep))
         if i in train_id:
             tr_index.append(ll)
         else:
@@ -107,10 +106,11 @@ def train_test_split_noaug(mat_dir, kfold = 10, fold = 0):
         count = count + rep
     tr_index = np.concatenate(tr_index)
     te_index = np.concatenate(te_index)
-    return tr_index,te_index
+    return tr_index, te_index
 
 
-def train_val_test_split(mat_dir, kfold = 5, fold = 0, rep=100):
+def train_val_test_split(mat_dir, kfold=5, fold=0, rep=100):
+    # this is with augmentation?
 
     subjects = loadmat(mat_dir)
     pat_id = list(subjects['subjects_pat'])
@@ -118,7 +118,6 @@ def train_val_test_split(mat_dir, kfold = 5, fold = 0, rep=100):
     sub_list = pat_id + con_id
     label = list(np.ones(len(pat_id)))+list(np.zeros(len(con_id)))
     list1, list2 = (list(t) for t in zip(*sorted(zip(sub_list, label))))
-
 
     x_ind = range(len(sub_list))
     y_ind = np.array(list2)
@@ -148,11 +147,11 @@ def train_val_test_split(mat_dir, kfold = 5, fold = 0, rep=100):
     val_index = list()
     count = 0
     for i in range(len(sub_list)):
-        if list2[i] ==1:
+        if list2[i] == 1:
             rep1 = rep
         else:
             rep1 = rep
-        ll = list(range(count,count+rep1))
+        ll = list(range(count, count+rep1))
         if i in train_id:
             tr_index.append(ll)
         elif i in test_id:
@@ -163,7 +162,7 @@ def train_val_test_split(mat_dir, kfold = 5, fold = 0, rep=100):
     tr_index = np.concatenate(tr_index)
     te_index = np.concatenate(te_index)
     val_index = np.concatenate(val_index)
-    return tr_index,te_index,val_index
+    return tr_index, te_index, val_index
 
 
 

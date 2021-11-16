@@ -134,7 +134,7 @@ def test(model, test_features, test_adj, test_labels):
     print("Test set results:",
           "loss= {:.4f}".format(loss_test.item()),
           "accuracy= {:.4f}".format(acc_test.item()))
-    return probabilities.cpu().detach().numpy()
+    return probabilities.cpu().detach().numpy(), acc_test.item()
     # return acc_test.item()
 
 
@@ -164,14 +164,14 @@ def cross_validation():
     acc_iter = []
     auc_iter = []
     for i in range(iterations):
-
         kfold = StratifiedKFold(n_splits=36, shuffle=True)
         # the folds are made by preserving the percentage of samples for each class.
         
         acc = []
         max_epochs = []
         test_true = []
-        # epochs_choices = []
+        probs_fold = []
+
         features_numpy = features.cpu().numpy()
         labels_numpy = labels.cpu().numpy()
         adj_numpy = adj.cpu().numpy()
@@ -179,8 +179,8 @@ def cross_validation():
             # Model and optimizer
 
             model = GCN(nfeat=features_epi.shape[2],
-                    nhid = [200, 200, 50],
-                    # nhid=[400, 200, 50],
+                    # nhid = [200, 200, 50],
+                    nhid=[400, 400, 100],
                     nclass= 2, #labels.max().item() + 1,
                     dropout=args.dropout)
             optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
@@ -218,13 +218,13 @@ def cross_validation():
                 if (epoch >= start_epoch) and (epoch % gap == 0) and (mode_on == True):
                         acc_test.append(test(model, test_features, test_adj, test_labels))
 
-            # acc_test.append(test(model, test_features, test_adj, test_labels))
-
-            # max_epochs.append(np.argmax(acc_test)*gap + start_epoch)
-            # acc.append(np.max(acc_test))
-
-            acc.append(test(model, test_features, test_adj, test_labels)[:, -1])
+            test_prob, test_accur = test(model, test_features, test_adj, test_labels)
+            acc_test.append(test_accur)
+            acc.append(np.max(acc_test))
+            ##=============================================
+            probs_fold.append(test_prob[:, -1])
             test_true.append(test_labels.cpu().numpy())
+
 
             # torch.save({'epoch': args.epochs,
             #     'model_state_dict': model.state_dict(),
@@ -238,17 +238,19 @@ def cross_validation():
         # with open('../results/accuracy_0.4thr_15e_5layers.txt', 'w') as f:
         #     f.write(str(acc))
         # f.close()
-        probs = np.array(acc).flatten()
+        probs = np.array(probs_fold).flatten()
         print(probs)
         auc = sklearn.metrics.roc_auc_score(np.array(test_true).flatten(), probs)
         print(auc)
 
         # print(np.mean(acc))
-        # acc_iter.append(np.mean(acc))
+        acc_iter.append(np.mean(acc))
         auc_iter.append(auc)
 
-    # print(acc_iter, np.mean(acc_iter), np.std(acc_iter))
+    print("----------Mean AUC-------------")
     print(auc_iter, np.mean(auc_iter), np.std(auc_iter))
+    print("----------Accuracy-------------")
+    print(acc_iter, np.mean(acc_iter), np.std(acc_iter))
 
 cross_validation()
 

@@ -31,8 +31,6 @@ class GraphConvolution(Module):
     def forward(self, input, adj):
         # support = torch.mm(input, self.weight)  
         support = torch.matmul(input, self.weight)
-        print(self.weight)
-        pdb.set_trace()
         ## torch.matmul is a better option, it suits for higher-dimensional matrix
         # output = torch.spmm(adj, support)
         output = torch.matmul(adj, support)
