@@ -23,6 +23,8 @@ import scipy.signal
 import scipy.stats as st
 from sklearn import metrics
 from VAE_model_pixel_vanilla import Encoder, Decoder, VAE_Generator
+from tqdm import tqdm
+from sklearn.svm import OneClassSVM
 pret=0
 
 #p_values = scipy.stats.norm.sf(abs(z_scores))*2
@@ -34,6 +36,12 @@ def load_model(epoch, encoder, decoder, loc):
     encoder.load_state_dict(torch.load(loc+'/VAE_GAN_encoder_%d.pth' % epoch))
     encoder.cuda()
   
+def dice_coef(mask1, mask2):
+    mask1 = np.float32(mask1)
+    mask2 = np.float32(mask2)
+
+    return 2 * np.sum(
+        mask1 * mask2) / (np.sum(np.float32(mask1 + mask2)) + 1e-8)
 
 #####read data######################
 
@@ -191,35 +199,58 @@ def Validation_2(X):
 
 rec_error_all = Validation_2(X)
 y_true =(X[:, :, :, 3])
-y_true = np.reshape(y_true, (-1, 1))
 
-maskX = np.reshape(X[:, :, :, 2], (-1, 1))
+
+maskX = np.copy(X[:, :, :, 2])
 y_true[y_true > 0]=1
 y_true[y_true < 0]=0
-y_true = y_true[maskX > 0]
+#y_true = y_true[maskX > 0]
 
 y_probas = (rec_error_all).to('cpu')
 y_probas = y_probas.numpy()
-y_probas = np.reshape(y_probas, (-1, 1))
+
 y_true = y_true.astype(int)
-
-print(np.min(y_probas))
-print(np.max(y_probas))
-y_probas = np.clip(y_probas, 0, 1)
+#y_probas = np.clip(y_probas, 0, 1)
 
 
-y_probas = np.reshape(y_probas, (-1, 1,128, 128))
+
+
+
+###
+indx=[]
+for i in range(y_true.shape[0]):
+    if y_true[i,:,:].mean()!=0:
+        indx.append(i)
+
+
+y_probas= np.reshape(y_probas, (-1,128*128))
+y_true=y_true[indx,:,:]
+y_probas=y_probas[indx,:]
+Xout = np.zeros(y_probas.shape)
+y_probas=y_probas.T
+maskX= maskX[indx,:,:]
+
+
+#temp= OneClassSVM(gamma='scale').fit_predict(y_probas[[0],:].T)
+for j in tqdm(range(y_probas.shape[1])):
+    temp1=y_probas[:,j:j+1]
+    if temp1.mean()==0:
+        continue
+    Xout[j, ] = OneClassSVM(gamma=0.001).fit_predict(temp1)== -1
+###
 #y_probas=scipy.signal.medfilt(y_probas,(1,1,7,7))
-y_probas = np.reshape(y_probas, (-1, 1))
-y_probas = y_probas[maskX > 0]
+Xout = np.reshape(Xout, (-1, 128,128))
+Xout[maskX <= 0]=0
 
-fpr, tpr, th= metrics.roc_curve(y_true, y_probas)
-L=fpr/tpr
-best_th=th[fpr<0.05]
-auc = metrics.auc(fpr, tpr)
-plt.plot(fpr, tpr, label="VAE, auc=" + str(auc))
-plt.legend(loc=4)
-plt.show()
+out_dice=np.zeros((y_true.shape[0],1))
+
+for i in range(y_true.shape[0]):
+    out_dice[i] = dice_coef(Xout[i,:,:], y_true[i,:,:])
+
+print(np.mean(out_dice, axis=0))
+print(np.std(out_dice, axis=0))
+
+
     
    
   

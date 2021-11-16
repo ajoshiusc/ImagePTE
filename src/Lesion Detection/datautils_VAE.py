@@ -8,7 +8,7 @@ from scipy.ndimage.morphology import binary_erosion
 import random
 from sklearn.datasets import make_blobs
 from scipy.ndimage import gaussian_filter
-from skimage.transform import match_histograms
+from skimage.exposure import match_histograms
 import torch
 from torch.autograd import Variable
 import fnmatch
