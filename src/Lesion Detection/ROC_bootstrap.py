@@ -24,6 +24,8 @@ import scipy.stats as st
 from sklearn import metrics
 from VAE_model_pixel_vanilla import Encoder, Decoder, VAE_Generator
 pret=0
+import random
+import copy
 
 #p_values = scipy.stats.norm.sf(abs(z_scores))*2
     
@@ -34,36 +36,25 @@ def load_model(epoch, encoder, decoder, loc):
     encoder.load_state_dict(torch.load(loc+'/VAE_GAN_encoder_%d.pth' % epoch))
     encoder.cuda()
   
+def _gen_data(X,samples):
+    X_valid=copy.deepcopy(X) 
+    j=0
+    for i in samples:
+        X_valid[j,:,:,:]=X[i,:,:,:]
+        j+=1
+    return X_valid
 
 #####read data######################
 
 d=np.load('/ImagePTE1/akrami/Projects/crash_gits/ImagePTE/src/Lesion Detection/data/data_ISEL_128_valid.npz')
 X = d['data'][:,:,:,:]
 
-X_data = np.copy(X[:, :, :, 0:3])
-#max_val=np.max(X)
-#X_data = X_data/ max_val
-X_data = X_data.astype('float64')
-X_valid=X_data[:,:,:,:]
-D=X_data.shape[1]*X_data.shape[2]
+
 ####################################
 
 
 
-##########train validation split##########
-batch_size=8
 
-
-X_valid = np.transpose(X_valid, (0, 3, 1,2))
-validation_data_inference = torch.from_numpy(X_valid).float()
-validation_data_inference= validation_data_inference.to('cuda') 
-
-
-Validation_loader = torch.utils.data.DataLoader(validation_data_inference,
-                                          batch_size=batch_size,
-                                          shuffle=False)
-                                         
-############################################
 
 
 
@@ -76,6 +67,7 @@ max_epochs = 200
 lr = 3e-4
 beta = 0
 device='cuda'
+batch_size=8
 #########################################
 epoch=99
 LM='/ImagePTE1/akrami/Projects/crash_gits/ImagePTE/src/Lesion Detection/models/VAE_final_64'
@@ -188,39 +180,61 @@ def Validation_2(X):
     return rec_error_all
 
 
+def auc_cal(X,):
+    rec_error_all = Validation_2(X)
+    y_true =(X[:, :, :, 3])
+    y_true = np.reshape(y_true, (-1, 1))
 
-rec_error_all = Validation_2(X)
-y_true =(X[:, :, :, 3])
-y_true = np.reshape(y_true, (-1, 1))
+    maskX = np.reshape(X[:, :, :, 2], (-1, 1))
+    y_true[y_true > 0]=1
+    y_true[y_true < 0]=0
+    y_true = y_true[maskX > 0]
 
-maskX = np.reshape(X[:, :, :, 2], (-1, 1))
-y_true[y_true > 0]=1
-y_true[y_true < 0]=0
-y_true = y_true[maskX > 0]
+    y_probas = (rec_error_all).to('cpu')
+    y_probas = y_probas.numpy()
+    y_probas = np.reshape(y_probas, (-1, 1))
+    y_true = y_true.astype(int)
 
-y_probas = (rec_error_all).to('cpu')
-y_probas = y_probas.numpy()
-y_probas = np.reshape(y_probas, (-1, 1))
-y_true = y_true.astype(int)
-
-print(np.min(y_probas))
-print(np.max(y_probas))
-y_probas = np.clip(y_probas, 0, 1)
+    print(np.min(y_probas))
+    print(np.max(y_probas))
+    y_probas = np.clip(y_probas, 0, 1)
 
 
-y_probas = np.reshape(y_probas, (-1, 1,128, 128))
-#y_probas=scipy.signal.medfilt(y_probas,(1,1,7,7))
-y_probas = np.reshape(y_probas, (-1, 1))
-y_probas = y_probas[maskX > 0]
+    y_probas = np.reshape(y_probas, (-1, 1,128, 128))
+    #y_probas=scipy.signal.medfilt(y_probas,(1,1,7,7))
+    y_probas = np.reshape(y_probas, (-1, 1))
+    y_probas = y_probas[maskX > 0]
 
-fpr, tpr, th= metrics.roc_curve(y_true, y_probas)
-L=fpr/tpr
-best_th=th[fpr<0.05]
-auc = metrics.auc(fpr, tpr)
-plt.plot(fpr, tpr, label="VAE, auc=" + str(auc))
-plt.legend(loc=4)
-plt.show()
-    
+    fpr, tpr, th= metrics.roc_curve(y_true, y_probas)
+    L=fpr/tpr
+    best_th=th[fpr<0.05]
+    auc = metrics.auc(fpr, tpr)
+    return auc
+
+auc_all=[]
+for i in range(100):
+    a_range=list(range(2730))
+    samples=random.choices((a_range),k= 2730)
+    X_iter=_gen_data(X,samples)
+    ##########train validation split##########
+    X_data = np.copy(X_iter[:, :, :, 0:3])
+    X_data = X_data.astype('float64')
+    X_valid=X_data[:,:,:,:]
+    D=X_data.shape[1]*X_data.shape[2]
+    X_valid = np.transpose(X_valid, (0, 3, 1,2))
+    validation_data_inference = torch.from_numpy(X_valid).float()
+    validation_data_inference= validation_data_inference.to('cuda') 
+
+
+    Validation_loader = torch.utils.data.DataLoader(validation_data_inference,
+                                            batch_size=batch_size,
+                                            shuffle=False)
+    auc_all.append(auc_cal(X_iter))                                   
+    ############################################
+
+print(sum(auc_all)/len*auc_all)
+print(np.std(np.array(auc_all)))
+
    
   
     

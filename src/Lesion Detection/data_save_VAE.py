@@ -178,8 +178,8 @@ if __name__ == "__main__":
     marryland_test=0
     TBI_train=0
     TBI_valid=0
-    ISEL_valid=0
-    Brats_2018=1
+    ISEL_valid=1
+    Brats_2018=0
 
     if marryland_train==1:
         ###data and output directory for merryland dataset###
@@ -232,7 +232,7 @@ if __name__ == "__main__":
         data_dir='/big_disk/ajoshi/ISLES2015/preproc/Training/'
         sub_names='/big_disk/ajoshi/ISLES2015/ISLES2015_Training_done.txt'
         Out_name='data_ISEL_128_valid.npz'
-        ref_dir='/big_disk/ajoshi/fitbir/preproc/maryland_rao_v1/TBI_INVYU830PA1'
+        ref_dir='/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1/TBI_INVYU830PA1'
         run_isel(data_dir,ref_dir,sub_names,Out_name)   
 
 
