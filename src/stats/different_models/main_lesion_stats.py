@@ -12,7 +12,7 @@ from scipy.stats import shapiro
 from sklearn.svm import OneClassSVM
 from statsmodels.stats.multitest import fdrcorrection
 from statsmodels.stats.weightstats import ttest_ind
-#from multivariate. import TBM_t2
+# from multivariate. import TBM_t2
 from tqdm import tqdm
 
 #from statsmodels.stats import wilcoxon
@@ -152,10 +152,10 @@ def roiwise_stats(epi_data, nonepi_data):
     at_labels = ni.load_img(atlas_labels).get_data()
     vox_size = ni.load_img(atlas_labels).get_header().get_zooms()
     vox_vol = vox_size[0] * vox_size[1] * vox_size[2]
-    #roi_list = [
+    # roi_list = [
     #    3, 100, 101, 184, 185, 200, 201, 300, 301, 400, 401, 500, 501, 800,
     #    850, 900, 950
-    #]
+    # ]
     roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
     epi_roi_lesion_vols = np.zeros((37, len(roi_list)))
     nonepi_roi_lesion_vols = np.zeros((37, len(roi_list)))
@@ -164,7 +164,8 @@ def roiwise_stats(epi_data, nonepi_data):
 
     for i, roi in enumerate(roi_list):
         msk = at_labels == roi
-        epi_roi_lesion_vols[:, i] = vox_vol * np.sum(epi_data[:, msk], axis=1) # 37 x 16
+        epi_roi_lesion_vols[:, i] = vox_vol * \
+            np.sum(epi_data[:, msk], axis=1)  # 37 x 16
         nonepi_roi_lesion_vols[:, i] = vox_vol * np.sum(nonepi_data[:, msk],
                                                         axis=1)
         roi_vols[i] = vox_vol * np.sum(at_labels.flatten() == roi)
@@ -205,12 +206,14 @@ def roiwise_stats(epi_data, nonepi_data):
 
     for i, r in enumerate(list(roi_list)):
         print(
-            '%d \t| %0.4g(%0.4g) \t| %0.4g(%0.4g) \t|' %
-            (r, np.median(100 * epi_roi_lesion_vols[:, i] / roi_vols[i],
-                          axis=0),
+            '%d \t| %0.4g,%0.4g(%0.4g) \t| %0.4g,%0.4g(%0.4g) \t|' %
+            (r, np.mean(100 * epi_roi_lesion_vols[:, i] / roi_vols[i],
+                        axis=0), np.median(100 * epi_roi_lesion_vols[:, i] / roi_vols[i],
+                                           axis=0),
              np.std(100 * epi_roi_lesion_vols[:, i] / roi_vols[i], axis=0),
-             np.median(100 * nonepi_roi_lesion_vols[:, i] / roi_vols[i],
-                       axis=0),
+             np.mean(100 * nonepi_roi_lesion_vols[:, i] / roi_vols[i],
+                     axis=0), np.median(100 * nonepi_roi_lesion_vols[:, i] / roi_vols[i],
+                                        axis=0),
              np.std(100 * nonepi_roi_lesion_vols[:, i] / roi_vols[i], axis=0)))
 
     for i, r in enumerate(list(roi_list)):
@@ -352,9 +355,8 @@ def main():
 
     nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds, read_mask=False)
 
-
-    find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
-                             nonepi_data)
+    # find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
+    #                         nonepi_data)
 
     # Do ROIwise stats
     roiwise_stats(epi_data, nonepi_data)
