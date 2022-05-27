@@ -33,7 +33,7 @@ X2, Os, Costdif, TotalError = groupBrainSync(nonepi_data)
 
 elapsed = time.time() - t
 
-np.savez('grp_atlas2.npz', X2=X2, Os=Os)
+np.savez('grp_atlas_unnormalized.npz', X2=X2, Os=Os)
 
 atlas_data, _, _ = normalizeData(np.mean(X2, axis=1))
 
