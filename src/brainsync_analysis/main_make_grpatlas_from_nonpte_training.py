@@ -35,7 +35,7 @@ elapsed = time.time() - t
 
 np.savez('grp_atlas_unnormalized.npz', X2=X2, Os=Os)
 
-atlas_data, _, _ = normalizeData(np.mean(X2, axis=1))
+atlas_data, _, _ = normalizeData(X2)
 
 np.savez('grp_atlas.npz', atlas_data=atlas_data)
 
