@@ -1,13 +1,14 @@
+from matplotlib.pyplot import axis
 import numpy as np
-from brainsync import normalizeData
+from brainsync import normalizeData, brainSync
 import os
 from bfp_utils import load_bfp_data
 import scipy.io as spio
 
 # get atlas
-X2=np.load('grp_atlas_unnormalized.npz')['X2'] #, X2=X2, Os=Os)
-atlas_data, _, _ = normalizeData(X2)
-print(atlas_data.shape)
+atlas_data=np.load('grp_atlas.npz')['atlas_data'] #, X2=X2, Os=Os)
+atlas_data2, _, _ = normalizeData(atlas_data)
+print(np.max(atlas_data2-atlas_data))
 
 
 studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
@@ -64,37 +65,34 @@ nonepi_data = load_bfp_data(nonepi_files, 171)
 nsub = min(epi_data.shape[2], nonepi_data.shape[2])
 epi_ids = epi_ids[:nsub]
 nonepi_ids = nonepi_ids[:nsub]
-conn_mat = np.zeros((len(label_ids), len(label_ids), nsub))
-cent_mat = np.zeros((len(label_ids), nsub))
+
+num_vtx = epi_data.shape[1]
+
+# fmri diff for epilepsy 
+fdiff_sub = np.zeros((len(label_ids), nsub))
 
 for subno in range(nsub):
-    conn_mat[:, :, subno] = get_connectivity(epi_data[:, :, subno],
-                                                labels=gord_labels,
-                                                label_ids=label_ids)
+    d, _ = brainSync(atlas_data, epi_data[:, :, subno])
 
-    G = nx.convert_matrix.from_numpy_array(np.abs(conn_mat[:, :, subno]))
-    cent = nx.eigenvector_centrality(G, weight='weight')
-    cent_mat[:, subno] = np.array(list(cent.items()))[:, 1]
+    for i, id in enumerate(label_ids):
+        idx = gord_labels == id
+        data = np.linalg.norm(atlas_data[:, idx] - d[:, idx], axis = 0)
+        fdiff_sub[i, subno] = np.mean(data, axis=1)
+
+
+
+
+
 
 np.savez('PTE_fmridiff.npz',
-            conn_mat=conn_mat,
+            fdiff_sub=fdiff_sub,
             label_ids=label_ids,
             labels=gord_labels,
             cent_mat=cent_mat,
             sub_ids=epi_ids)
 
-conn_mat = np.zeros((len(label_ids), len(label_ids), nsub))
-cent_mat = np.zeros((len(label_ids), nsub))
 
-for subno in range(nsub):
-    conn_mat[:, :, subno] = get_connectivity(nonepi_data[:, :, subno],
-                                                labels=gord_labels,
-                                                label_ids=label_ids)
-    G = nx.convert_matrix.from_numpy_array(np.abs(conn_mat[:, :, subno]))
-    cent = nx.eigenvector_centrality(G, weight='weight')
-    cent_mat[:, subno] = np.array(list(cent.items()))[:, 1]
-
-np.savez('NONPTE_graphs.npz',
+np.savez('NONPTE_fmridiff.npz',
             conn_mat=conn_mat,
             label_ids=label_ids,
             labels=gord_labels,
