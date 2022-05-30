@@ -39,7 +39,6 @@ with open(nonepi_train_txt) as f:
     nonepitrainIds = f.readlines()
 
 
-
 epiIds = list(map(lambda x: x.strip(), epiIds))
 nonepiIds = list(map(lambda x: x.strip(), nonepiIds))
 nonepitrainIds = list(map(lambda x: x.strip(), nonepitrainIds))
@@ -80,10 +79,6 @@ for sub in nonepitrainIds:
         print('File does not exist: %s' % fname)
 
 
-
-
-
-
 epi_data = load_bfp_data(epi_files, 171)
 nonepi_data = load_bfp_data(nonepi_files, 171)
 nonepitrain_data = load_bfp_data(nonepitrain_files, 171)
@@ -121,13 +116,14 @@ np.savez('NONPTE_TRAINING_fmridiff.npz',
          sub_ids=epi_ids)
 
 
-fdiff_mean = np.mean(fdiff_sub,axis=0)
-
+fdiff_mean = np.mean(fdiff_sub, axis=1)
+fdiff_std = np.std(fdiff_sub, axis=1)
 
 
 nsub_epi = epi_data.shape[2]
 # fmri diff for epilepsy
 fdiff_sub = np.zeros((len(label_ids), nsub_epi))
+fdiff_sub_z = np.zeros((len(label_ids), nsub_epi))
 
 for subno in range(nsub_epi):
     d, _ = brainSync(atlas_data, epi_data[:, :, subno])
@@ -137,9 +133,11 @@ for subno in range(nsub_epi):
         data = np.linalg.norm(
             atlas_data[:, idx] - d[:, idx])/np.sqrt(np.sum(idx))
         fdiff_sub[i, subno] = data
+        fdiff_sub_z[i, subno] = (data - fdiff_mean[i])/fdiff_std[i]
 
 np.savez('PTE_fmridiff.npz',
          fdiff_sub=fdiff_sub,
+         fdiff_sub_z=fdiff_sub_z,
          label_ids=label_ids,
          labels=gord_labels,
          sub_ids=epi_ids)
@@ -157,9 +155,12 @@ for subno in range(nsub_nonepi):
         data = np.linalg.norm(
             atlas_data[:, idx] - d[:, idx])/np.sqrt(np.sum(idx))
         fdiff_sub[i, subno] = data
+        fdiff_sub_z[i, subno] = (data - fdiff_mean[i])/fdiff_std[i]
+
 
 np.savez('NONPTE_fmridiff.npz',
          fdiff_sub=fdiff_sub,
+         fdiff_sub_z=fdiff_sub_z,
          label_ids=label_ids,
          labels=gord_labels,
          sub_ids=nonepi_ids)
