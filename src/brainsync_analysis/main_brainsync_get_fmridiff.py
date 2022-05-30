@@ -146,6 +146,7 @@ np.savez('PTE_fmridiff.npz',
 # fmri diff for nonepilepsy
 nsub_nonepi = nonepi_data.shape[2]
 fdiff_sub = np.zeros((len(label_ids), nsub_nonepi))
+fdiff_sub_z = np.zeros((len(label_ids), nsub_nonepi))
 
 for subno in range(nsub_nonepi):
     d, _ = brainSync(atlas_data, nonepi_data[:, :, subno])
