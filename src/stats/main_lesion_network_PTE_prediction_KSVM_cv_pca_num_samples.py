@@ -105,5 +105,5 @@ for num_sub in range(2, num_sub_all):
 print(auc_mean_sub)
 print(auc_std_sub)
 
-np.savez('auc_num_sub3.npz', auc_mean_sub=auc_mean_sub,
+np.savez('auc_num_sub3_tmp.npz', auc_mean_sub=auc_mean_sub,
          auc_std_sub=auc_std_sub, auc_sub_all=auc_sub_all)

@@ -5,7 +5,7 @@ from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import StratifiedKFold
 
-f = np.load('../connectivity/PTE_graphs.npz')
+f = np.load('./models/PTE_graphs.npz')
 conn_pte = f['conn_mat']
 lab_ids = f['label_ids']
 gordlab = f['labels']
@@ -21,7 +21,7 @@ epi_lesion_vols = np.array([a[k] for k in sub_ids])
 epi_measures = epi_connectivity
 
 
-f = np.load('../connectivity/NONPTE_graphs.npz')
+f = np.load('./models/NONPTE_graphs.npz')
 conn_nonpte = f['conn_mat']
 lab_ids = f['label_ids']
 gordlab = f['labels']
@@ -42,7 +42,7 @@ y = np.hstack(
 
 # Permute the labels to check if AUC becomes 0.5. This check is to make sure that we are not overfitting
 
-n_iter = 100
+n_iter = 1000
 auc = np.zeros(n_iter)
 precision = np.zeros(n_iter)
 recall = np.zeros(n_iter)
