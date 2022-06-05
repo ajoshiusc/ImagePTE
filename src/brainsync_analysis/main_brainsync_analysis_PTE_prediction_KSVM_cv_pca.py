@@ -16,8 +16,8 @@ epi_connectivity = conn_pte.T
 a = np.load('./stats/PTE_lesion_vols.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 epi_lesion_vols = np.array([a[k] for k in sub_ids])
-#epi_measures = epi_connectivity
-epi_measures = np.concatenate((epi_connectivity, epi_lesion_vols), axis=1)
+epi_measures = epi_connectivity
+#epi_measures = np.concatenate((epi_connectivity, epi_lesion_vols), axis=1)
 
 
 f = np.load('NONPTE_fmridiff.npz')
@@ -31,8 +31,8 @@ nonepi_connectivity = conn_nonpte.T
 a = np.load('./stats/NONPTE_lesion_vols.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
-#nonepi_measures = nonepi_connectivity
-nonepi_measures = np.concatenate((nonepi_connectivity, nonepi_lesion_vols), axis=1)
+nonepi_measures = nonepi_connectivity
+#nonepi_measures = np.concatenate((nonepi_connectivity, nonepi_lesion_vols), axis=1)
 
 
 X = np.vstack((epi_measures, nonepi_measures))
@@ -41,7 +41,7 @@ y = np.hstack(
 
 # Permute the labels to check if AUC becomes 0.5. This check is to make sure that we are not overfitting
 
-n_iter = 100
+n_iter = 1000
 auc = np.zeros(n_iter)
 precision = np.zeros(n_iter)
 recall = np.zeros(n_iter)
@@ -101,7 +101,7 @@ print('AUC on testing data:gamma=%s, auc=%g' % (mygamma, np.mean(auc)))
 ####################################################
 best_com=0
 max_AUC=0
-max_component=min((X.shape[0]-1),X.shape[1])
+max_component=min((X.shape[0]-2 - 1),(X.shape[1]-1))
 for nf in range(1, max_component):
     pipe = Pipeline([('pca_apply', PCA(n_components=nf, whiten=True)),
                         ('svc', SVC(kernel='rbf', C=best_C,gamma=best_gamma, tol=1e-9))])
@@ -118,7 +118,7 @@ print('n_components=%d is' %(best_com))
 #######################selecting gamma################
 ## Random permutation of pairs of training subject for 1000 iterations
 ####################################################
-iteration_num=100
+iteration_num=1000
 auc_sum = np.zeros((iteration_num))
 for i in range(iteration_num):
 # y = np.random.permutation(y)

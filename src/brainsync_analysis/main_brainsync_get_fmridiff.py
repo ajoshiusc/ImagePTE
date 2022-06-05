@@ -17,15 +17,15 @@ nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_
 nonepi_train_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_training.txt'
 
 
-atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
+atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCBrain_grayordinate_labels.mat'
 atlas = spio.loadmat(atlas_labels)
 
 gord_labels = atlas['labels'].squeeze()
 
 label_ids = np.unique(gord_labels)  # unique label ids
 #label_ids = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
-label_ids = [3, 100, 101, 184, 185, 200, 201, 300,
-             301, 400, 401, 500, 501, 800, 850, 900]
+#label_ids = [3, 100, 101, 184, 185, 200, 201, 300,
+#             301, 400, 401, 500, 501, 800, 850, 900]
 # remove WM label from connectivity analysis
 label_ids = np.setdiff1d(label_ids, (2000, 0))
 
