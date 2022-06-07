@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 import sys
 from sklearn.preprocessing import normalize
 from sklearn.model_selection import cross_val_score, LeaveOneOut
+import scipy.io as spio
 
 sm = '.smooth3mm'
 
@@ -65,11 +66,17 @@ def readsubs(studydir, sub_ids):
 
 def roiwise_stats(epi_data, nonepi_data):
 
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCBrain_grayordinate_labels.mat'
+    atlas = spio.loadmat(atlas_labels)
+    gord_labels = atlas['labels'].squeeze()
+
+    roi_list = np.unique(gord_labels)  # unique label ids
+
     atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/USCBrain.label.nii.gz'
     at_labels = np.asanyarray(ni.load_img(atlas_labels).dataobj)
 
     #roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
-    roi_list = np.unique(at_labels.flatten())
+    #roi_list = np.unique(at_labels.flatten())
     roi_list = np.setdiff1d(roi_list, (2000, 0))
 
     '''#roi_list = [3, 100, 101, 184, 185, 200, 201, 300,

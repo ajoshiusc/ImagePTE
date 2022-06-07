@@ -5,7 +5,7 @@ from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import StratifiedKFold
 
-f = np.load('PTE_fmridiff_USCLobes.npz')
+f = np.load('PTE_fmridiff_USCBrain.npz')
 conn_pte = f['fdiff_sub_z']
 lab_ids = f['label_ids']
 gordlab = f['labels']
@@ -13,14 +13,14 @@ sub_ids = f['sub_ids']
 n_rois = conn_pte.shape[0]
 epi_connectivity = conn_pte.T
 
-a = np.load('./stats/PTE_lesion_vols_USCLobes.npz', allow_pickle=True)
+a = np.load('./PTE_lesion_vols_USCBrain2.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 epi_lesion_vols = np.array([a[k] for k in sub_ids])
 #epi_measures = epi_connectivity
 epi_measures = np.concatenate((epi_connectivity, epi_lesion_vols), axis=1)
 
 
-f = np.load('NONPTE_fmridiff_USCLobes.npz')
+f = np.load('NONPTE_fmridiff_USCBrain.npz')
 conn_nonpte = f['fdiff_sub_z']
 lab_ids = f['label_ids']
 gordlab = f['labels']
@@ -28,7 +28,7 @@ sub_ids = f['sub_ids']
 
 nonepi_connectivity = conn_nonpte.T
 
-a = np.load('./stats/NONPTE_lesion_vols_USCLobes.npz', allow_pickle=True)
+a = np.load('./NONPTE_lesion_vols_USCBrain2.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
 #nonepi_measures = nonepi_connectivity
