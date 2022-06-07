@@ -70,6 +70,8 @@ def roiwise_stats(epi_data, nonepi_data):
 
     #roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
     roi_list = np.unique(at_labels.flatten())
+    roi_list = np.setdiff1d(roi_list, (2000, 0))
+
     '''#roi_list = [3, 100, 101, 184, 185, 200, 201, 300,
     #              301, 400, 401, 500, 501, 800, 850, 900]
     '''

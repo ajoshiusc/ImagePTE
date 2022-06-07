@@ -109,7 +109,7 @@ for subno in range(nsub_nonepi_train):
         fdiff_sub[i, subno] = data
 
 
-np.savez('NONPTE_TRAINING_fmridiff.npz',
+np.savez('NONPTE_TRAINING_fmridiff_USCBrain.npz',
          fdiff_sub=fdiff_sub,
          label_ids=label_ids,
          labels=gord_labels,
@@ -135,7 +135,7 @@ for subno in range(nsub_epi):
         fdiff_sub[i, subno] = data
         fdiff_sub_z[i, subno] = (data - fdiff_mean[i])/fdiff_std[i]
 
-np.savez('PTE_fmridiff.npz',
+np.savez('PTE_fmridiff_USCBrain.npz',
          fdiff_sub=fdiff_sub,
          fdiff_sub_z=fdiff_sub_z,
          label_ids=label_ids,
@@ -159,7 +159,7 @@ for subno in range(nsub_nonepi):
         fdiff_sub_z[i, subno] = (data - fdiff_mean[i])/fdiff_std[i]
 
 
-np.savez('NONPTE_fmridiff.npz',
+np.savez('NONPTE_fmridiff_USCBrain.npz',
          fdiff_sub=fdiff_sub,
          fdiff_sub_z=fdiff_sub_z,
          label_ids=label_ids,

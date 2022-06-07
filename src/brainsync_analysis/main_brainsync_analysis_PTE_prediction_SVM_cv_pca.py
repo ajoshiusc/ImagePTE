@@ -4,6 +4,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import StratifiedKFold
+from tqdm import tqdm
 
 f = np.load('PTE_fmridiff.npz')
 conn_pte = f['fdiff_sub_z']
@@ -102,7 +103,7 @@ print('AUC on testing data:gamma=%s, auc=%g' % (mygamma, np.mean(auc)))
 best_com=0
 max_AUC=0
 max_component=min((X.shape[0]-2 - 1),(X.shape[1]-1))
-for nf in range(1, max_component):
+for nf in tqdm(range(1, max_component)):
     pipe = Pipeline([('pca_apply', PCA(n_components=nf, whiten=True)),
                         ('svc', SVC(kernel='linear', C=best_C,gamma=best_gamma, tol=1e-9))])
     kfold = StratifiedKFold(n_splits=36, shuffle=True,random_state=1211)
@@ -120,7 +121,7 @@ print('n_components=%d is' %(best_com))
 ####################################################
 iteration_num=1000
 auc_sum = np.zeros((iteration_num))
-for i in range(iteration_num):
+for i in tqdm(range(iteration_num)):
 # y = np.random.permutation(y)
     pipe = Pipeline([('pca_apply', PCA(n_components=best_com, whiten=True)),
                     ('svc', SVC(kernel='linear',C=best_C, gamma=best_gamma, tol=1e-9))])
@@ -134,7 +135,7 @@ for i in range(iteration_num):
 print('Average AUC with PCA=%g , Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)))
 
 auc_sum = np.zeros((iteration_num))
-for i in range(iteration_num):
+for i in tqdm(range(iteration_num)):
 # y = np.random.permutation(y)
     pipe = SVC(kernel='linear', C=best_C,gamma=best_gamma, tol=1e-9)
     kfold = StratifiedKFold(n_splits=36, shuffle=True)
