@@ -65,17 +65,14 @@ def readsubs(studydir, sub_ids):
 
 def roiwise_stats(epi_data, nonepi_data):
 
-    atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/USCBrain.label.nii.gz'
     at_labels = np.asanyarray(ni.load_img(atlas_labels).dataobj)
-    # roi_list = [
-    #    3, 100, 101, 184, 185, 200, 201, 300, 301, 400, 401, 500, 501, 800,
-    #    850, 900, 950
-    # ]
-    roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
-    #roi_list = [300,301]
-    #roi_list = np.unique(at_labels.flatten())
-    #roi_list = [3, 100, 101, 184, 185, 200, 201, 300,
+
+    #roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
+    roi_list = np.unique(at_labels.flatten())
+    '''#roi_list = [3, 100, 101, 184, 185, 200, 201, 300,
     #              301, 400, 401, 500, 501, 800, 850, 900]
+    '''
 
     epi_roi_lesion_vols = np.zeros((37, len(roi_list)))
     nonepi_roi_lesion_vols = np.zeros((37, len(roi_list)))
@@ -161,7 +158,7 @@ def pointwise_stats(epi_data, nonepi_data):
     #    for nv in tqdm(range(numV), mininterval=30, maxinterval=90):
     #        rval[nv], pval[nv] = sp.stats.ranksums(edat1[nv, :], edat2[nv, :])
 
-    np.savez('lesion_results.npz', rval=rval, pval=pval, msk=msk)
+    np.savez('lesion_results_USCBrain.npz', rval=rval, pval=pval, msk=msk)
 
     pval_vol = pval_vol.flatten()
     pval_vol[msk] = pval
@@ -253,14 +250,14 @@ def main():
     for i, subid in enumerate(keys):
         lesion_vols[subid] = epi_measures[i]
 
-    np.savez('PTE_lesion_vols.npz', lesion_vols=lesion_vols)
+    np.savez('PTE_lesion_vols_USCBrain.npz', lesion_vols=lesion_vols)
 
     lesion_vols = {}
     keys = nonepi_subids
     for i, subid in enumerate(keys):
         lesion_vols[subid] = nonepi_measures[i]
 
-    np.savez('NONPTE_lesion_vols.npz', lesion_vols=lesion_vols)
+    np.savez('NONPTE_lesion_vols_USCBrain.npz', lesion_vols=lesion_vols)
 
     print('done')
 

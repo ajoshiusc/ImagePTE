@@ -27,7 +27,7 @@ def main():
     ind = np.tril_indices(n_rois, k=1)
   
 
-    a = np.load('PTE_lesion_vols.npz', allow_pickle=True)
+    a = np.load('PTE_lesion_vols_USCBrain.npz', allow_pickle=True)
     a = a['lesion_vols'].item()
     epi_lesion_vols = np.array([a[k] for k in sub_ids])
     epi_measures = epi_lesion_vols
@@ -45,7 +45,7 @@ def main():
 
 
 
-    a = np.load('NONPTE_lesion_vols.npz', allow_pickle=True)
+    a = np.load('NONPTE_lesion_vols_USCBrain.npz', allow_pickle=True)
     a = a['lesion_vols'].item()
     nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
     nonepi_measures = nonepi_lesion_vols
@@ -128,7 +128,7 @@ def main():
 #######################selecting gamma################
 ## Random permutation of pairs of training subject for 1000 iterations
 ####################################################
-    iteration_num=100
+    iteration_num=1000
     auc_sum = np.zeros((iteration_num))
     for i in range(iteration_num):
     # y = np.random.permutation(y)
