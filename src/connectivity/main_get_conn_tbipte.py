@@ -29,15 +29,15 @@ def main():
     epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
     nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
 
-    atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCBrain_grayordinate_labels.mat'
     atlas = spio.loadmat(atlas_labels)
 
     gord_labels = atlas['labels'].squeeze()
 
     label_ids = np.unique(gord_labels)  # unique label ids
     #label_ids = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
-    label_ids = [3, 100, 101, 184, 185, 200, 201, 300,
-                 301, 400, 401, 500, 501, 800, 850, 900]
+    #label_ids = [3, 100, 101, 184, 185, 200, 201, 300,
+    #             301, 400, 401, 500, 501, 800, 850, 900]
     # remove WM label from connectivity analysis
     label_ids = np.setdiff1d(label_ids, (2000, 0))
 
@@ -91,7 +91,7 @@ def main():
         cent = nx.eigenvector_centrality(G, weight='weight')
         cent_mat[:, subno] = np.array(list(cent.items()))[:, 1]
 
-    np.savez('PTE_graphs.npz',
+    np.savez('PTE_graphs_USCBrain.npz',
              conn_mat=conn_mat,
              label_ids=label_ids,
              labels=gord_labels,
@@ -109,7 +109,7 @@ def main():
         cent = nx.eigenvector_centrality(G, weight='weight')
         cent_mat[:, subno] = np.array(list(cent.items()))[:, 1]
 
-    np.savez('NONPTE_graphs.npz',
+    np.savez('NONPTE_graphs_USCBrain.npz',
              conn_mat=conn_mat,
              label_ids=label_ids,
              labels=gord_labels,

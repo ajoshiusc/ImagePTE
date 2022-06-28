@@ -7,7 +7,7 @@ import time
 
 
 studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
-nonpte_training_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
+nonpte_training_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_training.txt'
 
 
 with open(nonpte_training_txt) as f:

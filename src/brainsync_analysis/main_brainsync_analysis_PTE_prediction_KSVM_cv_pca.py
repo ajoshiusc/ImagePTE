@@ -5,30 +5,30 @@ from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import StratifiedKFold
 
-f = np.load('PTE_fmridiff.npz')
-conn_pte = f['fdiff_sub_z']
+f = np.load('PTE_fmridiff_USCBrain.npz')
+conn_pte = f['fdiff_sub']
 lab_ids = f['label_ids']
 gordlab = f['labels']
 sub_ids = f['sub_ids']
 n_rois = conn_pte.shape[0]
 epi_connectivity = conn_pte.T
 
-a = np.load('./stats/PTE_lesion_vols_USCBrain.npz', allow_pickle=True)
+a = np.load('stats/PTE_lesion_vols_USCLobes.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 epi_lesion_vols = np.array([a[k] for k in sub_ids])
 epi_measures = epi_connectivity
 #epi_measures = np.concatenate((epi_connectivity, epi_lesion_vols), axis=1)
 
 
-f = np.load('NONPTE_fmridiff.npz')
-conn_nonpte = f['fdiff_sub_z']
+f = np.load('NONPTE_fmridiff_USCBrain.npz')
+conn_nonpte = f['fdiff_sub']
 lab_ids = f['label_ids']
 gordlab = f['labels']
 sub_ids = f['sub_ids']
 
 nonepi_connectivity = conn_nonpte.T
 
-a = np.load('./stats/NONPTE_lesion_vols_USCBrain.npz', allow_pickle=True)
+a = np.load('stats/NONPTE_lesion_vols_USCLobes.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
 nonepi_measures = nonepi_connectivity
@@ -72,8 +72,9 @@ for current_gamma in gamma_range:
         best_gamma=current_gamma
 
 print('best gamma=%g is' %(best_gamma))
+max_AUC=0
 
-C_range=[0.0001, 0.001, 0.01, .1, .3, .6, .9, 1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 50, 100,200,500,1000]  
+C_range=[0.0001, 0.001, 0.01, .1, .3, .6, .9, 1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 50, 100,200,500,1000,1]  
 for current_C in C_range:
     clf = SVC(kernel='rbf', C=current_C,gamma=best_gamma, tol=1e-9)
     my_metric = 'roc_auc'
@@ -118,7 +119,7 @@ print('n_components=%d is' %(best_com))
 #######################selecting gamma################
 ## Random permutation of pairs of training subject for 1000 iterations
 ####################################################
-iteration_num=1000
+iteration_num=100
 auc_sum = np.zeros((iteration_num))
 for i in range(iteration_num):
 # y = np.random.permutation(y)

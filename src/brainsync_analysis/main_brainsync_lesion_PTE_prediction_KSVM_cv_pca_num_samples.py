@@ -8,7 +8,7 @@ from numpy.random import permutation
 
 
 f = np.load('PTE_fmridiff_USCBrain.npz')
-conn_pte = f['fdiff_sub_z']
+conn_pte = f['fdiff_sub']
 lab_ids = f['label_ids']
 gordlab = f['labels']
 sub_ids = f['sub_ids']
@@ -17,7 +17,7 @@ epi_connectivity = conn_pte.T
 num_sub_all = len(sub_ids)
 
 
-a = np.load('./stats/PTE_lesion_vols_USCBrain.npz', allow_pickle=True)
+a = np.load('stats/PTE_lesion_vols_USCLobes.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 epi_lesion_vols = np.array([a[k] for k in sub_ids])
 #epi_measures = epi_connectivity
@@ -25,14 +25,14 @@ epi_measures = np.concatenate((epi_connectivity, epi_lesion_vols), axis=1)
 
 
 f = np.load('NONPTE_fmridiff_USCBrain.npz')
-conn_nonpte = f['fdiff_sub_z']
+conn_nonpte = f['fdiff_sub']
 lab_ids = f['label_ids']
 gordlab = f['labels']
 sub_ids = f['sub_ids']
 
 nonepi_connectivity = conn_nonpte.T
 
-a = np.load('./stats/NONPTE_lesion_vols_USCBrain.npz', allow_pickle=True)
+a = np.load('stats/NONPTE_lesion_vols_USCLobes.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
 #nonepi_measures = nonepi_connectivity
@@ -69,7 +69,7 @@ for num_sub in range(2, num_sub_all):
 
     best_com = 37
     best_gamma = 0.001 # 0.075
-    best_C = 9
+    best_C = 5
     #######################selecting gamma################
     # Random permutation of pairs of training subject for 1000 iterations
     ####################################################

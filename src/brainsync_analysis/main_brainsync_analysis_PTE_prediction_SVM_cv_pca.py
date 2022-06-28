@@ -6,7 +6,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
 
-f = np.load('PTE_fmridiff.npz')
+f = np.load('../PTE_fmridiff_USCBrain.npz')
 conn_pte = f['fdiff_sub_z']
 lab_ids = f['label_ids']
 gordlab = f['labels']
@@ -14,14 +14,14 @@ sub_ids = f['sub_ids']
 n_rois = conn_pte.shape[0]
 epi_connectivity = conn_pte.T
 
-a = np.load('./stats/PTE_lesion_vols_USCBrain.npz', allow_pickle=True)
+a = np.load('../PTE_lesion_vols_USCBrain.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 epi_lesion_vols = np.array([a[k] for k in sub_ids])
 epi_measures = epi_connectivity
 #epi_measures = np.concatenate((epi_connectivity, epi_lesion_vols), axis=1)
 
 
-f = np.load('NONPTE_fmridiff.npz')
+f = np.load('../NONPTE_fmridiff_USCBrain.npz')
 conn_nonpte = f['fdiff_sub_z']
 lab_ids = f['label_ids']
 gordlab = f['labels']
@@ -29,7 +29,7 @@ sub_ids = f['sub_ids']
 
 nonepi_connectivity = conn_nonpte.T
 
-a = np.load('./stats/NONPTE_lesion_vols_USCBrain.npz', allow_pickle=True)
+a = np.load('../NONPTE_lesion_vols_USCBrain.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
 nonepi_measures = nonepi_connectivity
@@ -42,7 +42,7 @@ y = np.hstack(
 
 # Permute the labels to check if AUC becomes 0.5. This check is to make sure that we are not overfitting
 
-n_iter = 1000
+n_iter = 100
 auc = np.zeros(n_iter)
 precision = np.zeros(n_iter)
 recall = np.zeros(n_iter)
@@ -73,6 +73,7 @@ for current_gamma in gamma_range:
         best_gamma=current_gamma
 
 print('best gamma=%g is' %(best_gamma))
+max_AUC=0
 
 C_range=[0.0001, 0.001, 0.01, .1, .3, .6, .9, 1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 50, 100,200,500,1000]  
 for current_C in C_range:

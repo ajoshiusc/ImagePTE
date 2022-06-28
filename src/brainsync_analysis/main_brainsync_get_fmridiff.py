@@ -78,6 +78,13 @@ for sub in nonepitrainIds:
     else:
         print('File does not exist: %s' % fname)
 
+nsub = min(len(epi_files), len(nonepi_files))
+epi_ids = epi_ids[:nsub]
+epi_files = epi_files[:nsub]
+
+nonepi_ids = nonepi_ids[:nsub]
+nonepi_files = nonepi_files[:nsub]
+
 
 epi_data = load_bfp_data(epi_files, 171)
 nonepi_data = load_bfp_data(nonepi_files, 171)

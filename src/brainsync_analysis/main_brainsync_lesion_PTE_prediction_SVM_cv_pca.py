@@ -6,8 +6,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
 
-f = np.load('PTE_fmridiff.npz')
-conn_pte = f['fdiff_sub_z']
+f = np.load('PTE_fmridiff_USCBrain.npz')
+conn_pte = f['fdiff_sub']
 lab_ids = f['label_ids']
 gordlab = f['labels']
 sub_ids = f['sub_ids']
@@ -21,8 +21,8 @@ epi_lesion_vols = np.array([a[k] for k in sub_ids])
 epi_measures = np.concatenate((epi_connectivity, epi_lesion_vols), axis=1)
 
 
-f = np.load('NONPTE_fmridiff.npz')
-conn_nonpte = f['fdiff_sub_z']
+f = np.load('NONPTE_fmridiff_USCBrain.npz')
+conn_nonpte = f['fdiff_sub']
 lab_ids = f['label_ids']
 gordlab = f['labels']
 sub_ids = f['sub_ids']
@@ -119,7 +119,7 @@ print('n_components=%d is' %(best_com))
 #######################selecting gamma################
 ## Random permutation of pairs of training subject for 1000 iterations
 ####################################################
-iteration_num=1000
+iteration_num=100
 auc_sum = np.zeros((iteration_num))
 for i in tqdm(range(iteration_num)):
 # y = np.random.permutation(y)
