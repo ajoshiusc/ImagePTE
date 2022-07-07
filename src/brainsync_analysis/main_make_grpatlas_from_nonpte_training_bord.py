@@ -5,8 +5,9 @@ from brainsync import groupBrainSync, normalizeData
 import numpy as np
 import time
 import scipy.io as spio
+from tqdm import tqdm
 
-studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
+studydir = '/ImagePTE1/ajoshi/maryland_rao_v1_bfp'
 nonpte_training_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_training.txt'
 
 
@@ -18,7 +19,7 @@ subids = list(map(lambda x: x.strip(), subids))
 sub_files = list()
 for subdir in subids:
     sub = os.path.basename(subdir)
-    fname = os.path.join(subdir, 'func', sub + '_rest_bold.BOrd.mat')
+    fname = os.path.join(studydir, subdir, 'func', sub + '_rest_bold.BOrd.mat')
 
     if os.path.isfile(fname):
         sub_files.append(fname)
