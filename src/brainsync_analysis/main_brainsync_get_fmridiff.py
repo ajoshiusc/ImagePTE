@@ -6,28 +6,15 @@ from bfp_utils import load_bfp_data
 import scipy.io as spio
 
 # get atlas
-atlas_data = np.load('grp_atlas.npz')['atlas_data']  # , X2=X2, Os=Os)
+atlas_data = np.load('maryland_rao_v1_bfp_grp_atlas_bord.npz')['atlas_data']  # , X2=X2, Os=Os)
 atlas_data2, _, _ = normalizeData(atlas_data)
 print(np.max(atlas_data2-atlas_data))
 
 
-studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
+studydir = '/ImagePTE1/ajoshi/maryland_rao_v1_bfp'
 epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
 nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
 nonepi_train_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_training.txt'
-
-
-atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCBrain_grayordinate_labels.mat'
-atlas = spio.loadmat(atlas_labels)
-
-gord_labels = atlas['labels'].squeeze()
-
-label_ids = np.unique(gord_labels)  # unique label ids
-#label_ids = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
-#label_ids = [3, 100, 101, 184, 185, 200, 201, 300,
-#             301, 400, 401, 500, 501, 800, 850, 900]
-# remove WM label from connectivity analysis
-label_ids = np.setdiff1d(label_ids, (2000, 0))
 
 with open(epi_txt) as f:
     epiIds = f.readlines()
@@ -116,7 +103,7 @@ for subno in range(nsub_nonepi_train):
         fdiff_sub[i, subno] = data
 
 
-np.savez('NONPTE_TRAINING_fmridiff_USCBrain.npz',
+np.savez('NONPTE_TRAINING_fmridiff_BOrd.npz',
          fdiff_sub=fdiff_sub,
          label_ids=label_ids,
          labels=gord_labels,
@@ -142,7 +129,7 @@ for subno in range(nsub_epi):
         fdiff_sub[i, subno] = data
         fdiff_sub_z[i, subno] = (data - fdiff_mean[i])/fdiff_std[i]
 
-np.savez('PTE_fmridiff_USCBrain.npz',
+np.savez('PTE_fmridiff_BOrd.npz',
          fdiff_sub=fdiff_sub,
          fdiff_sub_z=fdiff_sub_z,
          label_ids=label_ids,
@@ -166,7 +153,7 @@ for subno in range(nsub_nonepi):
         fdiff_sub_z[i, subno] = (data - fdiff_mean[i])/fdiff_std[i]
 
 
-np.savez('NONPTE_fmridiff_USCBrain.npz',
+np.savez('NONPTE_fmridiff_BOrd.npz',
          fdiff_sub=fdiff_sub,
          fdiff_sub_z=fdiff_sub_z,
          label_ids=label_ids,
