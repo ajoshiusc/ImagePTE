@@ -4,9 +4,10 @@ from bfp_utils import load_bfp_data
 from brainsync import groupBrainSync, normalizeData
 import numpy as np
 import time
+import scipy.io as spio
+from tqdm import tqdm
 
-
-studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
+studydir = '/ImagePTE1/ajoshi/maryland_rao_v1_bfp'
 nonpte_training_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_training.txt'
 
 
@@ -16,28 +17,39 @@ with open(nonpte_training_txt) as f:
 subids = list(map(lambda x: x.strip(), subids))
 
 sub_files = list()
-for sub in subids:
-    fname = os.path.join(studydir, sub, 'BFP', sub, 'func',
-                         sub + '_rest_bold.32k.GOrd.mat')
+for subdir in subids:
+    sub = os.path.basename(subdir)
+    fname = os.path.join(studydir, subdir, 'func', sub + '_rest_bold.BOrd.mat')
 
     if os.path.isfile(fname):
         sub_files.append(fname)
     else:
         print('File does not exist: %s' % fname)
 
+num_sub = len(sub_files)
 
-nonepi_data = load_bfp_data(sub_files, 171)
+f = spio.loadmat(sub_files[0])['dtseries']
+
+numT = f.shape[1]
+fmri_data = np.zeros((numT, f.shape[0], num_sub))
+
+for i, f in enumerate(tqdm(sub_files)):
+
+    d = spio.loadmat(f)['dtseries'].T
+    fmri_data[:, :, i] = d[:numT, :]
 
 t = time.time()
-X2, Os, Costdif, TotalError = groupBrainSync(nonepi_data)
+X2, Os, Costdif, TotalError = groupBrainSync(fmri_data)
 
 elapsed = time.time() - t
 
-np.savez('grp_atlas_unnormalized.npz', X2=X2, Os=Os)
+
+base = os.path.basename(studydir)
+np.savez(base+'_grp_atlas_unnormalized_bord.npz', X2=X2, Os=Os)
 
 atlas_data, _, _ = normalizeData(X2)
 
-np.savez('grp_atlas.npz', atlas_data=atlas_data)
+np.savez(base+'_grp_atlas_bord.npz', atlas_data=atlas_data)
 
 
 # print(subids)
