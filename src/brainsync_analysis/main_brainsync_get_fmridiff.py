@@ -39,8 +39,9 @@ nonepi_ids = list()
 nonepitrain_ids = list()
 
 for sub in epiIds:
-    fname = os.path.join(studydir, sub, 'BFP', sub, 'func',
-                         sub + '_rest_bold.32k.GOrd.mat')
+
+    fname = os.path.join(studydir, sub, 'func', sub + '_rest_bold.BOrd.mat')
+
     if os.path.isfile(fname):
         epi_files.append(fname)
         epi_ids.append(sub)
@@ -48,8 +49,9 @@ for sub in epiIds:
         print('File does not exist: %s' % fname)
 
 for sub in nonepiIds:
-    fname = os.path.join(studydir, sub, 'BFP', sub, 'func',
-                         sub + '_rest_bold.32k.GOrd.mat')
+
+    fname = os.path.join(studydir, sub, 'func', sub + '_rest_bold.BOrd.mat')
+
     if os.path.isfile(fname):
         nonepi_files.append(fname)
         nonepi_ids.append(sub)
@@ -57,8 +59,9 @@ for sub in nonepiIds:
         print('File does not exist: %s' % fname)
 
 for sub in nonepitrainIds:
-    fname = os.path.join(studydir, sub, 'BFP', sub, 'func',
-                         sub + '_rest_bold.32k.GOrd.mat')
+
+    fname = os.path.join(studydir, sub, 'func', sub + '_rest_bold.BOrd.mat')
+
     if os.path.isfile(fname):
         nonepitrain_files.append(fname)
         nonepitrain_ids.append(sub)
@@ -91,23 +94,16 @@ num_vtx = epi_data.shape[1]
 
 nsub_nonepi_train = nonepitrain_data.shape[2]
 # fmri diff for epilepsy
-fdiff_sub = np.zeros((len(label_ids), nsub_nonepi_train))
+fdiff_sub = np.zeros((num_vtx, nsub_nonepi_train))
 
 for subno in range(nsub_nonepi_train):
     d, _ = brainSync(atlas_data, nonepitrain_data[:, :, subno])
-
-    for i, id in enumerate(label_ids):
-        idx = gord_labels == id
-        data = np.linalg.norm(
-            atlas_data[:, idx] - d[:, idx])/np.sqrt(np.sum(idx))
-        fdiff_sub[i, subno] = data
+    fdiff_sub[:, subno] =  np.linalg.norm(atlas_data - d,axis=0)
 
 
 np.savez('NONPTE_TRAINING_fmridiff_BOrd.npz',
          fdiff_sub=fdiff_sub,
-         label_ids=label_ids,
-         labels=gord_labels,
-         sub_ids=epi_ids)
+         sub_ids=nonepitrain_ids)
 
 
 fdiff_mean = np.mean(fdiff_sub, axis=1)
@@ -116,49 +112,42 @@ fdiff_std = np.std(fdiff_sub, axis=1)
 
 nsub_epi = epi_data.shape[2]
 # fmri diff for epilepsy
-fdiff_sub = np.zeros((len(label_ids), nsub_epi))
-fdiff_sub_z = np.zeros((len(label_ids), nsub_epi))
+fdiff_sub = np.zeros((num_vtx, nsub_epi))
+fdiff_sub_z = np.zeros((num_vtx, nsub_epi))
 
 for subno in range(nsub_epi):
     d, _ = brainSync(atlas_data, epi_data[:, :, subno])
-
-    for i, id in enumerate(label_ids):
-        idx = gord_labels == id
-        data = np.linalg.norm(
-            atlas_data[:, idx] - d[:, idx])/np.sqrt(np.sum(idx))
-        fdiff_sub[i, subno] = data
-        fdiff_sub_z[i, subno] = (data - fdiff_mean[i])/fdiff_std[i]
+    data = np.linalg.norm(atlas_data - d,axis=0)
+    fdiff_sub[:, subno] = data
+    fdiff_sub_z[:, subno] = (data - fdiff_mean)/fdiff_std
 
 np.savez('PTE_fmridiff_BOrd.npz',
          fdiff_sub=fdiff_sub,
          fdiff_sub_z=fdiff_sub_z,
-         label_ids=label_ids,
-         labels=gord_labels,
          sub_ids=epi_ids)
 
 
 # fmri diff for nonepilepsy
 nsub_nonepi = nonepi_data.shape[2]
-fdiff_sub = np.zeros((len(label_ids), nsub_nonepi))
-fdiff_sub_z = np.zeros((len(label_ids), nsub_nonepi))
+fdiff_sub = np.zeros((num_vtx, nsub_nonepi))
+fdiff_sub_z = np.zeros((num_vtx, nsub_nonepi))
 
 for subno in range(nsub_nonepi):
     d, _ = brainSync(atlas_data, nonepi_data[:, :, subno])
-
-    for i, id in enumerate(label_ids):
-        idx = gord_labels == id
-        data = np.linalg.norm(
-            atlas_data[:, idx] - d[:, idx])/np.sqrt(np.sum(idx))
-        fdiff_sub[i, subno] = data
-        fdiff_sub_z[i, subno] = (data - fdiff_mean[i])/fdiff_std[i]
+    data = np.linalg.norm(atlas_data - d,axis=0)
+    fdiff_sub[:, subno] = data
+    fdiff_sub_z[:, subno] = (data - fdiff_mean)/fdiff_std
 
 
 np.savez('NONPTE_fmridiff_BOrd.npz',
          fdiff_sub=fdiff_sub,
          fdiff_sub_z=fdiff_sub_z,
-         label_ids=label_ids,
-         labels=gord_labels,
          sub_ids=nonepi_ids)
 
 
+
+
+
 print('done')
+
+
