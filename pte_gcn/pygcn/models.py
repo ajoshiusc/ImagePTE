@@ -29,7 +29,7 @@ class GCN(nn.Module):
         self.mlp = nn.Sequential(
             # nn.Linear(400, 200), 
             # nn.PReLU(),
-            nn.Linear(200, 50),
+            nn.Linear(100, 50),
             # nn.BatchNorm1d(50),
             nn.PReLU(),
             # nn.Linear(200, 50),
