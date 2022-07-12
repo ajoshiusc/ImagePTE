@@ -25,16 +25,13 @@ def load_csv(path="/big_disk/ajoshi/ADHD_Peking_gord/",
     df = pd.read_csv(csv_file)
     sub_ids = np.array(df['ScanDir ID'])
     labels = np.array(df['DX'])
-    labels[labels > 0] = 1
-    ADHD_names = []
-    TDC_names = [] # typically developing children
+    # labels[labels > 0] = 1
+    names = []
+    # TDC_names = [] # typically developing children
     for i, sid in enumerate(sub_ids):
-        if labels[i] == 1:
-            ADHD_names.append(path + str(sid) + "_rest_bold.32k.GOrd.mat")
-        else:
-            TDC_names.append(path + str(sid) + "_rest_bold.32k.GOrd.mat")
+        names.append(path + str(sid) + "_rest_bold.32k.GOrd.mat")
 
-    return np.array(ADHD_names), np.array(TDC_names), labels
+    return np.array(names), labels
 ##============================================================================##
 
 
@@ -84,6 +81,9 @@ def load_all_data(atlas_labels):
 
     # remove WM label from connectivity analysis
     label_ids = np.setdiff1d(label_ids, (2000, 0))
+    # print(label_ids)
+    # pdb.set_trace()
+
 
     # with open(epi_txt) as f:
     #     epiIds = f.readlines()
@@ -111,69 +111,70 @@ def load_all_data(atlas_labels):
     #     if os.path.isfile(fname):
     #         nonepi_files.append(fname)
 
-    adhd_fnames, tdc_fnames, gt_labels = load_csv()
-    adhd_data = load_bfp_data(adhd_fnames, 235)
-    tdc_data = load_bfp_data(tdc_fnames, 235)
+    fnames, gt_labels = load_csv()
+    # print(gt_labels)
+    # pdb.set_trace()
+    data = load_bfp_data(fnames, 235)
+    # tdc_data = load_bfp_data(tdc_fnames, 235)
 
-    nsub = adhd_data.shape[2]
+    nsub = data.shape[2]
 
     conn_mat = np.zeros((nsub, len(label_ids), len(label_ids)))
     parcorr_mat = np.zeros((nsub, len(label_ids), len(label_ids)))
     cent_mat = np.zeros((nsub, len(label_ids)))
-    input_feat = np.zeros((nsub, len(label_ids), adhd_data.shape[0]))
+    input_feat = np.zeros((nsub, len(label_ids), data.shape[0]))
     print(conn_mat.shape, input_feat.shape)
-    print(adhd_data.shape, tdc_data.shape, gord_labels.shape)
+    print(data.shape, data.shape, gord_labels.shape)
 
-    _, _, ref_sub = get_connectivity(tdc_data[:, :, 0],
+    _, _, ref_sub = get_connectivity(data[:, :, 0],
                             labels=gord_labels,
                             label_ids=label_ids)
 
 
     for subno in range(nsub): # num of subjects
-        conn_mat[subno, :, :], parcorr_mat[subno, :, :], time_series = get_connectivity(adhd_data[:, :, subno],
+        conn_mat[subno, :, :], parcorr_mat[subno, :, :], time_series = get_connectivity(data[:, :, subno],
                                                  labels=gord_labels,
                                                  label_ids=label_ids)
 
         #G = nx.convert_matrix.from_numpy_array(np.abs(conn_mat[subno, :, :]))
         #cent = nx.eigenvector_centrality(G, weight='weight')
         #cent_mat[subno, :] = np.array(list(cent.items()))[:,1]
-        # print(time_series.shape)
+        # print(ref_sub.shape, time_series.shape)
         input_feat[subno, :, :] = np.transpose(brainSync(ref_sub.T, time_series.T)[0])
-        # input_feat[subno, :, :] = time_series
 
-    np.savez('/home/wenhuicu/data_npz/ADHD_parPearson_BCI-DNI_noBS.npz',
+    np.savez('/home/wenhuicu/data_npz/ADHD_all_BCI-DNI_multiC.npz',
              conn_mat=conn_mat,
              partial_mat=parcorr_mat,
              features=input_feat, # 36x16x171
              label_ids=label_ids,
+             label=gt_labels,
              cent_mat=cent_mat)
 
 ##============================================================================
-    print("healthy subjects")
-    nsub = tdc_data.shape[2]
-
-    conn_mat = np.zeros((nsub, len(label_ids), len(label_ids)))
-    parcorr_mat = np.zeros((nsub, len(label_ids), len(label_ids)))
-    cent_mat = np.zeros((nsub, len(label_ids)))
-    input_feat = np.zeros((nsub, len(label_ids), tdc_data.shape[0]))
-    print(conn_mat.shape, input_feat.shape)
-    # here we are using same number of training subjects for epi and nonepi.
-    for subno in range(nsub):
-        conn_mat[subno, :, :], parcorr_mat[subno, :, :], time_series = get_connectivity(tdc_data[:, :, subno],
-                                                 labels=gord_labels,
-                                                 label_ids=label_ids)
-        #G = nx.convert_matrix.from_numpy_array(np.abs(conn_mat[subno, :, :]))
-        #cent = nx.eigenvector_centrality(G, weight='weight')
-        # cent_mat[subno, :] = np.array(list(cent.items()))[:,1]
-        input_feat[subno, :, :] = np.transpose(brainSync(ref_sub.T, time_series.T)[0])
-        # input_feat[subno, :, :] = time_series
-
-    np.savez('/home/wenhuicu/data_npz/TDC_parPearson_BCI-DNI_noBS.npz',
-             conn_mat=conn_mat, # n_subjects*16*16
-             partial_mat=parcorr_mat,
-             features=input_feat, # n_subjects * 16 x 171
-             label_ids=label_ids,
-             cent_mat=cent_mat)
+    # print("healthy subjects")
+    # nsub = tdc_data.shape[2]
+    #
+    # conn_mat = np.zeros((nsub, len(label_ids), len(label_ids)))
+    # parcorr_mat = np.zeros((nsub, len(label_ids), len(label_ids)))
+    # cent_mat = np.zeros((nsub, len(label_ids)))
+    # input_feat = np.zeros((nsub, len(label_ids), tdc_data.shape[0]))
+    # print(conn_mat.shape, input_feat.shape)
+    # # here we are using same number of training subjects for epi and nonepi.
+    # for subno in range(nsub):
+    #     conn_mat[subno, :, :], parcorr_mat[subno, :, :], time_series = get_connectivity(tdc_data[:, :, subno],
+    #                                              labels=gord_labels,
+    #                                              label_ids=label_ids)
+    #     #G = nx.convert_matrix.from_numpy_array(np.abs(conn_mat[subno, :, :]))
+    #     #cent = nx.eigenvector_centrality(G, weight='weight')
+    #     # cent_mat[subno, :] = np.array(list(cent.items()))[:,1]
+    #     input_feat[subno, :, :] = np.transpose(brainSync(ref_sub.T, time_series.T)[0])
+    #
+    # np.savez('../TDC_parPearson_Lobes.npz',
+    #          conn_mat=conn_mat, # n_subjects*16*16
+    #          partial_mat=parcorr_mat,
+    #          features=input_feat, # n_subjects * 16 x 171
+    #          label_ids=label_ids,
+    #          cent_mat=cent_mat)
 
     print('done')
 

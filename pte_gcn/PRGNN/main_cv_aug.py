@@ -32,7 +32,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--epoch', type=int, default=1, help='starting epoch')
 parser.add_argument('--n_epochs', type=int, default=20, help='number of epochs of training')
 parser.add_argument('--batchSize', type=int, default=90, help='size of the batches')
-parser.add_argument('--dataroot', type=str, default='data_aug/praug_30/', help='root directory of the dataset')
+parser.add_argument('--dataroot', type=str, default='../../../data_aug/DC_aug30/', help='root directory of the dataset')
 parser.add_argument('--matroot', type=str, default='MAT/clear_subjects.mat', help='root directory of the subject ID')
 parser.add_argument('--fold', type=int, default=1, help='training which fold')
 parser.add_argument('--lr', type=float, default=0.01, help='learning rate')
@@ -199,8 +199,8 @@ name = 'PTE_data'
 writer = SummaryWriter(os.path.join('./log/{}_fold{}_consis{}'.format(opt.net, opt.fold, opt.lamb5)))
 
 ############# Define Dataloader -- need costumize#####################
-file_pos = "/home/wenhuicu/ImagePTE/pte_gcn/PRGNN_fMRI-main/PTE_parPearson_BCI-DNI.npz"
-file_neg = "/home/wenhuicu/ImagePTE/pte_gcn/PRGNN_fMRI-main/NONPTE_parPearson_BCI-DNI.npz"
+file_pos = "/home/wenhuicu/ImagePTE/pte_gcn/PRGNN/PTE_parPearson_BCI-DNI.npz"
+file_neg = "/home/wenhuicu/ImagePTE/pte_gcn/PRGNN/NONPTE_parPearson_BCI-DNI.npz"
 dataset = BiopointDataset(opt.dataroot, name)
 
 ############### split train, val, and test set -- need costumize########################
