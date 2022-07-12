@@ -16,7 +16,7 @@ import pdb
 import sklearn
 import scipy.stats
 import networkx as nx
-from karateclub import DeepWalk, NetMF, GraphWave
+from karateclub import DeepWalk, NetMF, GraphWave, BoostNE
 
 # Training settings
 parser = argparse.ArgumentParser()
@@ -49,6 +49,8 @@ parser.add_argument('--walk_n', type=int, default=32, help='number of generated 
 parser.add_argument('--epochs', type=int, default=1, help='number of epochs during optimization in word2vec function')
 parser.add_argument('--atlas', type=str, default="Brain", help='name of atlas to use.')
 parser.add_argument('--model', type=str, default="DeepWalk", help='Method used to generate node embeddings')
+parser.add_argument('--use_all', type=bool, default=False, help='Whether to use all three features or not.')
+parser.add_argument('--npz_name', type=str, default='_graphs_USCBrain')
 
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
@@ -67,17 +69,21 @@ def deepwalk(conn):
     for i in range(conn.shape[0]):
         for j in range(conn.shape[1]):
             if abs(conn[i][j]) > 0.4:
-                edge_list.append((i, j, conn[i][j]))
+                edge_list.append((i, j, abs(conn[i][j])))
         
     G = nx.Graph()
     G.add_weighted_edges_from(edge_list)
+    # print(len(G))
+    # pdb.set_trace()
     # train model and generate embedding
-    # walk_length=100, dimensions=64, window_size=5
     if args.model == 'DeepWalk':
         model = DeepWalk(walk_number=args.walk_n, walk_length=args.walk_len, dimensions=args.dim, window_size=args.win_size, epochs=args.epochs)
     if args.model == 'GraphWave':
         model = GraphWave()
-    
+    if args.model == 'BoostNE':
+        model = BoostNE(dimensions=args.dim, iterations=args.epochs)
+    if args.model == 'NetMF':
+        model = NetMF(dimensions=args.dim, iteration=args.epochs)
     model.fit(G)
     embedding = model.get_embedding()
 
@@ -90,7 +96,7 @@ def get_features(fname='PTE'):
     label_ids = f['label_ids']
     brainsync = f['fdiff_sub'].T
 
-    f = np.load(args.root_path + fname + '_deepwalk.npz')
+    f = np.load(args.root_path + fname + args.npz_name + '.npz')
     conn_mat = f['conn_mat']
 
     n_rois = conn_mat.shape[0]
@@ -104,13 +110,19 @@ def get_features(fname='PTE'):
     ##=========Generate DeepWalk Features====================
     deepwalk_feat = []
     for subno in range(nsub):
-        deepwalk_feat.append(deepwalk(conn_mat[subno, :, :]))
+        if 'Brain' in args.npz_name or 'Lobes' in args.npz_name:
+            this_conn = conn_mat[:, :, subno]
+        else:
+            this_conn = conn_mat[subno, :, :]
+        deepwalk_feat.append(deepwalk(this_conn))
     deepwalk_feat = np.array(deepwalk_feat)
     print(deepwalk_feat.shape)
-    # measures = np.concatenate(
-    #     (.3*lesion_vols, deepwalk_feat.reshape((nsub, -1)), .3*brainsync), axis=1)
-    
-    measures = deepwalk_feat
+
+    if args.use_all == True:
+        measures = np.concatenate(
+        (0.2*lesion_vols, deepwalk_feat, 0.2*brainsync), axis=-1)
+    else:
+        measures = deepwalk_feat
 
     return measures, np.load(args.root_path + fname + '_deepwalk.npz')
 
