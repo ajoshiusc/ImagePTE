@@ -72,8 +72,8 @@ class NoDaemonContext(type(multiprocessing.get_context())):
 def read_data(data_dir):
     # onlyfiles = [f for f in listdir(data_dir) if osp.isfile(osp.join(data_dir, f))]
     # onlyfiles.sort()
-    PTE_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN_fMRI-main/PTE_parPearson_BCI-DNI.npz")
-    NON_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN_fMRI-main/NONPTE_parPearson_BCI-DNI.npz")
+    PTE_data = np.load("/home/wenhuicu/data_npz/PTE_Allconn_BCI-DNI_all.npz")
+    NON_data = np.load("/home/wenhuicu/data_npz/NONPTE_Allconn_BCI-DNI_all.npz")
 
     # # parallar computing
     cores = multiprocessing.cpu_count()
@@ -135,8 +135,8 @@ def read_data(data_dir):
 def process_single_data(index, use_gdc=False):
     # key to how we adapt to our model
     # read edge and edge attribute, partial correlation
-    PTE_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN_fMRI-main/PTE_parPearson_BCI-DNI.npz")
-    NONPTE_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN_fMRI-main/NONPTE_parPearson_BCI-DNI.npz")
+    PTE_data = np.load("/home/wenhuicu/data_npz/PTE_Allconn_BCI-DNI_all.npz")
+    NONPTE_data = np.load("//home/wenhuicu/data_npz/NONPTE_Allconn_BCI-DNI_all.npz")
     if index < PTE_data["conn_mat"].shape[0]:
         data = PTE_data
         new_index = index

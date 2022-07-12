@@ -49,6 +49,21 @@ def deepwalk(conn):
 
     return embedding
 
+
+def deepwalk_concat(fname):
+    f1 = np.load(args.root_path + fname + '_deepwalk1605_brain.npz')['deepwalk'].reshape((36, -1))
+    f2 = np.load(args.root_path + fname + '_deepwalk1605_brain1.npz')['deepwalk'].reshape((36, -1))
+    f3 = np.load(args.root_path + fname + '_deepwalk1605_brain2.npz')['deepwalk'].reshape((36, -1))
+    embedding = np.zeros((f1.shape[0], 3, f1.shape[1]))
+    embedding[:, 0, :] = f1
+    embedding[:, 1, :] = f2
+    embedding[:, 2, :] = f3
+    mean_emb = np.mean(embedding, axis=1)
+    std_emb = np.std(embedding, axis=1)
+
+    return np.concatenate([mean_emb, std_emb], axis=1)
+
+
 def get_features(fname='PTE'):
     f = np.load(args.root_path + fname + '_fmridiff_USCBrain.npz')
     sub_ids = f['sub_ids']
@@ -73,8 +88,9 @@ def get_features(fname='PTE'):
             this_conn = conn_mat[:, :, subno]
         else:
             this_conn = conn_mat[subno, :, :]
-        deepwalk_feat.append(deepwalk(this_conn))
-    deepwalk_feat = np.array(deepwalk_feat)
+        # deepwalk_feat.append(deepwalk(this_conn))
+    # deepwalk_feat = np.array(deepwalk_feat)
+    deepwalk_feat = deepwalk_concat(fname)
     print(deepwalk_feat.shape)
 
     if args.use_all == True:

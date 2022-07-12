@@ -260,7 +260,7 @@ def cross_validation():
                     dropout=args.dropout)
             optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
             # optimizer = optim.RMSprop(model.parameters(), lr=args.lr, alpha=0.9)
-            scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-7, last_epoch=-1)
+            scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.num_epochs, eta_min=1e-7, last_epoch=-1)
             
             model.to(device)
 
@@ -285,7 +285,7 @@ def cross_validation():
             gap = 1
             mode_on = args.mode
             
-            for epoch in range(args.epochs):
+            for epoch in range(args.num_epochs):
                 train(epoch, model, optimizer, scheduler, 
                     torch.from_numpy(train_features).float().to(device), 
                     torch.from_numpy(train_adj).float().to(device), 
