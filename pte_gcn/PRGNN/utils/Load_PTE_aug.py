@@ -16,8 +16,9 @@ import nilearn.image as ni
 from nilearn.connectome import ConnectivityMeasure
 from tqdm import tqdm
 from sklearn.svm import OneClassSVM
-from sklearn.cross_decomposition import CCA
 #%%
+
+aug_times = 10
 
 def get_connectivity(data, labels, label_ids): # compute adj matrix
     if type(data) == str:
@@ -25,52 +26,48 @@ def get_connectivity(data, labels, label_ids): # compute adj matrix
         data = df['dtseries'].T
 
     num_time = data.shape[0]
+
     num_rois = len(label_ids)
-    rtseries = np.zeros((num_time, num_rois))  # 171x16 / 95 / 158
-    
-   
-    for i, id in enumerate(label_ids):
-        idx = labels == id
-        rtseries[:, i] = np.mean(data[:, idx], axis=1)
 
-    rtseries, _, _ = normalizeData(rtseries)
-    ##================================================================##
-    partial_measure = ConnectivityMeasure(kind='partial correlation')
-    partial_corrM = partial_measure.fit_transform([rtseries])[0]
+    rtseries = np.zeros((aug_times, num_time, num_rois)) # 171x16/ 95 /158
+    partial_corrM = np.zeros((aug_times, num_rois, num_rois))
+    conn = np.zeros((aug_times, num_rois, num_rois))
 
-    conn_measure = ConnectivityMeasure(kind='correlation')
-    conn_mat = conn_measure.fit_transform([rtseries])[0]
-    conn_measure = ConnectivityMeasure(kind='tangent')
-    connectivity_fit = conn_measure.fit([conn_mat])
-    TPE_connectivity = connectivity_fit.transform([conn_mat])[0]
+    for k in range(aug_times):
+        for i, id in enumerate(label_ids):
+            ##============================
 
-    connectivity_fit_TE = conn_measure.fit([rtseries])
-    TE_connectivity = connectivity_fit_TE.transform([rtseries])[0]
-    ##================================================================##
+            idx = labels == id
+            data_within_roi = data[:, idx]
+            num_voxels = data_within_roi.shape[1]
+            if num_voxels < 3:
+                rtseries[k, :, i] = np.mean(data_within_roi, axis=1)
+            else:
+                selected_voxels_id = sorted(random.sample(range(1, num_voxels), num_voxels//3))
+                rtseries[k, :, i] = np.mean(data_within_roi[:, selected_voxels_id], axis=1)
+                # print(idx.shape, data_within_roi.shape, len(selected_voxels_id))
+            # pdb.set_trace()
 
-    # conn = np.corrcoef(rtseries.T)
-    
-    # cca = CCA(n_components=1)
-    # # for i in range(rtseries.T.shape[0]):
-    # #     for i in range(rtseries.T.)
-    # cca.fit(rtseries.T, rtseries.T)
+        rtseries[k], _, _ = normalizeData(rtseries[k])
 
-    # conn = cca.transform(rtseries.T)
-    # print(conn)
-    # pdb.set_trace()
+        ##================================================================##
+        partial_measure = ConnectivityMeasure(kind='partial correlation')
+        partial_corrM[k] = partial_measure.fit_transform([rtseries[k]])[0]
+        ##================================================================##
 
-    conn = conn_mat
-    conn[~np.isfinite(conn)] = 0  # define the infinite value edges as no connection
+        conn[k] = np.corrcoef(rtseries[k].T)
+        conn[~np.isfinite(conn)] = 0  # define the infinite value edges as no connection
 
-    ##===================Added===========================##
-    for i in range(conn.shape[0]):
-        conn[i, i] = 1.0
-        for j in range(conn.shape[1]):
-            conn[i, j] = conn[j, i]
+        ##===================Added===========================##
+        for i in range(conn[k].shape[0]):
+            conn[k, i, i] = 1.0
+            for j in range(conn[k].shape[1]):
+                conn[k, i, j] = conn[k, j, i]
     ##================##
     ## the adjacency matrix here is not binary. we use the correlation coefficient directly.
-    # print(conn.shape, rtseries.T.shape)
-    return conn, partial_corrM, TPE_connectivity, TE_connectivity, rtseries.T  # 16x171, ROI/Node. 16*16 for conn
+    #print(conn.shape, rtseries.T.shape)
+
+    return conn, partial_corrM, np.transpose(rtseries, (0, 2, 1)) # 16x171, ROI/Node. 16*16 for conn
 
 
 def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, atlas_labels):
@@ -110,34 +107,31 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
         if os.path.isfile(fname):
             nonepi_files.append(fname)
 
-    epi_data = load_bfp_data(epi_files[:1], 171)
-    nonepi_data = load_bfp_data(nonepi_files[:1], 171)
+    epi_data = load_bfp_data(epi_files, 171)
+    nonepi_data = load_bfp_data(nonepi_files, 171)
 
     # nsub = epi_data.shape[2]
     #==============================================================
-    # nsub = min(epi_data.shape[2], nonepi_data.shape[2])
-    nsub = epi_data.shape[2]
-
-    # epiIds = epiIds[:nsub]
-    # nonepiIds = nonepiIds[:nsub]
+    nsub = min(epi_data.shape[2], nonepi_data.shape[2])
+    epiIds = epiIds[:nsub]
+    nonepiIds = nonepiIds[:nsub]
     #===============================================================
 
-    conn_mat = np.zeros((nsub, len(label_ids), len(label_ids)))
-    parcorr_mat = np.zeros((nsub, len(label_ids), len(label_ids)))
-    TE_conn = np.zeros((nsub, len(label_ids), len(label_ids)))
-    TPE_conn = np.zeros((nsub, len(label_ids), len(label_ids)))
-    cent_mat = np.zeros((nsub, len(label_ids)))
-    input_feat = np.zeros((nsub, len(label_ids), epi_data.shape[0]))
+    conn_mat = np.zeros((nsub*aug_times, len(label_ids), len(label_ids)))
+    parcorr_mat = np.zeros((nsub*aug_times, len(label_ids), len(label_ids)))
+    cent_mat = np.zeros((nsub*aug_times, len(label_ids)))
+    input_feat = np.zeros((nsub*aug_times, len(label_ids), epi_data.shape[0]))
     print(conn_mat.shape, input_feat.shape)
     print(epi_data.shape, nonepi_data.shape, gord_labels.shape)
-    # print(label_ids)
-    _,_, _, _, ref_sub = get_connectivity(nonepi_data[:, :, 0],
+
+    _,_, ref_sub = get_connectivity(nonepi_data[:, :, 0],
                             labels=gord_labels,
                             label_ids=label_ids)
 
 
     for subno in range(nsub): # num of subjects
-        conn_mat[subno, :, :], parcorr_mat[subno, :, :], TPE_conn[subno, :, :], TE_conn[subno, :, :], time_series = get_connectivity(epi_data[:, :, subno],
+        conn_mat[subno:subno+aug_times, :, :], parcorr_mat[subno:subno+aug_times, :, :], \
+        time_series = get_connectivity(epi_data[:, :, subno],
                                                  labels=gord_labels,
                                                  label_ids=label_ids)
         #G = nx.convert_matrix.from_numpy_array(np.abs(conn_mat[subno, :, :]))
@@ -147,29 +141,25 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
         # input_feat[subno, :, :, :] = np.transpose(brainSync(ref_sub.T, time_series.T)[0])
         # input_feat[subno, :, :, :] = time_series
 
-    np.savez('/home/wenhuicu/data_npz/PTE_Allconn_BCI-DNI_all.npz',
+    np.savez('../PTE_parPearson_BCI-DNI_aug10.npz',
              conn_mat=conn_mat,
              partial_mat=parcorr_mat,
-             TPE_mat=TPE_conn,
-             TE_mat=TE_conn,
              features=input_feat, # 36x16x171
              label_ids=label_ids,
              cent_mat=cent_mat)
 ##============================================================================
     print("non_epi")
-    nsub = nonepi_data.shape[2]
+    # nsub = nonepi_data.shape[2]
 
-    conn_mat = np.zeros((nsub, len(label_ids), len(label_ids)))
-    parcorr_mat = np.zeros((nsub, len(label_ids), len(label_ids)))
-    TE_conn = np.zeros((nsub, len(label_ids), len(label_ids)))
-    TPE_conn = np.zeros((nsub, len(label_ids), len(label_ids)))
-
-    cent_mat = np.zeros((nsub, len(label_ids)))
-    input_feat = np.zeros((nsub, len(label_ids), epi_data.shape[0]))
+    conn_mat = np.zeros((nsub * aug_times, len(label_ids), len(label_ids)))
+    parcorr_mat = np.zeros((nsub * aug_times, len(label_ids), len(label_ids)))
+    cent_mat = np.zeros((nsub * aug_times, len(label_ids)))
+    input_feat = np.zeros((nsub * aug_times, len(label_ids), epi_data.shape[0]))
     print(conn_mat.shape, input_feat.shape)
     # here we are using same number of training subjects for epi and nonepi.
     for subno in range(nsub):
-        conn_mat[subno, :, :], parcorr_mat[subno, :, :], TPE_conn[subno, :, :], TE_conn[subno, :, :], time_series = get_connectivity(nonepi_data[:, :, subno],
+        conn_mat[subno:subno+aug_times, :, :], parcorr_mat[subno:subno+aug_times, :, :], \
+        time_series = get_connectivity(nonepi_data[:, :, subno],
                                                  labels=gord_labels,
                                                  label_ids=label_ids)
         #G = nx.convert_matrix.from_numpy_array(np.abs(conn_mat[subno, :, :]))
@@ -178,11 +168,9 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
        #  input_feat[subno, :, :] = np.transpose(brainSync(ref_sub.T, time_series.T)[0])
 
     #We are not using time series directly as input features, so the input feature here is just zeros.
-    np.savez('/home/wenhuicu/data_npz/NONPTE_Allconn_BCI-DNI_all.npz',
+    np.savez('../NONPTE_parPearson_BCI-DNI_aug10.npz',
              conn_mat=conn_mat, # n_subjects*16*16
              partial_mat=parcorr_mat,
-             TPE_mat=TPE_conn,
-             TE_mat=TE_conn,
              features=input_feat, # n_subjects * 16 x 171
              label_ids=label_ids,
              cent_mat=cent_mat)
@@ -199,11 +187,9 @@ if __name__ == "__main__":
     # nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
     test_nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_test.txt'
     epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
-
-    nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
+    nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
     # atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCBrain_grayordinate_labels.mat'
     # atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
-    # atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/AAL_grayordinate_labels.mat'
     atlas_labels = '../../BCI-DNI_brain_grayordinate_labels.mat'
     load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, atlas_labels)
     input('press any key')

@@ -12,7 +12,7 @@ import torch.nn.functional as F
 from torch.optim import lr_scheduler
 from tensorboardX import SummaryWriter
 
-from BiopointData import BiopointDataset
+from BiopointData_adhd import BiopointDataset
 from torch_geometric.data import DataLoader
 from net.brain_networks import LI_Net, NNGAT_Net
 
@@ -32,7 +32,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--epoch', type=int, default=1, help='starting epoch')
 parser.add_argument('--n_epochs', type=int, default=20, help='number of epochs of training')
 parser.add_argument('--batchSize', type=int, default=30, help='size of the batches')
-parser.add_argument('--dataroot', type=str, default='../../../data_BG/allNONPTE1/', help='root directory of the dataset')
+parser.add_argument('--dataroot', type=str, default='../../../data_ADHD/multiC/', help='root directory of the dataset')
 parser.add_argument('--matroot', type=str, default='MAT/clear_subjects.mat', help='root directory of the subject ID')
 parser.add_argument('--fold', type=int, default=1, help='training which fold')
 parser.add_argument('--lr', type = float, default=0.01, help='learning rate')

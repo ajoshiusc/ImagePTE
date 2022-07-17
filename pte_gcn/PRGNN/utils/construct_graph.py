@@ -71,8 +71,8 @@ class NoDaemonContext(type(multiprocessing.get_context())):
 def read_data(data_dir):
     # onlyfiles = [f for f in listdir(data_dir) if osp.isfile(osp.join(data_dir, f))]
     # onlyfiles.sort()
-    PTE_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN_fMRI-main/PTE_parPearson_BCI-DNI.npz")
-    NON_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN_fMRI-main/NONPTE_parPearson_BCI-DNI.npz")
+    PTE_data = np.load("/home/wenhuicu/data_npz/PTE_Allconn_BCI-DNI_all.npz")
+    NON_data = np.load("/home/wenhuicu/data_npz/NONPTE_Allconn_BCI-DNI_all.npz")
 
     # # parallar computing
     cores = multiprocessing.cpu_count()
@@ -86,6 +86,15 @@ def read_data(data_dir):
     print(num_pte_sub)
     res = pool.map(process_single_data, range(num_pte_sub + num_non_sub))
 
+##=============================ADHD all DATA ============================
+    # adhd_data_all = np.load('/home/wenhuicu/data_npz/ADHD_all_BCI-DNI_multiC.npz')
+    # cores = multiprocessing.cpu_count()
+    # pool = multiprocessing.Pool(processes=cores)
+    # start = timeit.default_timer()
+    #
+    # num_sub = adhd_data_all["conn_mat"].shape[0]
+    # res = pool.map(process_single_data, range(num_sub))
+##===============================================================
     pool.close()
     pool.join()
 
@@ -97,6 +106,7 @@ def read_data(data_dir):
     pseudo = []
     edge_att_list, edge_index_list, att_list = [], [], []
     data_list = []
+    # y_list = []
     label = 1
     for j in range(len(res)):
         if j >= num_pte_sub:
@@ -106,7 +116,7 @@ def read_data(data_dir):
         # print(res[j][1])
         # pdb.set_trace()
         att_list.append(res[j][2])
-        # y_list.append(label)
+        # y_list.append(res[j][-2])
         batch.append([j] * res[j][-1])
         pseudo.append(np.diag(np.ones(res[j][-1])))
 
@@ -150,15 +160,19 @@ def read_data(data_dir):
 def process_single_data(index):
     # key to how we adapt to our model
     # read edge and edge attribute, partial correlation
-    PTE_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN_fMRI-main/PTE_parPearson_BCI-DNI.npz")
-    NONPTE_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN_fMRI-main/NONPTE_parPearson_BCI-DNI.npz")
-    if index < PTE_data["conn_mat"].shape[0]:
-        data = PTE_data
-        new_index = index
-    else:
-        print(index)
-        data = NONPTE_data
-        new_index = index - PTE_data["conn_mat"].shape[0]
+    # PTE_data = np.load("/home/wenhuicu/data_npz/PTE_Allconn_BCI-DNI_all.npz")
+    # NONPTE_data = np.load("/home/wenhuicu/data_npz/NONPTE_Allconn_BCI-DNI_all.npz")
+    #
+    # if index < PTE_data["conn_mat"].shape[0]:
+    #     data = PTE_data
+    #     new_index = index
+    # else:
+    #     print(index)
+    #     data = NONPTE_data
+    #     new_index = index - PTE_data["conn_mat"].shape[0]
+
+    # data = np.load('/home/wenhuicu/data_npz/ADHD_all_BCI-DNI_multiC.npz')
+    # new_index = index
 
     # index = min(index, )
     pcorr = np.abs(data['partial_mat'][new_index])
@@ -184,6 +198,7 @@ def process_single_data(index):
     std_fmri = np.std(data['features'][new_index], axis=-1, keepdims=True)
     # node_att = np.concatenate([pearson_corr, mean_fmri], axis=-1)
 
+    # y_label = data["label"][new_index]
     # print(edge_att.data.numpy().shape, edge_index.data.numpy().shape, node_att.shape, num_nodes)
     # print(std_fmri)
     # pdb.set_trace()

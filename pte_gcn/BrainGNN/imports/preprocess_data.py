@@ -106,7 +106,7 @@ def subject_connectivity(timeseries, subjects, atlas_name, kind, iter_no='', see
         connectivity : connectivity matrix (regions x regions)
     """
 
-    if kind in ['TPE', 'TE', 'correlation','partial correlation']:
+    if kind in ['TPE', 'TE', 'correlation', 'partial correlation']:
         if kind not in ['TPE', 'TE']:
             conn_measure = connectome.ConnectivityMeasure(kind=kind)
             connectivity = conn_measure.fit_transform(timeseries)

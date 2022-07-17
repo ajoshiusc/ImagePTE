@@ -5,11 +5,13 @@ Date: 2019/02/24
 
 import os.path as osp
 from os import listdir
+import os
 import glob
 import h5py
 
 import torch
 import numpy as np
+from scipy.io import loadmat
 from torch_geometric.data import Data
 import networkx as nx
 from networkx.convert_matrix import from_numpy_matrix
@@ -17,9 +19,9 @@ import multiprocessing
 from torch_sparse import coalesce
 from torch_geometric.utils import remove_self_loops
 from functools import partial
-import pdb
+import deepdish as dd
+from imports.gdc import GDC
 import timeit
-
 
 def split(data, batch):
     node_slice = torch.cumsum(torch.from_numpy(np.bincount(batch)), 0)
@@ -67,128 +69,144 @@ class NoDaemonContext(type(multiprocessing.get_context())):
     Process = NoDaemonProcess
 
 
-
 def read_data(data_dir):
     # onlyfiles = [f for f in listdir(data_dir) if osp.isfile(osp.join(data_dir, f))]
     # onlyfiles.sort()
-    PTE_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN/PTE_parPearson_BCI-DNI_aug30DC.npz")
-    NON_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN/NONPTE_parPearson_BCI-DNI_aug30DC.npz")
+    PTE_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN/ADHD_parPearson_Lobes.npz")
+    NON_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN/TDC_parPearson_Lobes.npz")
 
     # # parallar computing
     cores = multiprocessing.cpu_count()
     pool = multiprocessing.Pool(processes=cores)
-
     start = timeit.default_timer()
-
     # res = pool.map(partial(process_single_data, 'PTE'), range(num_sub_adhd))
     num_pte_sub = PTE_data["conn_mat"].shape[0]
     num_non_sub = NON_data["conn_mat"].shape[0]
     print(num_pte_sub)
-    res = pool.map(process_single_data, range(num_pte_sub + num_non_sub)) #num_pte_sub + num_non_sub
-
+    res = pool.map(process_single_data, range(num_pte_sub + num_non_sub))
     pool.close()
     pool.join()
-
     stop = timeit.default_timer()
-
     print('Time: ', stop - start)
 
     batch = []
     pseudo = []
+    y_list = []
     edge_att_list, edge_index_list, att_list = [], [], []
     data_list = []
-    label = 1
+    # label = 1
     for j in range(len(res)):
-        if j >= num_pte_sub:
-            label = 0
         edge_att_list.append(res[j][0])
         edge_index_list.append(res[j][1] + j * res[j][-1])
         # print(res[j][1])
         # pdb.set_trace()
         att_list.append(res[j][2])
-        # y_list.append(label)
+        y_list.append(res[j][3])
         batch.append([j] * res[j][-1])
         pseudo.append(np.diag(np.ones(res[j][-1])))
 
-        data = Data(x=torch.from_numpy(res[j][2]).float(),
-                    edge_index=torch.from_numpy(res[j][1]).long(),
-                    y=torch.from_numpy(np.asarray([label])).long(),
-                    edge_attr=torch.from_numpy(res[j][0]).float(),
-                    pos=torch.from_numpy(np.diag(np.ones(res[j][-1]))).float())
+        # data = Data(x=torch.from_numpy(res[j][2]).float(),
+        #             edge_index=torch.from_numpy(res[j][1]).long(),
+        #             y=torch.from_numpy(np.asarray([res[j][3]])).long(),
+        #             edge_attr=torch.from_numpy(res[j][0]).float(),
+        #             pos=torch.from_numpy(np.diag(np.ones(res[j][-1]))).float())
+        #
+        # data_list.append(data)
 
-        data_list.append(data)
+    edge_att_arr = np.concatenate(edge_att_list)
+    edge_index_arr = np.concatenate(edge_index_list, axis=1)
+    att_arr = np.concatenate(att_list, axis=0)
+    pseudo_arr = np.concatenate(pseudo, axis=0)
+    y_arr = np.stack(y_list)
+    edge_att_torch = torch.from_numpy(edge_att_arr.reshape(len(edge_att_arr), 1)).float()
+    att_torch = torch.from_numpy(att_arr).float()
+    y_torch = torch.from_numpy(y_arr).long()  # classification
+    batch_torch = torch.from_numpy(np.hstack(batch)).long()
+    edge_index_torch = torch.from_numpy(edge_index_arr).long()
+    pseudo_torch = torch.from_numpy(pseudo_arr).float()
+    data = Data(x=att_torch, edge_index=edge_index_torch, y=y_torch, edge_attr=edge_att_torch, pos=pseudo_torch)
 
-    # edge_att_arr = np.concatenate(edge_att_list)
-    # edge_index_arr = np.concatenate(edge_index_list, axis=1)
-    # att_arr = np.concatenate(att_list, axis=0)
-    # ## Define labels here
-    # y_arr = np.hstack((np.ones(num_pte_sub), np.zeros(num_non_sub)))
-    # ##
-    # pseudo_arr = np.concatenate(pseudo, axis=0)
-    # #edge_att_torch = torch.from_numpy(edge_att_arr.reshape(len(edge_att_arr), 1)).float()
-    # edge_att_torch = torch.from_numpy(edge_att_arr).float()
-    # att_torch = torch.from_numpy(att_arr).float()
-    # y_torch = torch.from_numpy(y_arr).long()  # classification
-    # batch_torch = torch.from_numpy(np.hstack(batch)).long()
-    # edge_index_torch = torch.from_numpy(edge_index_arr).long()
-    # #data = Data(x=att_torch, edge_index=edge_index_torch, y=y_torch, edge_attr=edge_att_torch)
-    # pseudo_torch = torch.from_numpy(pseudo_arr).float()
-    #
-    # data = Data(x=att_torch, edge_index=edge_index_torch, y=y_torch, edge_attr=edge_att_torch, pos=pseudo_torch )
-    # # pdb.set_trace()
-    # x: node feature matrix, edge_index: graph connectivity in COO format with shape[2, num_edges], y: labels/targets
-    # edge_attr: edge feature matrix with shape[num_e, num_e_feat];
-    # pos: node position matrix with shape[num_nodes, num_dimensions]
-    # pdb.set_trace()
-    # data, slices = split(data, batch_torch)
-    # print(data, slices)
-    # pdb.set_trace()
-    # return data, slices
-    return data_list
+    data, slices = split(data, batch_torch)
+
+    return data, slices
+    # return data_list
 
 
-def process_single_data(index):
+def process_single_data(index, use_gdc=False):
     # key to how we adapt to our model
     # read edge and edge attribute, partial correlation
-    PTE_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN/PTE_parPearson_BCI-DNI_aug30DC.npz")
-    NONPTE_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN/NONPTE_parPearson_BCI-DNI_aug30DC.npz")
+    PTE_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN/ADHD_parPearson_Lobes.npz")
+    NONPTE_data = np.load("/home/wenhuicu/ImagePTE/pte_gcn/PRGNN/TDC_parPearson_Lobes.npz")
     if index < PTE_data["conn_mat"].shape[0]:
         data = PTE_data
         new_index = index
+        label = 1
     else:
-        print(index)
         data = NONPTE_data
         new_index = index - PTE_data["conn_mat"].shape[0]
+        label = 0
 
     # index = min(index, )
     pcorr = np.abs(data['partial_mat'][new_index])
     # only keep the top 10% edges
     th = np.percentile(pcorr.reshape(-1), 95)
     pcorr[pcorr < th] = 0  # set a threshold
+
     num_nodes = pcorr.shape[0]
-
-
     G = from_numpy_matrix(pcorr)
     A = nx.to_scipy_sparse_matrix(G)
     adj = A.tocoo()
-    edge_att = np.zeros((len(adj.row)))
+    edge_att = np.zeros(len(adj.row))
     for i in range(len(adj.row)):
         edge_att[i] = pcorr[adj.row[i], adj.col[i]]
-    edge_index = np.stack([adj.row, adj.col])
-    edge_index, edge_att = remove_self_loops(torch.from_numpy(edge_index).long(), torch.from_numpy(edge_att).float())
-    edge_index, edge_att = coalesce(edge_index, edge_att, num_nodes, num_nodes)
 
-    # node attribute, Pearson correlation
-    node_att = data["conn_mat"][new_index]
-    pearson_corr = data["conn_mat"][new_index]
-    mean_fmri = np.mean(data['features'][new_index], axis=-1, keepdims=True)
-    std_fmri = np.std(data['features'][new_index], axis=-1, keepdims=True)
+    edge_index = np.stack([adj.row, adj.col])
+    edge_index, edge_att = remove_self_loops(torch.from_numpy(edge_index), torch.from_numpy(edge_att))
+    edge_index = edge_index.long()
+    edge_index, edge_att = coalesce(edge_index, edge_att, num_nodes,
+                                    num_nodes)
+
+    att = data['conn_mat'][new_index]
+
+    att_torch = torch.from_numpy(att).float()
+    y_torch = torch.from_numpy(np.array(label)).long()  # classification
+
+    data = Data(x=att_torch, edge_index=edge_index.long(), y=y_torch, edge_attr=edge_att)
+
+    if use_gdc:
+        '''
+        Implementation of https://papers.nips.cc/paper/2019/hash/23c894276a2c5a16470e6a31f4618d73-Abstract.html
+        '''
+        data.edge_attr = data.edge_attr.squeeze()
+        gdc = GDC(self_loop_weight=1, normalization_in='sym',
+                  normalization_out='col',
+                  diffusion_kwargs=dict(method='ppr', alpha=0.2),
+                  sparsification_kwargs=dict(method='topk', k=20,
+                                             dim=0), exact=True)
+        data = gdc(data)
+        return data.edge_attr.data.numpy(), data.edge_index.data.numpy(), data.x.data.numpy(), data.y.data.item(), num_nodes
+
+    else:
+        return edge_att.data.numpy(), edge_index.data.numpy(), att, label, num_nodes
     # node_att = np.concatenate([pearson_corr, mean_fmri], axis=-1)
 
     # print(edge_att.data.numpy().shape, edge_index.data.numpy().shape, node_att.shape, num_nodes)
     # print(std_fmri)
     # pdb.set_trace()
-    return edge_att.data.numpy(), edge_index.data.numpy(), node_att, num_nodes
+    # return edge_att.data.numpy(), edge_index.data.numpy(), node_att, num_nodes
 
 
-# read_data("")
+
+# def read_sigle_data(data_dir,filename,use_gdc =False):
+
+#     temp = dd.io.load(osp.join(data_dir, filename))
+
+#     # read edge and edge attribute
+#     pcorr = np.abs(temp['pcorr'][()])
+
+
+
+# if __name__ == "__main__":
+#     data_dir = '/home/azureuser/projects/BrainGNN/data/ABIDE_pcp/cpac/filt_noglobal/raw'
+#     filename = '50346.h5'
+#     read_sigle_data(data_dir, filename)
