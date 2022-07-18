@@ -1,8 +1,8 @@
 clc;clear all;close all;
 addpath(genpath('/ImagePTE1/ajoshi/code_farm/bfp/src'));
 
-inp_dir='/ImagePTE1/ajoshi/maryland_rao_v1_bfp/maryland_v1_alff';
-out_dir='/ImagePTE1/ajoshi/maryland_rao_v1_bfp/maryland_v1_alff_smooth';
+inp_dir='/ImagePTE1/ajoshi/maryland_rao_v1_bfp/maryland_v1_falff';
+out_dir='/ImagePTE1/ajoshi/maryland_rao_v1_bfp/maryland_v1_falff_smooth';
 
 d = dir(inp_dir);
 
