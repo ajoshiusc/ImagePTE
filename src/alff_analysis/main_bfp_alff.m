@@ -19,12 +19,16 @@ config.FSLRigidReg=1;
 config.MultiThreading=0;
 config.BFPPATH='/home/ajoshi/projects/bfp';
 
-parpool(6);
-parfor j=3:length(a)
+%parpool(6);
+for j=3:length(a)
     subid = a(j).name;
     fmribase = fullfile(studydir,subid,'func',[subid,'_rest_bold']);
     anatbase = fullfile(studydir,subid,'anat',[subid,'_T1w']);
-    get_alff_gord(config, fmribase, anatbase)
+    get_alff_gord(config, fmribase, anatbase);
+    gen_brainordinates_alff('/home/ajoshi/BrainSuite21a', studydir, subid, sessionid, 'ALFF_Z');
+    gen_brainordinates_alff('/home/ajoshi/BrainSuite21a', studydir, subid, sessionid, 'ALFF');
+    gen_brainordinates_alff('/home/ajoshi/BrainSuite21a', studydir, subid, sessionid, 'fALFF');
+    j
 end
 
 
