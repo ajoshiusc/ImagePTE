@@ -4,15 +4,16 @@ import os
 import scipy.io as spio
 
 
-measure = 'ALFF'
+measure = 'fALFF'
+atlas_name = 'USCLobes'
 
-studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
+studydir = '/ImagePTE1/ajoshi/maryland_rao_v1_bfp'
 epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
 nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
 nonepi_train_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_training.txt'
 
 
-atlas_labels = '/home/ajoshi/projects/bfp/supp_data/USCBrain_grayordinate_labels.mat'
+atlas_labels = '/home/ajoshi/projects/bfp/supp_data/'+atlas_name+'_grayordinate_labels.mat'
 atlas = spio.loadmat(atlas_labels)
 
 gord_labels = atlas['labels'].squeeze()
@@ -47,8 +48,8 @@ nonepi_ids = list()
 nonepitrain_ids = list()
 
 for sub in epiIds:
-    fname = os.path.join(studydir, sub, 'BFP', sub, 'func',
-                         sub + '_rest_bold.', measure, '.GOrd.mat')
+    fname = os.path.join(studydir, sub, 'func',
+                         sub + '_rest_bold.' +measure+ '.GOrd.mat')
     if os.path.isfile(fname):
         epi_files.append(fname)
         epi_ids.append(sub)
@@ -56,8 +57,8 @@ for sub in epiIds:
         print('File does not exist: %s' % fname)
 
 for sub in nonepiIds:
-    fname = os.path.join(studydir, sub, 'BFP', sub, 'func',
-                         sub + '_rest_bold.', measure, '.GOrd.mat')
+    fname = os.path.join(studydir, sub, 'func',
+                         sub + '_rest_bold.'+ measure+ '.GOrd.mat')
     if os.path.isfile(fname):
         nonepi_files.append(fname)
         nonepi_ids.append(sub)
@@ -65,8 +66,7 @@ for sub in nonepiIds:
         print('File does not exist: %s' % fname)
 
 for sub in nonepitrainIds:
-    fname = os.path.join(studydir, sub, 'BFP', sub, 'func',
-                         sub + '_rest_bold.', measure, '.GOrd.mat')
+    fname = os.path.join(studydir, sub, 'func', sub + '_rest_bold.'+ measure+ '.GOrd.mat')
     if os.path.isfile(fname):
         nonepitrain_files.append(fname)
         nonepitrain_ids.append(sub)
@@ -89,19 +89,19 @@ num_gord = 96854
 nsub_nonepi_train = len(nonepitrainIds)
 nonepitrain_data = np.zeros((num_gord, nsub_nonepi_train))
 for i, fname in enumerate(nonepitrain_files):
-    nonepitrain_data[:, i] = spio.loadmat(fname)['dtseries'].squeeze()
+    nonepitrain_data[:, i] = spio.loadmat(fname)['data'].squeeze()
 
 
 nsub_epi = len(epiIds)
 epi_data = np.zeros((num_gord, nsub_epi))
 for i, fname in enumerate(epi_files):
-    epi_data[:, i] = spio.loadmat(fname)['dtseries'].squeeze()
+    epi_data[:, i] = spio.loadmat(fname)['data'].squeeze()
 
 
 nsub_nonepi = len(nonepiIds)
 nonepi_data = np.zeros((num_gord, nsub_nonepi))
 for i, fname in enumerate(nonepi_files):
-    nonepi_data[:, i] = spio.loadmat(fname)['dtseries'].squeeze()
+    nonepi_data[:, i] = spio.loadmat(fname)['data'].squeeze()
 
 
 '''nsub = min(epi_data.shape[2], nonepi_data.shape[2])
@@ -123,7 +123,7 @@ for i, id in enumerate(label_ids):
     data = np.mean(nonepitrain_data[idx, :], axis=0)
     roiwise_data[i, :] = data
 
-np.savez('NONPTE_TRAINING_'+measure+'_USCBrain.npz',
+np.savez('NONPTE_TRAINING_'+measure+'_'+atlas_name+'.npz',
          roiwise_data=roiwise_data, label_ids=label_ids, sub_ids=nonepitrainIds)
 
 
@@ -135,7 +135,7 @@ for i, id in enumerate(label_ids):
     data = np.mean(epi_data[idx, :], axis=0)
     roiwise_data[i, :] = data
 
-np.savez('PTE_'+measure+'_USCBrain.npz',
+np.savez('PTE_'+measure+'_'+atlas_name+'.npz',
          roiwise_data=roiwise_data, label_ids=label_ids, sub_ids=epiIds)
 
 
@@ -147,7 +147,7 @@ for i, id in enumerate(label_ids):
     data = np.mean(nonepi_data[idx, :], axis=0)
     roiwise_data[i, :] = data
 
-np.savez('NONPTE_'+measure+'_USCBrain.npz',
+np.savez('NONPTE_'+measure+'_'+atlas_name+'.npz',
          roiwise_data=roiwise_data, label_ids=label_ids, sub_ids=nonepiIds)
 
 
