@@ -26,6 +26,7 @@ parser.add_argument('--walk_len', type=int, default=160, help='walk length')
 parser.add_argument('--win_size', type=int, default=5, help='window size')
 parser.add_argument('--walk_n', type=int, default=64, help='number of generated random walks')
 parser.add_argument('--atlas', type=str, default="Brain", help='name of atlas to use.')
+parser.add_argument('--all_subjects', type=bool, default=False, help='name of atlas to use.')
 args = parser.parse_args()
 
 
@@ -66,16 +67,16 @@ def get_connectivity(data, labels, label_ids): # compute adj matrix
 
     rtseries, _, _ = normalizeData(rtseries) 
 
-    conn = abs(np.corrcoef(rtseries.T))
+    conn = np.corrcoef(rtseries.T)
 
     conn[~np.isfinite(conn)] = 0  # define the infinite value edges as no connection
 
-    ##===================Added===========================##
-    for i in range(conn.shape[0]):
-        conn[i, i] = 1.0
-        for j in range(conn.shape[1]):
-            conn[i, j] = conn[j, i]
-    ##================##
+    # ##===================Added===========================##
+    # for i in range(conn.shape[0]):
+    #     conn[i, i] = 1.0
+    #     for j in range(conn.shape[1]):
+    #         conn[i, j] = conn[j, i]
+    # ##================##
     ## the adjacency matrix here is not binary. we use the correlation coefficient directly.
     #print(conn.shape, rtseries.T.shape)
     return conn, rtseries.T # 16x171, ROI/Node. 16*16 for conn
@@ -157,7 +158,7 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
     # setting 2 lobes: walk_length=15, dimensions=DW_DIM, window_size=5
     # setting lobes: walk_length=10, dimensions=DW_DIM, window_size=3
     fname = str(args.walk_n) + str(args.walk_len) + str(args.win_size)
-    np.savez('/home/wenhuicu/ImagePTE-1/PTE_conn_f100.npz',
+    np.savez('/home/wenhuicu/ImagePTE/PTE_conn_brain_all_ori.npz',
              conn_mat=conn_mat,
              deepwalk=dw_feat,
              features=input_feat, # 36x16x171
@@ -165,7 +166,8 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
              cent_mat=cent_mat)
 ##============================================================================
     print("non_epi")
-    # nsub = nonepi_data.shape[2]
+    if args.all_subjects == True:
+        nsub = nonepi_data.shape[2]
 
     conn_mat = np.zeros((nsub, len(label_ids), len(label_ids)))
     cent_mat = np.zeros((nsub, len(label_ids)))
@@ -187,7 +189,7 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
     # setting 1: walk_length=120, dimensions=64, window_size=20
     # setting 2 lobes: walk_length=15, dimensions=64, window_size=5
     # setting lobes: walk_length=10, dimensions=64, window_size=3
-    np.savez('/home/wenhuicu/ImagePTE-1/NONPTE_conn_f100.npz',
+    np.savez('/home/wenhuicu/ImagePTE/NONPTE_conn_brain_all_ori.npz',
              conn_mat=conn_mat, # n_subjects*16*16
              deepwalk=dw_feat,
              features=input_feat, # n_subjects * 16 x 171
@@ -206,8 +208,11 @@ if __name__ == "__main__":
     # nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
     test_nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_test.txt'
     epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
-    nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
-    
+
+    if args.all_subjects == True:
+        nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
+    else:
+        nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
     # atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
     if args.atlas == 'Brain':
         atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCBrain_grayordinate_labels.mat'
