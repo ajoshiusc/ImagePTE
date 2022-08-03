@@ -28,7 +28,6 @@ def get_connectivity(data, labels, label_ids): # compute adj matrix
     num_rois = len(label_ids)
     rtseries = np.zeros((num_time, num_rois))  # 171x16 / 95 / 158
     
-   
     for i, id in enumerate(label_ids):
         idx = labels == id
         rtseries[:, i] = np.mean(data[:, idx], axis=1)
@@ -110,8 +109,8 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
         if os.path.isfile(fname):
             nonepi_files.append(fname)
 
-    epi_data = load_bfp_data(epi_files[:1], 171)
-    nonepi_data = load_bfp_data(nonepi_files[:1], 171)
+    epi_data = load_bfp_data(epi_files, 171)
+    nonepi_data = load_bfp_data(nonepi_files, 171)
 
     # nsub = epi_data.shape[2]
     #==============================================================
@@ -147,7 +146,7 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
         # input_feat[subno, :, :, :] = np.transpose(brainSync(ref_sub.T, time_series.T)[0])
         # input_feat[subno, :, :, :] = time_series
 
-    np.savez('/home/wenhuicu/data_npz/PTE_Allconn_BCI-DNI_all.npz',
+    np.savez('/home/wenhuicu/data_npz/PTE_Allconn_brain_all.npz',
              conn_mat=conn_mat,
              partial_mat=parcorr_mat,
              TPE_mat=TPE_conn,
@@ -158,7 +157,6 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
 ##============================================================================
     print("non_epi")
     nsub = nonepi_data.shape[2]
-
     conn_mat = np.zeros((nsub, len(label_ids), len(label_ids)))
     parcorr_mat = np.zeros((nsub, len(label_ids), len(label_ids)))
     TE_conn = np.zeros((nsub, len(label_ids), len(label_ids)))
@@ -178,7 +176,7 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
        #  input_feat[subno, :, :] = np.transpose(brainSync(ref_sub.T, time_series.T)[0])
 
     #We are not using time series directly as input features, so the input feature here is just zeros.
-    np.savez('/home/wenhuicu/data_npz/NONPTE_Allconn_BCI-DNI_all.npz',
+    np.savez('/home/wenhuicu/data_npz/NONPTE_Allconn_brain_all.npz',
              conn_mat=conn_mat, # n_subjects*16*16
              partial_mat=parcorr_mat,
              TPE_mat=TPE_conn,
@@ -198,12 +196,13 @@ if __name__ == "__main__":
     test_epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_test.txt'
     # nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
     test_nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_test.txt'
+    
     epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
-
+    # nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
     nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
     # atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCBrain_grayordinate_labels.mat'
-    # atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
     # atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/AAL_grayordinate_labels.mat'
-    atlas_labels = '../../BCI-DNI_brain_grayordinate_labels.mat'
+    # atlas_labels = '../../BCI-DNI_brain_grayordinate_labels.mat'
     load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, atlas_labels)
     input('press any key')
