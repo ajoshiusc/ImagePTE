@@ -17,17 +17,17 @@ f = np.load('PTE_graphs_USCLobes.npz')
 conn_pte = f['conn_mat']
 lab_ids = f['label_ids']
 gordlab = f['labels']
-sub_ids = f['sub_ids']
+sub_ids2 = f['sub_ids']
 cent_mat = f['cent_mat']
 n_rois = conn_pte.shape[0]
 ind = np.tril_indices(n_rois, k=1)
 epi_connectivity = conn_pte[ind[0], ind[1], :].T
 
-a = np.load('stats/PTE_lesion_vols.npz', allow_pickle=True)
+a = np.load('PTE_lesion_vols_USCLobes.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 epi_lesion_vols = np.array([a[k] for k in sub_ids])
 epi_measures = np.concatenate(
-    (.3*epi_lesion_vols,epi_connectivity,epi_brainsync), axis=1)
+    (.3*epi_lesion_vols,epi_connectivity,.3*epi_brainsync), axis=1)
 
 f = np.load('NONPTE_fmridiff_USCLobes.npz')
 conn_pte = f['fdiff_sub']
@@ -46,12 +46,14 @@ cent_mat = f['cent_mat']
 
 nonepi_connectivity = conn_nonpte[ind[0], ind[1], :].T
 
-a = np.load('stats/NONPTE_lesion_vols.npz', allow_pickle=True)
+a = np.load('NONPTE_lesion_vols_USCLobes.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
 nonepi_measures = np.concatenate(
-    (.3*nonepi_lesion_vols,nonepi_connectivity,nonepi_brainsync), axis=1)
+    (.3*nonepi_lesion_vols,nonepi_connectivity,.3*nonepi_brainsync), axis=1)
 
+#nonepi_measures = np.concatenate(
+#    (.3*nonepi_lesion_vols,nonepi_connectivity,.3*nonepi_brainsync), axis=1)
 
 X = np.vstack((epi_measures, nonepi_measures))
 y = np.hstack(

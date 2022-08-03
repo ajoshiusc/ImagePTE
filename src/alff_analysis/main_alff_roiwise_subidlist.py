@@ -50,13 +50,14 @@ nonepi_ids = list()
 nonepitrain_ids = list()
 
 for sub in epiIds:
+    fnamefmri = os.path.join(studydir, sub, 'BFP', sub, 'func',  sub + '_rest_bold.' +'32k'+ '.GOrd.mat')
     fname = os.path.join(studydir, sub, 'BFP', sub, 'func',
                          sub + '_rest_bold.' + measure + '.GOrd.mat')
-    if os.path.isfile(fname):
+    if os.path.isfile(fname) and os.path.isfile(fnamefmri):
         epi_files.append(fname)
         epi_ids.append(sub)
     else:
-        print('File does not exist: %s' % (fname))
+        print('File does not exist: %s\n%s' % (fname, fname))
 
 for sub in nonepiIds:
     fname = os.path.join(studydir, sub, 'BFP', sub, 'func',
@@ -95,23 +96,23 @@ for i, fname in enumerate(nonepitrain_files):
     nonepitrain_data[:, i] = spio.loadmat(fname)['data'].squeeze()
 
 
-nsub_epi = len(epi_ids)
+nsub_epi = len(epiIds)
 epi_data = np.zeros((num_gord, nsub_epi))
 for i, fname in enumerate(epi_files):
     epi_data[:, i] = spio.loadmat(fname)['data'].squeeze()
 
 
-nsub_nonepi = len(nonepi_ids)
+nsub_nonepi = len(nonepiIds)
 nonepi_data = np.zeros((num_gord, nsub_nonepi))
 for i, fname in enumerate(nonepi_files):
     nonepi_data[:, i] = spio.loadmat(fname)['data'].squeeze()
 
 
-#nsub = min(epi_data.shape[2], nonepi_data.shape[2])
-#epi_ids = epi_ids[:nsub]
-#nonepi_ids = nonepi_ids[:nsub]
+'''nsub = min(epi_data.shape[2], nonepi_data.shape[2])
+epi_ids = epi_ids[:nsub]
+nonepi_ids = nonepi_ids[:nsub]
 #nonepitrain_ids = nonepitrain_ids[:nsub]
-
+'''
 
 num_vtx = epi_data.shape[0]
 

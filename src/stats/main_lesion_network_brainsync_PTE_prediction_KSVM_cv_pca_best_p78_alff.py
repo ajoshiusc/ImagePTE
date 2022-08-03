@@ -5,6 +5,12 @@ from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import StratifiedKFold
 
+measure = 'fALFF'
+atlas_name = 'USCLobes'
+f = np.load('PTE_'+measure+'_'+atlas_name+'.npz')
+ALFF_pte = f['roiwise_data']
+#ALFF_pte = ALFF_pte[1:13,:]
+
 f = np.load('PTE_fmridiff_USCLobes.npz')
 conn_pte = f['fdiff_sub']
 lab_ids = f['label_ids']
@@ -23,11 +29,18 @@ n_rois = conn_pte.shape[0]
 ind = np.tril_indices(n_rois, k=1)
 epi_connectivity = conn_pte[ind[0], ind[1], :].T
 
-a = np.load('stats/PTE_lesion_vols.npz', allow_pickle=True)
+a = np.load('PTE_lesion_vols_USCLobes.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 epi_lesion_vols = np.array([a[k] for k in sub_ids])
-epi_measures = np.concatenate(
-    (.3*epi_lesion_vols,epi_connectivity,epi_brainsync), axis=1)
+epi_measures = np.concatenate((.08*ALFF_pte.T, .3*epi_lesion_vols,epi_connectivity,.3*epi_brainsync), axis=1)
+
+
+
+measure = 'fALFF'
+atlas_name = 'USCLobes'
+f = np.load('NONPTE_'+measure+'_'+atlas_name+'.npz')
+ALFF_nonpte = f['roiwise_data']
+#ALFF_nonpte = ALFF_nonpte[1:13,:]
 
 f = np.load('NONPTE_fmridiff_USCLobes.npz')
 conn_pte = f['fdiff_sub']
@@ -46,11 +59,10 @@ cent_mat = f['cent_mat']
 
 nonepi_connectivity = conn_nonpte[ind[0], ind[1], :].T
 
-a = np.load('stats/NONPTE_lesion_vols.npz', allow_pickle=True)
+a = np.load('NONPTE_lesion_vols_USCLobes.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
-nonepi_measures = np.concatenate(
-    (.3*nonepi_lesion_vols,nonepi_connectivity,nonepi_brainsync), axis=1)
+nonepi_measures = np.concatenate((.08*ALFF_nonpte.T,.3*nonepi_lesion_vols,nonepi_connectivity,.3*nonepi_brainsync), axis=1)
 
 
 X = np.vstack((epi_measures, nonepi_measures))
@@ -58,6 +70,8 @@ y = np.hstack(
     (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
 
 # Permute the labels to check if AUC becomes 0.5. This check is to make sure that we are not overfitting
+#y = np.random.permutation(y)
+
 
 n_iter = 1000
 auc = np.zeros(n_iter)
@@ -68,7 +82,7 @@ support = np.zeros(n_iter)
 
 
 my_metric = 'roc_auc'
-best_com = 50#
+best_com = 50
 best_C= .1
 #y = np.random.permutation(y)
 
@@ -145,7 +159,7 @@ print('n_components=%d is' %(best_com))
 iteration_num=100
 auc_sum = np.zeros((iteration_num))
 for i in range(iteration_num):
-# y = np.random.permutation(y)
+    #y = np.random.permutation(y)
     pipe = Pipeline([('pca_apply', PCA(n_components=best_com, whiten=True)),
                     ('svc', SVC(kernel='rbf',C=best_C, gamma=best_gamma, tol=1e-9))])
     kfold = StratifiedKFold(n_splits=36, shuffle=True)
@@ -159,7 +173,7 @@ print('Average AUC with PCA=%g , Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)
 
 auc_sum = np.zeros((iteration_num))
 for i in range(iteration_num):
-# y = np.random.permutation(y)
+    #y = np.random.permutation(y)
     pipe = SVC(kernel='rbf', C=best_C,gamma=best_gamma, tol=1e-9)
     kfold = StratifiedKFold(n_splits=36, shuffle=True)
     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
