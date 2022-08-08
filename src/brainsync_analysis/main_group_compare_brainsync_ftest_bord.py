@@ -8,7 +8,7 @@ import scipy.io as spio
 import os
 import sys
 config_file = '/ImagePTE1/ajoshi/code_farm/ImagePTE/src/stats/sample_config_stats_Maryland.ini'
-BFPPATH = '/ImagePTE1/ajoshi/code_farm/bfp'
+#BFPPATH = '/ImagePTE1/ajoshi/code_farm/bfp'
 # %%#%%
 # Import the required librariesimport configparser
 
