@@ -6,24 +6,20 @@ from sklearn.pipeline import Pipeline
 from sklearn.model_selection import StratifiedKFold
 
 measure = 'fALFF'
-atlas_name = 'USCBrain'
+atlas_name = 'USCLobes'
 f = np.load('PTE_'+measure+'_'+atlas_name+'.npz')
-sub_ids = f['sub_ids']
 ALFF_pte = f['roiwise_data']
-ALFF_pte = dict(zip(sub_ids,ALFF_pte[1:13,:].T))
+ALFF_pte = ALFF_pte[1:13,:]
 
-
-f = np.load('PTE_fmridiff_USCBrain.npz')
+f = np.load('PTE_fmridiff_USCLobes.npz')
 conn_pte = f['fdiff_sub']
 lab_ids = f['label_ids']
 gordlab = f['labels']
 sub_ids = f['sub_ids']
 n_rois = conn_pte.shape[0]
-#epi_brainsync = conn_pte.T
-epi_brainsync=dict(zip(sub_ids,conn_pte.T))
+epi_brainsync = conn_pte.T
 
-
-f = np.load('PTE_graphs_USCBrain.npz')
+f = np.load('PTE_graphs_USCLobes.npz')
 conn_pte = f['conn_mat']
 lab_ids = f['label_ids']
 gordlab = f['labels']
@@ -33,35 +29,28 @@ n_rois = conn_pte.shape[0]
 ind = np.tril_indices(n_rois, k=1)
 epi_connectivity = conn_pte[ind[0], ind[1], :].T
 
-a = np.load('PTE_lesion_vols_USCBrain.npz', allow_pickle=True)
+a = np.load('PTE_lesion_vols_USCLobes.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 epi_lesion_vols = np.array([a[k] for k in sub_ids])
-#epi_measures = np.concatenate((ALFF_pte.T, 0*epi_lesion_vols,epi_connectivity,0*epi_brainsync), axis=1)
-epi_brainsync = np.array([epi_brainsync[k] for k in sub_ids])
-ALFF_pte = np.array([ALFF_pte[k] for k in sub_ids])
-epi_measures = np.concatenate((ALFF_pte, epi_brainsync,epi_connectivity,epi_lesion_vols), axis=1)
-#epi_measures = epi_connectivity
+epi_measures = np.concatenate((epi_lesion_vols,epi_connectivity,ALFF_pte.T), axis=1)
+
 
 
 measure = 'fALFF'
-atlas_name = 'USCBrain'
+atlas_name = 'USCLobes'
 f = np.load('NONPTE_'+measure+'_'+atlas_name+'.npz')
 ALFF_nonpte = f['roiwise_data']
-sub_ids = f['sub_ids']
-#ALFF_nonpte = ALFF_nonpte[1:13,:]
-ALFF_nonpte = dict(zip(sub_ids,ALFF_nonpte[1:13,:].T))
+ALFF_nonpte = ALFF_nonpte[1:13,:]
 
-f = np.load('NONPTE_fmridiff_USCBrain.npz')
+f = np.load('NONPTE_fmridiff_USCLobes.npz')
 conn_pte = f['fdiff_sub']
 lab_ids = f['label_ids']
 gordlab = f['labels']
 sub_ids = f['sub_ids']
 n_rois = conn_pte.shape[0]
-#nonepi_brainsync = conn_pte.T
-nonepi_brainsync=dict(zip(sub_ids,conn_pte.T))
+nonepi_brainsync = conn_pte.T
 
-
-f = np.load('NONPTE_graphs_USCBrain.npz')
+f = np.load('NONPTE_graphs_USCLobes.npz')
 conn_nonpte = f['conn_mat']
 lab_ids = f['label_ids']
 gordlab = f['labels']
@@ -70,17 +59,16 @@ cent_mat = f['cent_mat']
 
 nonepi_connectivity = conn_nonpte[ind[0], ind[1], :].T
 
-a = np.load('NONPTE_lesion_vols_USCBrain.npz', allow_pickle=True)
+a = np.load('NONPTE_lesion_vols_USCLobes.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
-#nonepi_measures = np.concatenate((ALFF_nonpte.T,.0*nonepi_lesion_vols,nonepi_connectivity,.0*nonepi_brainsync), axis=1)
-nonepi_brainsync = np.array([nonepi_brainsync[k] for k in sub_ids])
-ALFF_nonpte = np.array([ALFF_nonpte[k] for k in sub_ids])
-nonepi_measures = np.concatenate((ALFF_nonpte, nonepi_brainsync,nonepi_connectivity,nonepi_lesion_vols), axis=1)
-#nonepi_measures = nonepi_connectivity
+nonepi_measures = np.concatenate((nonepi_lesion_vols,nonepi_connectivity,ALFF_nonpte.T), axis=1)
 
+from sklearn.preprocessing import normalize
 
 X = np.vstack((epi_measures, nonepi_measures))
+X=normalize(X)
+
 y = np.hstack(
     (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
 
@@ -97,7 +85,7 @@ support = np.zeros(n_iter)
 
 
 my_metric = 'roc_auc'
-best_com = np.min((50,X.shape[1]-1))
+best_com = 50
 best_C= .1
 #y = np.random.permutation(y)
 
