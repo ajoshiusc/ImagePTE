@@ -82,11 +82,19 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
     atlas = spio.loadmat(atlas_labels)
 
     gord_labels = atlas['labels'].squeeze()
-
+    
     label_ids = np.unique(gord_labels)  # unique label ids
     # remove WM label from connectivity analysis
     label_ids = np.setdiff1d(label_ids, (2000, 0))
     
+    idst = atlas['LookUpTable'][0][0][0][0]
+    names = atlas['LookUpTable'][0][0][1][0]
+    table = dict()
+    for i, idl in enumerate(label_ids):
+        tmp = names[np.where(idst == idl)]
+        table[i] = tmp
+    print(table)
+    pdb.set_trace()
     # pick_ids = np.random.randint(0, 156, size=16)
     # label_ids = label_ids[pick_ids]
     
