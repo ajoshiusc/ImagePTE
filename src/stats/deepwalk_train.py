@@ -99,7 +99,7 @@ def get_features(fname='PTE'):
     ind = np.tril_indices(n_rois, k=1)
     connectivity = conn_mat[ind[0], ind[1], :].T
     
-    a = np.load(args.root_path + fname + '_lesion_vols_USCBrain.npz', allow_pickle=True)
+    a = np.load(args.root_path + fname + '_lesion_vols.npz', allow_pickle=True)
     a = a['lesion_vols'].item()
     lesion_vols = np.array([a[k] for k in sub_ids])
 
@@ -108,8 +108,8 @@ def get_features(fname='PTE'):
         mean_vols = lesion_vols / n_voxels
         ind_rmv = np.argmax(mean_vols, axis=1)
         print("Remove Brain Region:", ind_rmv)
-        tmp = np.delete(conn_mat, 15, axis=1)
-        new_conn_mat = np.delete(tmp, 15, axis=0)
+        tmp = np.delete(conn_mat, ind_rmv, axis=1)
+        new_conn_mat = np.delete(tmp, ind_rmv, axis=0)
         conn_mat = new_conn_mat
     ##=========Generate DeepWalk Features====================
     nsub = 36
@@ -126,7 +126,7 @@ def get_features(fname='PTE'):
 
     if args.use_all == True:
         measures = np.concatenate(
-        (0.3*lesion_vols, deepwalk_feat.reshape((nsub, -1)), 0.3*brainsync), axis=1)
+        (0.5*lesion_vols, deepwalk_feat.reshape((nsub, -1))), axis=1)
     else:
         measures = deepwalk_feat.reshape((nsub, -1))
 
@@ -212,8 +212,8 @@ for nf in range(1, max_component):
     kfold = StratifiedKFold(n_splits=args.num_cv, shuffle=True,random_state=1211)
     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
 
-    print('AUC after CV for nf=%dgamma=%s is %g' %
-            (nf, best_gamma, np.mean(auc)))
+    # print('AUC after CV for nf=%dgamma=%s is %g' %
+    #         (nf, best_gamma, np.mean(auc)))
     if np.mean(auc)>= max_AUC:
         max_AUC=np.mean(auc)
         best_com=nf
@@ -237,6 +237,10 @@ for i in range(iteration_num):
     
     for j, m in enumerate(args.metric):
         res_sum[i, j]= np.mean(res['test_' + m])
+
+    print('AUC after CV for i=%dgamma=%s number of components=%d is' % (i, best_gamma, best_com))
+    print(res_sum)
+
     
 print("Results with PCA:")
 print(args.metric)

@@ -155,7 +155,7 @@ def roiwise_stats(epi_data, nonepi_data):
     #roi_list = [
     #    3, 100, 101, 184, 185, 200, 201, 300, 301, 400, 401, 500, 501, 800,
     #    850, 900, 950
-    #]
+    #] Removed brainstem, cerebellum, cingulate gyrus, whitematter
     roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
     epi_roi_lesion_vols = np.zeros((37, len(roi_list)))
     nonepi_roi_lesion_vols = np.zeros((37, len(roi_list)))
