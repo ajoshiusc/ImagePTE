@@ -82,4 +82,4 @@ ALFF_nonpte = ALFF_nonpte.T
 ALFF_pte = ALFF_pte.T
 
 np.savez('PTE_nonPTE_features_USCLobes.npz', nonepi_lesion_vols=nonepi_lesion_vols, nonepi_connectivity=nonepi_connectivity,
-         ALFF_nonpte=ALFF_nonpte, epi_lesion_vols=epi_lesion_vols, epi_connectivity=epi_connectivity, ALFF_pte=ALFF_pte)
+         ALFF_nonpte=ALFF_nonpte, epi_lesion_vols=epi_lesion_vols, epi_connectivity=epi_connectivity, ALFF_pte=ALFF_pte, nonepi_measures=nonepi_measures, epi_measures=epi_measures)
