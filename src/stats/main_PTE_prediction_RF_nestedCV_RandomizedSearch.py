@@ -7,10 +7,12 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import normalize
 from sklearn.model_selection import GridSearchCV, ParameterGrid, RandomizedSearchCV
 from tqdm import tqdm
-a = np.load('PTE_nonPTE_features_USCLobes.npz')
+from sklearn.ensemble import RandomForestClassifier
 
-epi_measures = a['ALFF_pte']
-nonepi_measures = a['ALFF_nonpte']
+a = np.load('../PTE_nonPTE_features_USCLobes.npz')
+
+epi_measures = a['epi_connectivity']
+nonepi_measures = a['nonepi_connectivity']
 
 '''epi_measures = np.concatenate(
     (a['epi_lesion_vols'], a['epi_connectivity']), axis=1)  # , a['ALFF_pte']
@@ -27,22 +29,20 @@ y = np.hstack(
 # Permute the labels to check if AUC becomes 0.5. This check is to make sure that we are not overfitting
 #y = np.random.permutation(y)
 max_component = min((X.shape[0]-1), X.shape[1])
-
 # for all features
-param_grid = {"pca__n_components": [55, 56, 57, 58, 59], "svc__C": [.1, 1, 10, 100], "svc__gamma": [
-    1, 0.001, 0.05, 0.075, .1, .13, .15, .17, 0.2, 0.3, .5, 1, 5, 10, 100]}
+param_grid = {"pca__n_components": [55, 56, 57, 58, 59], "svc__max_depth": [1, 1, 10, 100]}
 
 #for lesion features and ALFF features
-param_grid = {"pca__n_components": [3,5,7,9], "svc__C": [.1, 1, 10, 100], "svc__gamma": [
-    1, 0.001, 0.05, 0.075, .1, .13, .15, .17, 0.2, 0.3, .5, 1, 5, 10, 100]}
+#param_grid = {"pca__n_components": [3,5,7,9], "svc__max_depth": [3, 5, 7, 11]}
 
-# for connectivity features
-#param_grid = {"pca__n_components": [30,40,50,60], "svc__C": [.1, 1, 10, 100], "svc__gamma": [
-#    1, 0.001, 0.05, 0.075, .1, .13, .15, .17, 0.2, 0.3, .5, 1, 5, 10, 100]}
+# best gamma=0.075 is
+# best C=100 is
+# n_components=54 is
 
 
 pipe = Pipeline([('pca', PCA(whiten=True)),
-                ('svc', SVC(kernel='rbf', tol=1e-9))])
+                ('svc', RandomForestClassifier())])
+
 
 
 #grid_search = GridSearchCV(pipe, param_grid=param_grid)
@@ -52,7 +52,7 @@ auc = np.zeros(NUM_TRIALS)
 
 for i in tqdm(range(NUM_TRIALS)):
 
-    inner_cv = StratifiedKFold(n_splits=35)
+    inner_cv = StratifiedKFold(n_splits=35)  
     outer_cv = StratifiedKFold(n_splits=36)
 
     clf = RandomizedSearchCV(
