@@ -7,7 +7,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import normalize
 from sklearn.model_selection import GridSearchCV
 from tqdm import tqdm
-a = np.load('PTE_nonPTE_features_USCLobes.npz')
+a = np.load('../PTE_nonPTE_features_USCLobes.npz')
 
 epi_measures = a['epi_measures']
 nonepi_measures = a['nonepi_measures']

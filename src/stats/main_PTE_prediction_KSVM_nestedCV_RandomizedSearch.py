@@ -7,17 +7,19 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import normalize
 from sklearn.model_selection import GridSearchCV, ParameterGrid, RandomizedSearchCV
 from tqdm import tqdm
-a = np.load('PTE_nonPTE_features_USCLobes.npz')
+a = np.load('../PTE_nonPTE_features_USCLobes.npz')
 
-epi_measures = a['ALFF_pte']
-nonepi_measures = a['ALFF_nonpte']
+epi_measures = a['epi_measures']
+nonepi_measures = a['nonepi_measures']
+
+#epi_measures = a['ALFF_pte']
+#nonepi_measures = a['ALFF_nonpte']
 
 '''epi_measures = np.concatenate(
     (a['epi_lesion_vols'], a['epi_connectivity']), axis=1)  # , a['ALFF_pte']
 nonepi_measures = np.concatenate(
     (a['nonepi_lesion_vols'], a['nonepi_connectivity']), axis=1)
 '''
-
 
 X = np.vstack((epi_measures, nonepi_measures))
 y = np.hstack(
@@ -33,8 +35,8 @@ param_grid = {"pca__n_components": [55, 56, 57, 58, 59], "svc__C": [.1, 1, 10, 1
     1, 0.001, 0.05, 0.075, .1, .13, .15, .17, 0.2, 0.3, .5, 1, 5, 10, 100]}
 
 #for lesion features and ALFF features
-param_grid = {"pca__n_components": [3,5,7,9], "svc__C": [.1, 1, 10, 100], "svc__gamma": [
-    1, 0.001, 0.05, 0.075, .1, .13, .15, .17, 0.2, 0.3, .5, 1, 5, 10, 100]}
+#param_grid = {"pca__n_components": [3,5,7,9], "svc__C": [.1, 1, 10, 100], "svc__gamma": [
+#    1, 0.001, 0.05, 0.075, .1, .13, .15, .17, 0.2, 0.3, .5, 1, 5, 10, 100]}
 
 # for connectivity features
 #param_grid = {"pca__n_components": [30,40,50,60], "svc__C": [.1, 1, 10, 100], "svc__gamma": [
