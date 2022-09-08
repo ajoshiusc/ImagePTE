@@ -4,14 +4,35 @@ from sklearn.model_selection import cross_val_score
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import StratifiedKFold
+from scipy import io as spio
+from sklearn.preprocessing import normalize
+import pdb
 
-measure = 'fALFF'
-atlas_name = 'USCLobes'
-f = np.load('/ImagePTE1/ajoshi/code_farm/ImagePTE/src/' + 'PTE_'+measure+'_'+atlas_name+'.npz')
-ALFF_pte = f['roiwise_data']
-ALFF_pte = ALFF_pte[1:13,:]
 
-f = np.load('PTE_fmridiff_USCLobes.npz')
+def calc_mean_lesion(lesion_vols):
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
+    atlas = spio.loadmat(atlas_labels)
+    gord_labels = atlas['labels'].squeeze()
+    label_ids = np.unique(gord_labels)  # unique label ids
+    # remove WM label from connectivity analysis
+    label_ids = [101, 100, 201, 200, 301, 300, 401, 400, 501, 500, 900]
+
+    num_voxels = []
+    for i, tid in enumerate(label_ids):
+        idx = gord_labels == tid
+        num_voxels.append(np.sum(idx))
+
+    return lesion_vols / np.array(num_voxels)
+
+
+# measure = 'fALFF'
+# atlas_name = 'USCLobes'
+# f = np.load('/ImagePTE1/ajoshi/code_farm/ImagePTE/src/' + 'PTE_'+measure+'_'+atlas_name+'.npz')
+# ALFF_pte = f['roiwise_data']
+# ALFF_pte = ALFF_pte[1:13,:]
+root_path = '/home/wenhuicu/ImagePTE/'
+
+f = np.load(root_path + 'PTE_fmridiff_USCLobes.npz')
 conn_pte = f['fdiff_sub']
 lab_ids = f['label_ids']
 gordlab = f['labels']
@@ -19,7 +40,7 @@ sub_ids = f['sub_ids']
 n_rois = conn_pte.shape[0]
 epi_brainsync = conn_pte.T
 
-f = np.load('PTE_graphs_USCLobes.npz')
+f = np.load(root_path + 'PTE_graphs_USCLobes.npz')
 conn_pte = f['conn_mat']
 lab_ids = f['label_ids']
 gordlab = f['labels']
@@ -29,20 +50,22 @@ n_rois = conn_pte.shape[0]
 ind = np.tril_indices(n_rois, k=1)
 epi_connectivity = conn_pte[ind[0], ind[1], :].T
 
-a = np.load('PTE_lesion_vols_USCLobes.npz', allow_pickle=True)
+a = np.load(root_path + 'PTE_lesion_vols_USCLobes.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 epi_lesion_vols = np.array([a[k] for k in sub_ids])
-epi_measures = np.concatenate((epi_lesion_vols,epi_connectivity,ALFF_pte.T), axis=1)
+mean_epi_les = calc_mean_lesion(epi_lesion_vols)
+mean_epi_les = normalize(epi_lesion_vols, axis=1)
 
+epi_measures = np.concatenate((mean_epi_les, epi_connectivity), axis=1)
 
+# pdb.set_trace()
+# measure = 'fALFF'
+# atlas_name = 'USCLobes'
+# f = np.load('NONPTE_'+measure+'_'+atlas_name+'.npz')
+# ALFF_nonpte = f['roiwise_data']
+# ALFF_nonpte = ALFF_nonpte[1:13,:]
 
-measure = 'fALFF'
-atlas_name = 'USCLobes'
-f = np.load('NONPTE_'+measure+'_'+atlas_name+'.npz')
-ALFF_nonpte = f['roiwise_data']
-ALFF_nonpte = ALFF_nonpte[1:13,:]
-
-f = np.load('NONPTE_fmridiff_USCLobes.npz')
+f = np.load(root_path + 'NONPTE_fmridiff_USCLobes.npz')
 conn_pte = f['fdiff_sub']
 lab_ids = f['label_ids']
 gordlab = f['labels']
@@ -50,7 +73,7 @@ sub_ids = f['sub_ids']
 n_rois = conn_pte.shape[0]
 nonepi_brainsync = conn_pte.T
 
-f = np.load('NONPTE_graphs_USCLobes.npz')
+f = np.load(root_path + 'NONPTE_graphs_USCLobes.npz')
 conn_nonpte = f['conn_mat']
 lab_ids = f['label_ids']
 gordlab = f['labels']
@@ -59,16 +82,17 @@ cent_mat = f['cent_mat']
 
 nonepi_connectivity = conn_nonpte[ind[0], ind[1], :].T
 
-a = np.load('NONPTE_lesion_vols_USCLobes.npz', allow_pickle=True)
+a = np.load(root_path + 'NONPTE_lesion_vols_USCLobes.npz', allow_pickle=True)
 a = a['lesion_vols'].item()
 nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
-nonepi_measures = np.concatenate((nonepi_lesion_vols,nonepi_connectivity,ALFF_nonpte.T), axis=1)
+mean_nonepi_les = calc_mean_lesion(nonepi_lesion_vols)
+mean_nonepi_les = normalize(nonepi_lesion_vols, axis=1)
 
-from sklearn.preprocessing import normalize
+nonepi_measures = np.concatenate((mean_nonepi_les, nonepi_connectivity), axis=1)
 
 X = np.vstack((epi_measures, nonepi_measures))
-X=normalize(X)
-
+# X = normalize(X)
+# pdb.set_trace()
 y = np.hstack(
     (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
 
