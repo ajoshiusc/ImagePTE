@@ -105,7 +105,7 @@ def find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
         flair_nii = os.path.join(studydir, id, 'FLAIRmni' + '.nii.gz')
         fname_lesion_w = os.path.join(studydir, id,
                                       'vae_mse.flair.mask' + '.nii.gz')
-        os.system('/home/ajoshi/BrainSuite19b/svreg/bin/svreg_apply_map.sh ' +
+        os.system('/home/ajoshi/BrainSuite21a/svreg/bin/svreg_apply_map.sh ' +
                   fwdmap + ' ' + fname + ' ' + fname_lesion_w + ' ' +
                   flair_nii)
 
@@ -113,7 +113,7 @@ def find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
         flair_nii = os.path.join(studydir, id, 'FLAIRmni' + '.nii.gz')
         fname_lesion_e = os.path.join(studydir, id,
                                       'vae_mse.flair' + '.nii.gz')
-        os.system('/home/ajoshi/BrainSuite19b/svreg/bin/svreg_apply_map.sh ' +
+        os.system('/home/ajoshi/BrainSuite21a/svreg/bin/svreg_apply_map.sh ' +
                   fwdmap + ' ' + fname + ' ' + fname_lesion_e + ' ' +
                   flair_nii)
 
@@ -129,7 +129,7 @@ def find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
         flair_nii = os.path.join(studydir, id, 'FLAIRmni' + '.nii.gz')
         fname_lesion_w = os.path.join(studydir, id,
                                       'vae_mse.flair.mask' + '.nii.gz')
-        os.system('/home/ajoshi/BrainSuite19b/svreg/bin/svreg_apply_map.sh ' +
+        os.system('/home/ajoshi/BrainSuite21a/svreg/bin/svreg_apply_map.sh ' +
                   fwdmap + ' ' + fname + ' ' + fname_lesion_w + ' ' +
                   flair_nii)
 
@@ -137,7 +137,7 @@ def find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
         flair_nii = os.path.join(studydir, id, 'FLAIRmni' + '.nii.gz')
         fname_lesion_e = os.path.join(studydir, id,
                                       'vae_mse.flair' + '.nii.gz')
-        os.system('/home/ajoshi/BrainSuite19b/svreg/bin/svreg_apply_map.sh ' +
+        os.system('/home/ajoshi/BrainSuite21a/svreg/bin/svreg_apply_map.sh ' +
                   fwdmap + ' ' + fname + ' ' + fname_lesion_e + ' ' +
                   flair_nii)
 
@@ -150,7 +150,7 @@ def roiwise_stats(epi_data, nonepi_data):
     ati = ni.load_img(atlas_bfc)
     atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
     at_labels = ni.load_img(atlas_labels).get_data()
-    vox_size = ni.load_img(atlas_labels).get_header().get_zooms()
+    vox_size = ni.load_img(atlas_labels).header.get_zooms()
     vox_vol = vox_size[0] * vox_size[1] * vox_size[2]
     #roi_list = [
     #    3, 100, 101, 184, 185, 200, 201, 300, 301, 400, 401, 500, 501, 800,
@@ -221,7 +221,8 @@ def roiwise_stats(epi_data, nonepi_data):
 
 def pointwise_stats(epi_data, nonepi_data):
 
-    atlas = '/home/ajoshi/BrainSuite19b/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
+    sm='0mm'
+    atlas = '/home/ajoshi/BrainSuite21a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
     ati = ni.load_img(atlas)
 
     # Save mean over the epilepsy subjects
@@ -323,7 +324,7 @@ def pointwise_stats(epi_data, nonepi_data):
     fimg = ni.new_img_like(ati, pval_fdr.reshape(ati.shape))
     fimg.to_filename('pval_fdr_ftest_lesion' + sm + '.nii.gz')
 
-    edat1.img
+    #edat1.img
 
 
 def main():
@@ -341,9 +342,7 @@ def main():
 
     epiIds = list(map(lambda x: x.strip(), epiIds))
     nonepiIds = list(map(lambda x: x.strip(), nonepiIds))
-    '''    # Do Pointwise stats
-    pointwise_stats(epi_data, nonepi_data)
-    '''
+    
 
     # Use once class SVM to compute lesion volume
     #roiwise_stats_OneclassSVM(epi_data, nonepi_data)
@@ -351,8 +350,12 @@ def main():
     epi_data, epi_subids = readsubs(studydir, epiIds, read_mask=False)
     nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds, read_mask=False)
 
-    find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
+    '''find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
                              nonepi_data)
+                             '''
+
+         # Do Pointwise stats
+    pointwise_stats(epi_data, nonepi_data)
 
     # Do ROIwise stats
     roiwise_stats(epi_data, nonepi_data)

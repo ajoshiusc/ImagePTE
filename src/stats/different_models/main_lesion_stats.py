@@ -150,7 +150,7 @@ def roiwise_stats(epi_data, nonepi_data):
     ati = ni.load_img(atlas_bfc)
     atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
     at_labels = ni.load_img(atlas_labels).get_data()
-    vox_size = ni.load_img(atlas_labels).get_header().get_zooms()
+    vox_size = ni.load_img(atlas_labels).header.get_zooms()
     vox_vol = vox_size[0] * vox_size[1] * vox_size[2]
     # roi_list = [
     #    3, 100, 101, 184, 185, 200, 201, 300, 301, 400, 401, 500, 501, 800,
@@ -223,6 +223,8 @@ def roiwise_stats(epi_data, nonepi_data):
 
 
 def pointwise_stats(epi_data, nonepi_data):
+
+    sm = 3
 
     atlas = '/home/ajoshi/BrainSuite19b/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
     ati = ni.load_img(atlas)

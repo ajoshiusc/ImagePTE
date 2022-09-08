@@ -9,7 +9,7 @@ from sklearn.model_selection import GridSearchCV, ParameterGrid, RandomizedSearc
 from tqdm import tqdm
 from sklearn.ensemble import RandomForestClassifier
 
-a = np.load('../PTE_nonPTE_features_USCLobes.npz')
+a = np.load('PTE_nonPTE_features_USCLobes.npz')
 
 epi_measures = a['ALFF_pte']
 nonepi_measures = a['ALFF_nonpte']
@@ -56,9 +56,9 @@ for i in tqdm(range(NUM_TRIALS)):
     outer_cv = StratifiedKFold(n_splits=36)
 
     clf = RandomizedSearchCV(
-        estimator=pipe, param_distributions=param_grid, cv=inner_cv, scoring='roc_auc')
+        estimator=pipe, param_distributions=param_grid, cv=inner_cv, scoring='accuracy')
     nested_score = cross_val_score(
-        clf, X=X, y=y, cv=outer_cv, scoring='roc_auc')
+        clf, X=X, y=y, cv=outer_cv, scoring='accuracy')
     auc[i] = nested_score.mean()
     print(auc[i])
 

@@ -17,7 +17,7 @@ img[img < 1e-3] = 0
 
 stat_img = nl.new_img_like(stat_img, img)
 
-bk_img = '/home/ajoshi/BrainSuite19b/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.nii.gz'
+bk_img = '/home/ajoshi/BrainSuite21a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.nii.gz'
 
 plot_stat_map(stat_img,
               bk_img,
