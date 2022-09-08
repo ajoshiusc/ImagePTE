@@ -26,13 +26,13 @@ from sklearn.pipeline import Pipeline
 
 
 population = 'PTE'
-f = np.load(population+'_graphs.npz')
+f = np.load(population+'_graphs_USCLobes.npz')
 conn_pte = f['conn_mat']
 lab_ids = f['label_ids']
 gordlab = f['labels']
 
 population = 'NONPTE'
-f = np.load(population+'_graphs.npz')
+f = np.load(population+'_graphs_USCLobes.npz')
 conn_nonpte = f['conn_mat']
 lab_ids = f['label_ids']
 gordlab = f['labels']
