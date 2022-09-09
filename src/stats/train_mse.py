@@ -4,56 +4,78 @@ from sklearn.model_selection import cross_val_score
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import StratifiedKFold
+import msentropy as msen
+import entropy as etp
+import pdb
+nscales = 20
+m = 1
+
+def extract_mse_features(time_series):
+    n_signal = time_series.shape[1]
+    nsub = time_series.shape[0]
+    RCMSE = np.zeros((nsub, nscales + 1))
+    for subno in range(nsub):
+        for j in range(0, n_signal):
+            signal = time_series[subno, j, :]
+            # mse = etp.multiscale_entropy(signal, 2, tolerance=None, maxscale=20)
+            # pdb.set_trace()
+            RCMSE_temp = msen.rcmse(signal, m, 0.15 * np.std(signal), nscales)
+            for k in range(0, len(RCMSE_temp)):
+                RCMSE[subno, k] += RCMSE_temp[k]
+
+        # mean of the n_signal RCMSE
+        RCMSE[subno] /= n_signal
+    # pdb.set_trace()
+    return RCMSE[:, 1:]
+
 
 root_path = '/home/wenhuicu/ImagePTE/'
 
-f = np.load(root_path + 'PTE_fmridiff_USCLobes.npz')
-conn_pte = f['fdiff_sub']
-lab_ids = f['label_ids']
-gordlab = f['labels']
-sub_ids = f['sub_ids']
-n_rois = conn_pte.shape[0]
-epi_brainsync = conn_pte.T
+f = np.load(root_path + 'PTE_deepwalk.npz')
+time_series_pte = f['features']
 
-f = np.load(root_path + 'PTE_graphs_USCLobes.npz')
-conn_pte = f['conn_mat']
-lab_ids = f['label_ids']
-gordlab = f['labels']
-sub_ids = f['sub_ids']
-cent_mat = f['cent_mat']
-n_rois = conn_pte.shape[0]
-ind = np.tril_indices(n_rois, k=1)
-epi_connectivity = conn_pte[ind[0], ind[1], :].T
+mse_feat = extract_mse_features(time_series_pte)
 
-a = np.load(root_path + 'PTE_lesion_vols_USCLobes.npz', allow_pickle=True)
-a = a['lesion_vols'].item()
-epi_lesion_vols = np.array([a[k] for k in sub_ids])
-epi_measures = np.concatenate(
-    (.3*epi_lesion_vols, epi_connectivity, .3*epi_brainsync), axis=1)
+epi_measures = mse_feat
+print(epi_measures)
+# f = np.load(root_path + 'PTE_graphs_USCLobes.npz')
+# conn_pte = f['conn_mat']
+# lab_ids = f['label_ids']
+# gordlab = f['labels']
+# sub_ids = f['sub_ids']
+# cent_mat = f['cent_mat']
+# n_rois = conn_pte.shape[0]
+# ind = np.tril_indices(n_rois, k=1)
+# epi_connectivity = conn_pte[ind[0], ind[1], :].T
+
+# a = np.load(root_path + 'PTE_lesion_vols_USCLobes.npz', allow_pickle=True)
+# a = a['lesion_vols'].item()
+# epi_lesion_vols = np.array([a[k] for k in sub_ids])
+# epi_measures = np.concatenate(
+#     (.3*epi_lesion_vols, epi_connectivity, .3*epi_brainsync), axis=1)
 
 
-f = np.load(root_path + 'NONPTE_fmridiff_USCLobes.npz')
-conn_pte = f['fdiff_sub']
-lab_ids = f['label_ids']
-gordlab = f['labels']
-sub_ids = f['sub_ids']
-n_rois = conn_pte.shape[0]
-nonepi_brainsync = conn_pte.T
+f = np.load(root_path + 'NONPTE_deepwalk.npz')
+time_series_non = f['features']
 
-f = np.load(root_path + 'NONPTE_graphs_USCLobes.npz')
-conn_nonpte = f['conn_mat']
-lab_ids = f['label_ids']
-gordlab = f['labels']
-sub_ids = f['sub_ids']
-cent_mat = f['cent_mat']
+mse_feat = extract_mse_features(time_series_non)
 
-nonepi_connectivity = conn_nonpte[ind[0], ind[1], :].T
+nonepi_measures = mse_feat
 
-a = np.load(root_path + 'NONPTE_lesion_vols_USCLobes.npz', allow_pickle=True)
-a = a['lesion_vols'].item()
-nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
-nonepi_measures = np.concatenate(
-    (.3*nonepi_lesion_vols, nonepi_connectivity, .3*nonepi_brainsync), axis=1)
+# f = np.load(root_path + 'NONPTE_graphs_USCLobes.npz')
+# conn_nonpte = f['conn_mat']
+# lab_ids = f['label_ids']
+# gordlab = f['labels']
+# sub_ids = f['sub_ids']
+# cent_mat = f['cent_mat']
+
+# nonepi_connectivity = conn_nonpte[ind[0], ind[1], :].T
+
+# a = np.load(root_path + 'NONPTE_lesion_vols_USCLobes.npz', allow_pickle=True)
+# a = a['lesion_vols'].item()
+# nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
+# nonepi_measures = np.concatenate(
+#     (.3*nonepi_lesion_vols, nonepi_connectivity, .3*nonepi_brainsync), axis=1)
 
 
 X = np.vstack((epi_measures, nonepi_measures))

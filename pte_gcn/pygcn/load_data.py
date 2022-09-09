@@ -87,9 +87,9 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
         if os.path.isfile(fname):
             nonepi_files.append(fname)
 
-    epi_data = load_bfp_data(epi_files, 171)
+    epi_data = load_bfp_data(epi_files[:1], 171)
     nonepi_data = load_bfp_data(nonepi_files, 171)
-
+    
     # nsub = epi_data.shape[2]
     #==============================================================
     nsub = min(epi_data.shape[2], nonepi_data.shape[2])
