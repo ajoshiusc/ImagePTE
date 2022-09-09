@@ -144,9 +144,9 @@ def find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
 
 def roiwise_stats(epi_data, nonepi_data):
 
-    atlas_bfc = '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/BCI-DNI_brain.bfc.nii.gz'
+    atlas_bfc = '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/USCBrain.bfc.nii.gz'
     ati = ni.load_img(atlas_bfc)
-    atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/BCI-DNI_brain.label.nii.gz'
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/USCBrain.label.nii.gz'
     at_labels = np.asanyarray(ni.load_img(atlas_labels).dataobj)
     vox_size = ni.load_img(atlas_labels).header.get_zooms()
     vox_vol = vox_size[0] * vox_size[1] * vox_size[2]
