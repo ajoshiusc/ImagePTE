@@ -18,9 +18,10 @@ parser.add_argument('--m', type=int, default=1)
 parser.add_argument('--use_rcmse', type=bool, default=True)
 parser.add_argument('--use_all', type=bool, default=False)
 parser.add_argument('--use_pca', type=bool, default=False)
+parser.add_argument('--nfolds', type=int, default=36)
 args = parser.parse_args()
 
-root_path = '/home/wenhuicu/ImagePTE/'
+root_path = '/home/wenhuicu/data_npz/'
 
 def extract_mse_features(time_series):
     n_signal = time_series.shape[1]
@@ -45,7 +46,7 @@ def extract_mse_features(time_series):
         # mean of the n_signal RCMSE
     return np.mean(RCMSE, axis=1), np.std(RCMSE, axis=1), RCMSE
 
-f = np.load(root_path + 'PTE' + args.npz_name)
+f = np.load(root_path + 'ADHD' + args.npz_name)
 time_series_pte = f['features']
 print(time_series_pte.shape)
 
@@ -76,7 +77,7 @@ if args.use_all:
         (epi_lesion_vols, .3*mse_feat), axis=1)
 
 
-f = np.load(root_path + 'NONPTE' + args.npz_name)
+f = np.load(root_path + 'TDC' + args.npz_name)
 time_series_non = f['features']
 
 mse_feat_mean, mse_feat_std, mse_feat = extract_mse_features(time_series_non)
@@ -134,7 +135,7 @@ if args.use_pca:
                         ('svc', SVC(kernel='rbf',C=best_C, gamma=current_gamma, tol=1e-9))])
         my_metric = 'roc_auc'
         #auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
-        kfold = StratifiedKFold(n_splits=36, shuffle=True,random_state=1211)
+        kfold = StratifiedKFold(n_splits=args.nfolds, shuffle=True,random_state=1211)
         auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
         #print('AUC on testing data:gamma=%g, auc=%g' % (current_gamma, np.mean(auc)))
         if np.mean(auc)>= max_AUC:
@@ -149,7 +150,7 @@ if args.use_pca:
                         ('svc', SVC(kernel='rbf',C=current_C, gamma=best_gamma, tol=1e-9))])
         my_metric = 'roc_auc'
         #auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
-        kfold = StratifiedKFold(n_splits=36, shuffle=True,random_state=1211)
+        kfold = StratifiedKFold(n_splits=args.nfolds, shuffle=True,random_state=1211)
         auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
         #print('AUC on testing data:gamma=%g, auc=%g' % (current_gamma, np.mean(auc)))
         if np.mean(auc)>= max_AUC:
@@ -176,7 +177,7 @@ if args.use_pca:
     for nf in range(1, max_component):
         pipe = Pipeline([('pca_apply', PCA(n_components=nf, whiten=True)),
                             ('svc', SVC(kernel='rbf', C=best_C,gamma=best_gamma, tol=1e-9))])
-        kfold = StratifiedKFold(n_splits=36, shuffle=True,random_state=1211)
+        kfold = StratifiedKFold(n_splits=args.nfolds, shuffle=True,random_state=1211)
         auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
 
         #print('AUC after CV for nf=%dgamma=%s is %g' %
@@ -199,7 +200,7 @@ if args.use_pca:
     # y = np.random.permutation(y)
         pipe = Pipeline([('pca_apply', PCA(n_components=best_com, whiten=True)),
                         ('svc', SVC(kernel='rbf',C=best_C, gamma=best_gamma, tol=1e-9))])
-        kfold = StratifiedKFold(n_splits=36, shuffle=True)
+        kfold = StratifiedKFold(n_splits=args.nfolds, shuffle=True)
         auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
         auc_sum [i]= np.mean(auc)
         print('AUC after CV for i=%dgamma=%s number of components=%d is %g' % (i, best_gamma,best_com, np.mean(auc)))
@@ -212,7 +213,7 @@ auc_sum = np.zeros((iteration_num))
 for i in range(iteration_num):
 # y = np.random.permutation(y)
     pipe = SVC(kernel='rbf', C=best_C, gamma=best_gamma, tol=1e-9)
-    kfold = StratifiedKFold(n_splits=36, shuffle=True)
+    kfold = StratifiedKFold(n_splits=args.nfolds, shuffle=True)
     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
     auc_sum [i]= np.mean(auc)
     # print('AUC after CV for i=%dgamma=%s is %g' %

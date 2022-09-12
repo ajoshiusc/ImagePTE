@@ -166,7 +166,7 @@ def multiscale_entropy(time_series, sample_length, tolerance=None, maxscale=None
     if tolerance is None:
         # We need to fix the tolerance at this level
         # If it remains 'None' it will be changed in call to sample_entropy()
-        tolerance = 0.1 * np.std(time_series)
+        tolerance = 0.15 * np.std(time_series)
     if maxscale is None:
         maxscale = len(time_series)
 
