@@ -141,7 +141,7 @@ def load_all_data(atlas_labels):
         input_feat[subno, :, :] = np.transpose(brainSync(ref_sub.T, time_series.T)[0])
         # input_feat[subno, :, :] = time_series
 
-    np.savez('/home/wenhuicu/data_npz/ADHD_parPearson_BCI-DNI_noBS.npz',
+    np.savez('/home/wenhuicu/data_npz/ADHD_ts_Brain.npz',
              conn_mat=conn_mat,
              partial_mat=parcorr_mat,
              features=input_feat, # 36x16x171
@@ -168,7 +168,7 @@ def load_all_data(atlas_labels):
         input_feat[subno, :, :] = np.transpose(brainSync(ref_sub.T, time_series.T)[0])
         # input_feat[subno, :, :] = time_series
 
-    np.savez('/home/wenhuicu/data_npz/TDC_parPearson_BCI-DNI_noBS.npz',
+    np.savez('/home/wenhuicu/data_npz/TDC_ts_Brain.npz',
              conn_mat=conn_mat, # n_subjects*16*16
              partial_mat=parcorr_mat,
              features=input_feat, # n_subjects * 16 x 171
@@ -188,8 +188,8 @@ if __name__ == "__main__":
     # test_nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_test.txt'
     # epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
     # nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
-    # atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCBrain_grayordinate_labels.mat'
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCBrain_grayordinate_labels.mat'
     # atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
-    atlas_labels = '../../BCI-DNI_brain_grayordinate_labels.mat'
+    # atlas_labels = '../../BCI-DNI_brain_grayordinate_labels.mat'
     load_all_data(atlas_labels)
     input('press any key')

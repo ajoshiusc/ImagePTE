@@ -79,7 +79,7 @@ def get_connectivity(data, labels, label_ids): # compute adj matrix
     # ##================##
     ## the adjacency matrix here is not binary. we use the correlation coefficient directly.
     #print(conn.shape, rtseries.T.shape)
-    return conn, rtseries.T # 16x171, ROI/Node. 16*16 for conn
+    return conn, data.T # 16x171, ROI/Node. 16*16 for conn
 
 
 def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, atlas_labels):
@@ -131,7 +131,7 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
 
     conn_mat = np.zeros((nsub, len(label_ids), len(label_ids)))
     cent_mat = np.zeros((nsub, len(label_ids)))
-    input_feat = np.zeros((nsub, len(label_ids), epi_data.shape[0]))
+    input_feat = np.zeros((nsub, epi_data.shape[1], epi_data.shape[0]))
     dw_feat = np.zeros((nsub, len(label_ids), args.dim))
     print(conn_mat.shape, input_feat.shape)
     print(epi_data.shape, nonepi_data.shape, gord_labels.shape)
@@ -158,7 +158,7 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
     # setting 2 lobes: walk_length=15, dimensions=DW_DIM, window_size=5
     # setting lobes: walk_length=10, dimensions=DW_DIM, window_size=3
     fname = str(args.walk_n) + str(args.walk_len) + str(args.win_size)
-    np.savez('/home/wenhuicu/ImagePTE/PTE_conn_brain_all_ori.npz',
+    np.savez('/home/wenhuicu/ImagePTE/PTE_voxelwise_fmri.npz',
              conn_mat=conn_mat,
              deepwalk=dw_feat,
              features=input_feat, # 36x16x171
@@ -171,7 +171,7 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
 
     conn_mat = np.zeros((nsub, len(label_ids), len(label_ids)))
     cent_mat = np.zeros((nsub, len(label_ids)))
-    input_feat = np.zeros((nsub, len(label_ids), nonepi_data.shape[0]))
+    input_feat = np.zeros((nsub, epi_data.shape[1], nonepi_data.shape[0]))
     dw_feat = np.zeros((nsub, len(label_ids), args.dim))
     print(conn_mat.shape, input_feat.shape, dw_feat.shape)
     # here we are using same number of training subjects for epi and nonepi.
@@ -189,7 +189,7 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
     # setting 1: walk_length=120, dimensions=64, window_size=20
     # setting 2 lobes: walk_length=15, dimensions=64, window_size=5
     # setting lobes: walk_length=10, dimensions=64, window_size=3
-    np.savez('/home/wenhuicu/ImagePTE/NONPTE_conn_brain_all_ori.npz',
+    np.savez('/home/wenhuicu/ImagePTE/NONPTE_voxelwise_fmri.npz',
              conn_mat=conn_mat, # n_subjects*16*16
              deepwalk=dw_feat,
              features=input_feat, # n_subjects * 16 x 171
