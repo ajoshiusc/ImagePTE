@@ -73,8 +73,8 @@ pval = np.zeros(num_bord)
 #    _, pval[i]=ranksums(data1[i,:], data2[i,:])
 
 # We will perform f-test test (modified in a pairwise stats)
-data1 = data1[:,:35]
 
+data1 = data1[:,:35]
 S1 = 0.5 * np.var(data1, axis=1)
 S2 = 0.5 * np.var(data2, axis=1)
 
@@ -91,12 +91,8 @@ pval[sp.isnan(pval)] = .5
 _, pval_fdr = fdrcorrection(pval)
 
 
-save2volbord_bci((0.05-pval)*np.float32(pval < 0.05), os.path.join(bfp_path, 'src/stats/results',
-                 'pval_alff_bord_PTE_smooth1.5_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
-save2volbord_bci((0.05-pval_fdr)*np.float32(pval_fdr < 0.05), os.path.join(bfp_path,
-                 'src/stats/results', 'pval_fdr_bord_PTE_smooth1.5_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
+save2volbord_bci(S1, os.path.join(bfp_path, 'src/stats/results',
+                                    'S1.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
 
-save2volbord_bci((0.05-pval)*np.float32(pval < 0.05), os.path.join(bfp_path, 'src/stats/results',
-                 'pval_alff_bord_PTE_smooth1.5_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)
-save2volbord_bci((0.05-pval_fdr)*np.float32(pval_fdr < 0.05), os.path.join(bfp_path,
-                 'src/stats/results', 'pval_fdr_bord_PTE_smooth1.5_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)
+save2volbord_bci(S2, os.path.join(bfp_path, 'src/stats/results',
+                                    'S2.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
