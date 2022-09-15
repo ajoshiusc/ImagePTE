@@ -112,7 +112,7 @@ y = np.hstack(
 
 # Permute the labels to check if AUC becomes 0.5. This check is to make sure that we are not overfitting
 
-n_iter = 1000
+n_iter = args.num_cv
 auc = np.zeros(n_iter)
 precision = np.zeros(n_iter)
 recall = np.zeros(n_iter)
@@ -121,7 +121,7 @@ support = np.zeros(n_iter)
 
 
 my_metric = 'roc_auc'
-best_com = 50#
+best_com = 120#
 best_C= .1
 #y = np.random.permutation(y)
 
@@ -174,24 +174,24 @@ print('AUC on testing data:gamma=%s, auc=%g' % (mygamma, np.mean(auc)))
 ## Following part of the code do a grid search to find best number of PCA component
 ## the metric for comparing the performance is AUC
 ####################################################
-best_com=0
-max_AUC=0
-max_component=min((X.shape[0]-1),X.shape[1])
-for nf in range(1, max_component):
-    pipe = Pipeline([('pca_apply', PCA(n_components=nf, whiten=True)),
-                        ('svc', SVC(kernel='rbf', C=best_C,gamma=best_gamma, tol=1e-9))])
-    kfold = StratifiedKFold(n_splits=args.num_cv, shuffle=True,random_state=1211)
-    auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
+# best_com=0
+# max_AUC=0
+# max_component=min((X.shape[0]-1),X.shape[1])
+# for nf in range(1, max_component):
+#     pipe = Pipeline([('pca_apply', PCA(n_components=nf, whiten=True)),
+#                         ('svc', SVC(kernel='rbf', C=best_C,gamma=best_gamma, tol=1e-9))])
+#     kfold = StratifiedKFold(n_splits=args.num_cv, shuffle=True,random_state=1211)
+#     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
 
-    # print('AUC after CV for nf=%dgamma=%s is %g' %
-    #         (nf, best_gamma, np.mean(auc)))
-    if np.mean(auc)>= max_AUC:
-        max_AUC=np.mean(auc)
-        best_com=nf
+#     # print('AUC after CV for nf=%dgamma=%s is %g' %
+#     #         (nf, best_gamma, np.mean(auc)))
+#     if np.mean(auc)>= max_AUC:
+#         max_AUC=np.mean(auc)
+#         best_com=nf
 
-print('n_components=%d is' %(best_com))
+# print('n_components=%d is' %(best_com))
 
-# best_com=53
+best_com=120
 # best_gamma=0.075
 # best_C=.1
 # #######################selecting gamma################
@@ -209,14 +209,13 @@ for i in range(iteration_num):
     for j, m in enumerate(args.metric):
         res_sum[i, j]= np.mean(res['test_' + m])
 
-    print('AUC after CV for i=%dgamma=%s number of components=%d is' % (i, best_gamma, best_com))
-    print(res_sum)
+    # print('AUC after CV for i=%dgamma=%s number of components=%d is' % (i, best_gamma, best_com))
+    # print(res_sum)
 
     
 print("Results with PCA:")
 print(args.metric)
 print((np.mean(res_sum, axis=0), np.std(res_sum, axis=0)))
-
 
 
 res_sum = np.zeros((iteration_num, len(args.metric)))

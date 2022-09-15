@@ -12,13 +12,13 @@ import argparse
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--npz_name', type=str, default='_deepwalk_lobes.npz')
+parser.add_argument('--npz_name', type=str, default='_ts_Brain.npz')
 parser.add_argument('--nscales', type=int, default=20)
 parser.add_argument('--m', type=int, default=1)
 parser.add_argument('--use_rcmse', type=bool, default=True)
 parser.add_argument('--use_all', type=bool, default=False)
 parser.add_argument('--use_pca', type=bool, default=False)
-parser.add_argument('--nfolds', type=int, default=36)
+parser.add_argument('--nfolds', type=int, default=5)
 args = parser.parse_args()
 
 root_path = '/home/wenhuicu/data_npz/'

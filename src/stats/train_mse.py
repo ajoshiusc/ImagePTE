@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--npz_name', type=str, default='_deepwalk_lobes.npz')
 parser.add_argument('--nscales', type=int, default=20)
 parser.add_argument('--m', type=int, default=1)
-parser.add_argument('--use_rcmse', type=bool, default=True)
+parser.add_argument('--use_rcmse', type=bool, default=False)
 parser.add_argument('--use_all', type=bool, default=False)
 parser.add_argument('--use_pca', type=bool, default=False)
 args = parser.parse_args()
@@ -73,7 +73,7 @@ if args.use_all:
     a = a['lesion_vols'].item()
     epi_lesion_vols = np.array([a[k] for k in sub_ids])
     epi_measures = np.concatenate(
-        (epi_lesion_vols, .3*mse_feat), axis=1)
+        (epi_connectivity, .1*mse_feat_mean), axis=1)
 
 
 f = np.load(root_path + 'NONPTE' + args.npz_name)
@@ -100,7 +100,7 @@ if args.use_all:
     a = a['lesion_vols'].item()
     nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
     nonepi_measures = np.concatenate(
-        (nonepi_lesion_vols, .3*mse_feat), axis=1)
+        (nonepi_connectivity, .1*mse_feat_mean), axis=1)
 
 
 X = np.vstack((epi_measures, nonepi_measures))
