@@ -3,14 +3,14 @@ import nilearn.image as nl
 from matplotlib import cm
 stat_img = 'pval_fdr_ftest_TBMsmooth3mm.nii.gz'
 stat_img = 'pval_fdr_ftest_lesion.smooth3mm.nii.gz'
-stat_img = '/home/ajoshi/projects/bfp/src/stats/results/pval_fdr_bord_PTE_smooth1.5_sig.nii.gz'
+stat_img = '/home/ajoshi/projects/bfp/src/stats/results/pval_fdr_bord_PTE_smooth0.5_sig.nii.gz'
 outfile1 = stat_img.replace('.nii.gz','_1.png') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
 outfile2 = stat_img.replace('.nii.gz','_2.png') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
 outfile3 = stat_img.replace('.nii.gz','_3.png') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
 outfile4 = stat_img.replace('.nii.gz','_4.png') #'/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
 
 #img = 0.05 - nl.load_img(stat_img).get_fdata()
-#img[img < 0] = 0
+#img[img <= 0] = 0
 
 img = nl.load_img(stat_img).get_fdata()
 img[img < 1e-3] = 0

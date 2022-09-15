@@ -7,7 +7,7 @@ from sklearn.model_selection import StratifiedKFold
 import scipy.stats as ss
 from scipy.stats import ranksums
 
-measure = 'ALFF_Z'
+measure = 'ALFF'
 atlas_name = 'USCLobes'
 f = np.load('PTE_'+measure+'_'+atlas_name+'.npz')
 conn_pte = f['roiwise_data']
@@ -42,7 +42,7 @@ nonepi_measure = nonepi_connectivity
 
 
 F = epi_measure.var(axis=0) / (nonepi_measure.var(axis=0) + 1e-6)
-pval = 1 - ss.f.cdf(F, 36*8 - 1, 36*8 - 1)
+pval = 1 - ss.f.cdf(F, 37*8 - 1, 37*8-1)
 
 print(lab_ids, pval)
 
