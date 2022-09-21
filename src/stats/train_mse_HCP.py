@@ -12,7 +12,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--npz_name', type=str, default='_ts_Brain.npz')
+parser.add_argument('--npz_name', type=str, default='hcp_1200_roi22.npz')
 parser.add_argument('--nscales', type=int, default=20)
 parser.add_argument('--m', type=int, default=1)
 parser.add_argument('--use_rcmse', type=bool, default=True)
@@ -46,18 +46,17 @@ def extract_mse_features(time_series):
         # mean of the n_signal RCMSE
     return np.mean(RCMSE, axis=1), np.std(RCMSE, axis=1), RCMSE
 
-f = np.load(root_path + 'ADHD' + args.npz_name)
-time_series_pte = f['features']
-print(time_series_pte.shape)
+f = np.load(root_path + args.npz_name)
+time_series = f['time_series']
+print(time_series.shape)
 
-mse_feat_mean, mse_feat_std, mse_feat = extract_mse_features(time_series_pte)
+mse_feat_mean, mse_feat_std, mse_feat = extract_mse_features(time_series)
 
 # print(mse_feat_mean, mse_feat_std)
 # pdb.set_trace()
 epi_measures = mse_feat_mean
 # epi_measures = mse_feat.reshape((36, -1))
 # epi_measures = normalize(np.vstack((mse_feat_mean, mse_feat_std)))
-print(epi_measures)
 
 if args.use_all:
     f = np.load(root_path + 'PTE_graphs_USCLobes.npz')
@@ -76,37 +75,8 @@ if args.use_all:
     epi_measures = np.concatenate(
         (epi_lesion_vols, .3*mse_feat), axis=1)
 
-
-f = np.load(root_path + 'TDC' + args.npz_name)
-time_series_non = f['features']
-
-mse_feat_mean, mse_feat_std, mse_feat = extract_mse_features(time_series_non)
-# nonepi_measures = mse_feat.reshape((36, -1))
-# nonepi_measures = normalize(np.vstack((mse_feat_mean, mse_feat_std)))
-nonepi_measures = mse_feat_mean
-
-print(nonepi_measures)
-
-if args.use_all:
-    f = np.load(root_path + 'NONPTE_graphs_USCLobes.npz')
-    conn_nonpte = f['conn_mat']
-    lab_ids = f['label_ids']
-    gordlab = f['labels']
-    sub_ids = f['sub_ids']
-    cent_mat = f['cent_mat']
-
-    nonepi_connectivity = conn_nonpte[ind[0], ind[1], :].T
-
-    a = np.load(root_path + 'NONPTE_lesion_vols_USCLobes.npz', allow_pickle=True)
-    a = a['lesion_vols'].item()
-    nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
-    nonepi_measures = np.concatenate(
-        (nonepi_lesion_vols, .3*mse_feat), axis=1)
-
-
-X = np.vstack((epi_measures, nonepi_measures))
-y = np.hstack(
-    (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
+X = epi_measures
+y = f['labels']
 
 # Permute the labels to check if AUC becomes 0.5. This check is to make sure that we are not overfitting
 

@@ -1,3 +1,4 @@
+from cProfile import label
 import numpy as np
 from sklearn.svm import SVC
 from sklearn.model_selection import cross_val_score
@@ -7,15 +8,7 @@ from sklearn.model_selection import StratifiedKFold
 
 root_path = '/home/wenhuicu/ImagePTE/'
 
-f = np.load(root_path + 'PTE_fmridiff_USCLobes.npz')
-conn_pte = f['fdiff_sub']
-lab_ids = f['label_ids']
-gordlab = f['labels']
-sub_ids = f['sub_ids']
-n_rois = conn_pte.shape[0]
-epi_brainsync = conn_pte.T
-
-f = np.load('/home/wenhuicu/data_npz/' + 'ADHD_parPearson_Lobes.npz')
+f = np.load('/home/wenhuicu/data_npz/' + 'hcp_1200_roi22.npz')
 conn_pte = f['conn_mat']
 # lab_ids = f['label_ids']
 # gordlab = f['labels']
@@ -23,53 +16,20 @@ conn_pte = f['conn_mat']
 # cent_mat = f['cent_mat']
 n_rois = conn_pte.shape[1]
 ind = np.tril_indices(n_rois, k=1)
-epi_connectivity = conn_pte[:, ind[0], ind[1]]
+connectivity = conn_pte[:, ind[0], ind[1]]
 
-a = np.load(root_path + 'PTE_lesion_vols_USCLobes.npz', allow_pickle=True)
-a = a['lesion_vols'].item()
-epi_lesion_vols = np.array([a[k] for k in sub_ids])
-# epi_measures = np.concatenate(
-#     (.3*epi_lesion_vols, epi_connectivity, .3*epi_brainsync), axis=1)
-epi_measures = epi_connectivity
-print(epi_measures.shape)
-
-
-f = np.load(root_path + 'NONPTE_fmridiff_USCLobes.npz')
-conn_pte = f['fdiff_sub']
-lab_ids = f['label_ids']
-gordlab = f['labels']
-sub_ids = f['sub_ids']
-n_rois = conn_pte.shape[0]
-nonepi_brainsync = conn_pte.T
-
-f = np.load('/home/wenhuicu/data_npz/' + 'TDC_parPearson_Lobes.npz')
-conn_nonpte = f['conn_mat']
-# lab_ids = f['label_ids']
-# gordlab = f['labels']
-# sub_ids = f['sub_ids']
-# cent_mat = f['cent_mat']
-
-nonepi_connectivity = conn_nonpte[:, ind[0], ind[1]]
-
-a = np.load(root_path + 'NONPTE_lesion_vols_USCLobes.npz', allow_pickle=True)
-a = a['lesion_vols'].item()
-nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
 # nonepi_measures = np.concatenate(
 #     (.3*nonepi_lesion_vols, nonepi_connectivity, .3*nonepi_brainsync), axis=1)
-nonepi_measures = nonepi_connectivity
 
-
-X = np.vstack((epi_measures, nonepi_measures))
-y = np.hstack(
-    (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
-
+X = connectivity
+y = f['labels']
 # Permute the labels to check if AUC becomes 0.5. This check is to make sure that we are not overfitting
 
-n_iter = 1000
+n_iter = 100
 auc = np.zeros(n_iter)
 precision = np.zeros(n_iter)
 recall = np.zeros(n_iter)
-fscore = np.zeros(n_iters)
+fscore = np.zeros(n_iter)
 support = np.zeros(n_iter)
 
 

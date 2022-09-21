@@ -121,46 +121,48 @@ support = np.zeros(n_iter)
 
 
 my_metric = 'roc_auc'
-best_com = 120#
-best_C= .1
+best_com = 120
+# best gamma=0.075 is
+# best C=1 is
+# best_C= .1
 #y = np.random.permutation(y)
 
 #######################selecting gamma################
 ## Following part of the code do a grid search to find best value of gamma using a one fold cross validation
 ## the metric for comparing the performance is AUC
 ####################################################
-max_AUC=0
-gamma_range=[1, 0.001, 0.05, 0.075, .1, .13, .15, .17, 0.2, 0.3, .5, 1, 5, 10, 100]
-for current_gamma in gamma_range:
-    pipe = Pipeline([('pca_apply', PCA(n_components=best_com, whiten=True)),
-                    ('svc', SVC(kernel='rbf',C=best_C, gamma=current_gamma, tol=1e-9))])
-    my_metric = 'roc_auc'
-    #auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
-    kfold = StratifiedKFold(n_splits=args.num_cv, shuffle=True,random_state=1211)
-    # print(X.shape)
-    # pdb.set_trace()
-    auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
-    #print('AUC on testing data:gamma=%g, auc=%g' % (current_gamma, np.mean(auc)))
-    if np.mean(auc)>= max_AUC:
-        max_AUC=np.mean(auc)
-        best_gamma=current_gamma
+# max_AUC=0
+# gamma_range=[1, 0.001, 0.05, 0.075, .1, .13, .15, .17, 0.2, 0.3, .5, 1, 5, 10, 100]
+# for current_gamma in gamma_range:
+#     pipe = Pipeline([('pca_apply', PCA(n_components=best_com, whiten=True)),
+#                     ('svc', SVC(kernel='rbf',C=best_C, gamma=current_gamma, tol=1e-9))])
+#     my_metric = 'roc_auc'
+#     #auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
+#     kfold = StratifiedKFold(n_splits=args.num_cv, shuffle=True,random_state=1211)
+#     # print(X.shape)
+#     # pdb.set_trace()
+#     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
+#     #print('AUC on testing data:gamma=%g, auc=%g' % (current_gamma, np.mean(auc)))
+#     if np.mean(auc)>= max_AUC:
+#         max_AUC=np.mean(auc)
+#         best_gamma=current_gamma
 
-print('best gamma=%g is' %(best_gamma))
+# print('best gamma=%g is' %(best_gamma))
 
-C_range=[0.0001, 0.001, 0.01, .1, .3, .6, 0.7,0.9, 1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 100]  
-for current_C in C_range:
-    pipe = Pipeline([('pca_apply', PCA(n_components=best_com, whiten=True)),
-                    ('svc', SVC(kernel='rbf',C=current_C, gamma=best_gamma, tol=1e-9))])
-    my_metric = 'roc_auc'
-    #auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
-    kfold = StratifiedKFold(n_splits=args.num_cv, shuffle=True,random_state=1211)
-    auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
-    #print('AUC on testing data:gamma=%g, auc=%g' % (current_gamma, np.mean(auc)))
-    if np.mean(auc)>= max_AUC:
-        max_AUC=np.mean(auc)
-        best_C=current_C
+# C_range=[0.0001, 0.001, 0.01, .1, .3, .6, 0.7,0.9, 1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 100]  
+# for current_C in C_range:
+#     pipe = Pipeline([('pca_apply', PCA(n_components=best_com, whiten=True)),
+#                     ('svc', SVC(kernel='rbf',C=current_C, gamma=best_gamma, tol=1e-9))])
+#     my_metric = 'roc_auc'
+#     #auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
+#     kfold = StratifiedKFold(n_splits=args.num_cv, shuffle=True,random_state=1211)
+#     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
+#     #print('AUC on testing data:gamma=%g, auc=%g' % (current_gamma, np.mean(auc)))
+#     if np.mean(auc)>= max_AUC:
+#         max_AUC=np.mean(auc)
+#         best_C=current_C
 
-print('best C=%g is' %(best_C))
+# print('best C=%g is' %(best_C))
 
 '''
 for mygamma in ['auto', 'scale']:
@@ -192,8 +194,8 @@ print('AUC on testing data:gamma=%s, auc=%g' % (mygamma, np.mean(auc)))
 # print('n_components=%d is' %(best_com))
 
 best_com=120
-# best_gamma=0.075
-# best_C=.1
+best_gamma=0.075
+best_C=1
 # #######################selecting gamma################
 # ## Random permutation of pairs of training subject for 1000 iterations
 # ####################################################
