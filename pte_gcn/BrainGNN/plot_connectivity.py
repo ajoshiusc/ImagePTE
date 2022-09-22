@@ -68,8 +68,8 @@ def get_graphs_from_mask(common_graph, conn):
     # pdb.set_trace()
     return conn
 
-file_pos = "/home/wenhuicu/ImagePTE/pte_gcn/PRGNN/PTE_Allconn_BCI-DNI.npz"
-file_neg = "/home/wenhuicu/ImagePTE/pte_gcn/PRGNN/NONPTE_Allconn_BCI-DNI.npz"
+file_pos = "/home/wenhuicu/data_npz/PTE_Allconn_BCI-DNI.npz"
+file_neg = "/home/wenhuicu/data_npz/NONPTE_Allconn_BCI-DNI.npz"
 #
 pte_data = np.load(file_pos, encoding='bytes', allow_pickle=True)
 non_data = np.load(file_neg, encoding='bytes', allow_pickle=True)
