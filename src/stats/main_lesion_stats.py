@@ -355,7 +355,7 @@ def main():
                              '''
 
          # Do Pointwise stats
-    pointwise_stats(epi_data, nonepi_data)
+    #pointwise_stats(epi_data, nonepi_data)
 
     # Do ROIwise stats
     roiwise_stats(epi_data, nonepi_data)
