@@ -59,9 +59,7 @@ def read_demoCSV(csvfname, data_dir, file_ext, colsubj, colvar_exclude,
             sub = row[colsubj]
             fname = os.path.join(data_dir, sub + "/func/" + sub + file_ext)
             if not os.path.isfile(fname) or int(row[colvar_exclude]) != 0:
-                fname = os.path.join(data_dir, sub + file_ext)
-                if not os.path.isfile(fname) or int(row[colvar_exclude]) != 0:
-                    continue
+                continue
             
             df = spio.loadmat(fname)
             data = df['dtseries'].T

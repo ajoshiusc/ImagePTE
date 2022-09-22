@@ -39,7 +39,7 @@ if not os.path.isdir(cf.out_dir):
 write_text_timestamp(log_fname,
                      "All outputs will be written in: " + cf.out_dir)
 # read demographic csv file
-subIDs, sub_fname, group, reg_var, reg_cvar1, reg_cvar2 = read_demoCSV(
+subIDs, sub_fname, ref_atlas, group, reg_cvar1, reg_cvar2 = read_demoCSV(
     cf.csv_fname, cf.data_dir, cf.file_ext, cf.colsubj, cf.colvar_exclude,
     cf.colvar_group, cf.colvar_main, cf.colvar_reg1, cf.colvar_reg2, len_time=int(cf.lentime))
 
@@ -49,19 +49,20 @@ subIDs = np.array(subIDs)
 sub_fname = np.array(sub_fname)
 
 print('Identifying subjects for each group...')
-subIDs_grp2 = subIDs[group == 1]
+
+subIDs_grp_pte = subIDs[group == 1]
 sub_fname_grp2 = sub_fname[group == 1]
 
-subIDs_grp1 = subIDs[group == 0]
+subIDs_grp_nonpte = subIDs[group == 0]
 sub_fname_grp1 = sub_fname[group == 0]
 
 num_bord = 46961
 # Read group 1
-data1 = np.zeros((num_bord, len(subIDs_grp1)))
+data1 = np.zeros((num_bord, len(subIDs_grp_nonpte)))
 for i, fname in enumerate(sub_fname_grp1):
     data1[:, i] = spio.loadmat(fname)['dtseries'].squeeze()
 
-data2 = np.zeros((num_bord, len(subIDs_grp2)))
+data2 = np.zeros((num_bord, len(subIDs_grp_pte)))
 for i, fname in enumerate(sub_fname_grp2):
     data2[:, i] = spio.loadmat(fname)['dtseries'].squeeze()
 
@@ -73,7 +74,7 @@ pval = np.zeros(num_bord)
 #    _, pval[i]=ranksums(data1[i,:], data2[i,:])
 
 # We will perform f-test test (modified in a pairwise stats)
-data1 = data1[:,:35]
+#data1 = data1[:,:35]
 
 S1 = 0.5 * np.var(data1, axis=1)
 S2 = 0.5 * np.var(data2, axis=1)
@@ -82,9 +83,9 @@ S2 = 0.5 * np.var(data2, axis=1)
 n1 = data1.shape[1]
 n2 = data2.shape[1]
 
-F = S1 / (S2 + 1e-16)
+F = S2 / (S1 + 1e-16)
 
-pval = 1 - ss.f.cdf(F, n1 - 1, n2 - 1)
+pval = 1 - ss.f.cdf(F, n2 - 1, n1 - 1)
 
 # %%
 pval[sp.isnan(pval)] = .5
@@ -92,11 +93,26 @@ _, pval_fdr = fdrcorrection(pval)
 
 
 save2volbord_bci((0.05-pval)*np.float32(pval < 0.05), os.path.join(bfp_path, 'src/stats/results',
-                 'pval_alff_bord_PTE_smooth1.5_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
+                 'pval_alff_bord_PTE_smooth0_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
 save2volbord_bci((0.05-pval_fdr)*np.float32(pval_fdr < 0.05), os.path.join(bfp_path,
-                 'src/stats/results', 'pval_fdr_bord_PTE_smooth1.5_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
+                 'src/stats/results', 'pval_fdr_bord_PTE_smooth0_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
 
 save2volbord_bci((0.05-pval)*np.float32(pval < 0.05), os.path.join(bfp_path, 'src/stats/results',
-                 'pval_alff_bord_PTE_smooth1.5_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)
+                 'pval_alff_bord_PTE_smooth0.5_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=.5)
 save2volbord_bci((0.05-pval_fdr)*np.float32(pval_fdr < 0.05), os.path.join(bfp_path,
-                 'src/stats/results', 'pval_fdr_bord_PTE_smooth1.5_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)
+                 'src/stats/results', 'pval_fdr_bord_PTE_smooth0.5_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=.5)
+
+save2volbord_bci((0.05-pval)*np.float32(pval < 0.05), os.path.join(bfp_path, 'src/stats/results',
+                 'pval_alff_bord_PTE_smooth1_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=1)
+save2volbord_bci((0.05-pval_fdr)*np.float32(pval_fdr < 0.05), os.path.join(bfp_path,
+                 'src/stats/results', 'pval_fdr_bord_PTE_smooth1_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=1)
+
+save2volbord_bci(pval, os.path.join(bfp_path, 'src/stats/results', 'pval2_alff_bord_PTE_smooth0_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
+save2volbord_bci(pval_fdr, os.path.join(bfp_path, 'src/stats/results', 'pval2_fdr_bord_PTE_smooth0_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
+
+save2volbord_bci(pval, os.path.join(bfp_path, 'src/stats/results', 'pval2_alff_bord_PTE_smooth0.5_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=.5)
+save2volbord_bci(pval_fdr, os.path.join(bfp_path, 'src/stats/results', 'pval2_fdr_bord_PTE_smooth0.5_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=.5)
+
+
+save2volbord_bci(pval, os.path.join(bfp_path, 'src/stats/results', 'pval2_alff_bord_PTE_smooth1.5_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)
+save2volbord_bci(pval_fdr, os.path.join(bfp_path, 'src/stats/results', 'pval2_fdr_bord_PTE_smooth1.5_sig_temp.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)

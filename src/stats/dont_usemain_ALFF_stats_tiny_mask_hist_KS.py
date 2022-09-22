@@ -14,6 +14,12 @@ from statsmodels.stats.multitest import fdrcorrection
 from statsmodels.stats.weightstats import ttest_ind
 #from multivariate. import TBM_t2
 from tqdm import tqdm
+from matplotlib import pyplot
+from scipy.stats import ks_2samp
+
+bfp_path='/home/ajoshi/projects/bfp'
+sys.path.append(os.path.join(bfp_path, 'src/stats/'))
+from grayord_utils import save2volbord_bci
 
 #from statsmodels.stats import wilcoxon
 
@@ -144,7 +150,7 @@ def find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
     return epi_data_lesion, nonepi_data_lesion
 
 
-def roiwise_stats(epi_data, nonepi_data):
+def roiwise_stats_KS(epi_data, nonepi_data):
 
     atlas_bfc = '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.bfc.nii.gz'
     ati = ni.load_img(atlas_bfc)
@@ -174,17 +180,14 @@ def roiwise_stats(epi_data, nonepi_data):
     nonepi_roi_lesion_vols[:, len(roi_list)] = np.sum(nonepi_data[:, msk], axis=1)
     '''
 
-    t, p, _ = ttest_ind(epi_roi_lesion_vols, nonepi_roi_lesion_vols)
+    print('Doing KS test')
 
-    F = epi_roi_lesion_vols.var(axis=0) / (nonepi_roi_lesion_vols.var(axis=0) +
-                                           1e-6)
-    pval = 1 - ss.f.cdf(F, 37 - 1, 37 - 1)
+    rval = np.zeros(len(roi_list))
+    pval = np.zeros(len(roi_list))
 
-    roi_list = np.array(roi_list)
-
-    print('significant rois in t-test are')
-    print(roi_list[p < 0.05])
-
+    for i in tqdm(range(len(roi_list))):
+        rval[i], pval[i] = ks_2samp(epi_roi_lesion_vols[:,i], nonepi_roi_lesion_vols[:,i])
+ 
     print('significant rois in f-test are')
     print(roi_list[pval < 0.05])
 
@@ -219,7 +222,7 @@ def roiwise_stats(epi_data, nonepi_data):
     return
 
 
-def pointwise_stats(epi_data, nonepi_data):
+def pointwise_stats_KS(epi_data, nonepi_data):
 
     sm='0mm'
     atlas = '/home/ajoshi/BrainSuite21a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
@@ -262,18 +265,26 @@ def pointwise_stats(epi_data, nonepi_data):
 
     edat1 = epi_data[:, msk].squeeze().T
     edat2 = nonepi_data[:, msk].squeeze().T
-    rval, pval, _ = ttest_ind(edat1.T, edat2.T)
+
+    num_vox = np.sum(msk)
+
+    rval = np.zeros(num_vox)
+    pval = np.zeros(num_vox)
+
+    print('Doing KS test')
+    for i in tqdm(range(num_vox)):
+        rval[i], pval[i] = ks_2samp(edat1[i,:], edat2[i,:])
     #    for nv in tqdm(range(numV), mininterval=30, maxinterval=90):
     #        rval[nv], pval[nv] = sp.stats.ranksums(edat1[nv, :], edat2[nv, :])
 
-    np.savez('lesion_results.npz', rval=rval, pval=pval, msk=msk)
+    np.savez('lesion_results_KS.npz', rval=rval, pval=pval, msk=msk)
 
     pval_vol = pval_vol.flatten()
     pval_vol[msk] = pval
     pval_vol = pval_vol.reshape(ati.shape)
 
     p = ni.new_img_like(ati, pval_vol)
-    p.to_filename('pval_lesion' + sm + '.nii.gz')
+    p.to_filename('pval_KS_lesion' + sm + '.nii.gz')
     '''pval_vol = 0 * pval_vol.flatten()
     pval_vol[msk] = (pval < 0.05)
     pval_vol = pval_vol.reshape(ati.shape)
@@ -290,14 +301,14 @@ def pointwise_stats(epi_data, nonepi_data):
     pval_vol = pval_vol.reshape(ati.shape)
 
     p = ni.new_img_like(ati, pval_vol)
-    p.to_filename('pval_fdr_lesion' + sm + '.nii.gz')
+    p.to_filename('pval_KS_fdr_lesion' + sm + '.nii.gz')
 
     pval_vol = 0 * pval_vol.flatten()
     pval_vol[msk] = (pval_fdr < 0.05)
     pval_vol = pval_vol.reshape(ati.shape)
 
     p = ni.new_img_like(ati, pval_vol)
-    p.to_filename('pval_fdr_lesion.sig.mask' + sm + '.nii.gz')
+    p.to_filename('pval_KS_fdr_lesion.sig.mask' + sm + '.nii.gz')
     ''' Significance masks
     p1 = ni.smooth_img(p, 5)
     p1.to_filename('pval_lesion_sig_mask.smooth5' + sm + '.nii.gz')
@@ -308,21 +319,6 @@ def pointwise_stats(epi_data, nonepi_data):
     p1 = ni.smooth_img(p, 15)
     p1.to_filename('pval_lesion_sig_mask.smooth15' + sm + '.nii.gz')
     '''
-
-    # Do f test
-    F = epi_data.var(axis=0) / (nonepi_data.var(axis=0) + 1e-16)
-
-    F = F * msk
-    fimg = ni.new_img_like(ati, F.reshape(ati.shape))
-    fimg.to_filename('fval_lesion' + sm + '.nii.gz')
-
-    pval = 1 - ss.f.cdf(F, 37 - 1, 37 - 1)
-    fimg = ni.new_img_like(ati, pval.reshape(ati.shape))
-    fimg.to_filename('pval_ftest_lesion' + sm + '.nii.gz')
-
-    _, pval_fdr = fdrcorrection(pvals=pval)
-    fimg = ni.new_img_like(ati, pval_fdr.reshape(ati.shape))
-    fimg.to_filename('pval_fdr_ftest_lesion' + sm + '.nii.gz')
 
     #edat1.img
 
@@ -350,15 +346,34 @@ def main():
     epi_data, epi_subids = readsubs(studydir, epiIds, read_mask=False)
     nonepi_data, nonepi_subids = readsubs(studydir, nonepiIds, read_mask=False)
 
+
+    # read tiny mask
+
+    msk = ni.load_img('stats/right_temporal_tiny.mask.nii.gz')
+
+    msk_ind = msk.get_fdata()>0
+
+    epi = np.mean(epi_data[:,msk_ind], axis=1)
+    nonepi = np.mean(nonepi_data[:,msk_ind], axis=1)
+
+    bins = np.linspace(0,np.max(epi),100)
+
+    pyplot.hist(epi, bins, alpha=0.5, label='pte')
+    pyplot.hist(nonepi, bins, alpha=0.5, label='nonpte')
+    pyplot.legend(loc='upper right')
+    #pyplot.show()
+    pyplot.savefig('hist4tinyroi_right_temporal.png')
+    pyplot.close()
+
     '''find_lesions_OneclassSVM(studydir, epi_subids, epi_data, nonepi_subids,
                              nonepi_data)
                              '''
 
          # Do Pointwise stats
-    #pointwise_stats(epi_data, nonepi_data)
+    #pointwise_stats_KS(epi_data, nonepi_data)
 
     # Do ROIwise stats
-    roiwise_stats(epi_data, nonepi_data)
+    roiwise_stats_KS(epi_data, nonepi_data)
 
     print('done')
 
