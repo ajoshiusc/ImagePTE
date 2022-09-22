@@ -13,10 +13,10 @@ def regparfun(subid):
 
     #    study_dir = '/big_disk/ajoshi/fitbir/tracktbi/MM_Prospective_ImagingMR_314'
     # List of subjects that maryland_rao
-    preproc_dir = '/ImagePTE1/ajoshi/camcan/cc700/mri/pipeline/release004/BIDS_20190411/anat'
+    preproc_dir = '/ImagePTE1/ajoshi/data/camcan/cc700/mri/pipeline/release004/BIDS_20190411/anat'
     subdir = os.path.join(preproc_dir, subid)
 
-    outdir = '/ImagePTE1/ajoshi/CamCan/'
+    outdir = '/ImagePTE1/ajoshi/data/camcan_preproc/'
     outdir = os.path.join(outdir, subid)
 
     if not os.path.isdir(outdir):
@@ -64,7 +64,7 @@ def main():
     '''Main function call'''
 
     # Set subject dirs
-    sub_dir = '/ImagePTE1/ajoshi/camcan/cc700/mri/pipeline/release004/BIDS_20190411/anat'
+    sub_dir = '/ImagePTE1/ajoshi/data/camcan/cc700/mri/pipeline/release004/BIDS_20190411/anat'
 
     sub_list = [os.path.basename(x) for x in glob.glob(sub_dir+'/s*')]
 
@@ -80,8 +80,8 @@ def main():
     pool.map(regparfun, sub_list)
     print('++++SUBMITTED++++++')
     
-    #pool.close()
-    #pool.join()
+    pool.close()
+    pool.join()
 
 
 if __name__ == "__main__":
