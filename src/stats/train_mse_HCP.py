@@ -13,9 +13,9 @@ import argparse
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--npz_name', type=str, default='hcp_1200_roi22.npz')
-parser.add_argument('--nscales', type=int, default=20)
+parser.add_argument('--nscales', type=int, default=50)
 parser.add_argument('--m', type=int, default=1)
-parser.add_argument('--use_rcmse', type=bool, default=True)
+parser.add_argument('--use_rcmse', type=bool, default=False)
 parser.add_argument('--use_all', type=bool, default=False)
 parser.add_argument('--use_pca', type=bool, default=False)
 parser.add_argument('--nfolds', type=int, default=5)
@@ -27,24 +27,32 @@ def extract_mse_features(time_series):
     n_signal = time_series.shape[1]
     nsub = time_series.shape[0]
     RCMSE = np.zeros((nsub, n_signal, args.nscales))
-    for subno in range(nsub):
-        for j in range(0, n_signal):
-            signal = time_series[subno, j, :]
+    for j in range(0, n_signal):
+        signal = time_series[:, j, :]
 
-            if args.use_rcmse == False:
-                RCMSE_temp = etp.multiscale_entropy(signal, args.m, tolerance=None, maxscale=args.nscales)
-            else:
-                RCMSE_temp = msen.rcmse(signal, args.m, 0.15 * np.std(signal), args.nscales)
+        if args.use_rcmse == False:
+            RCMSE_temp = etp.multiscale_entropy(signal, args.m, tolerance=None, maxscale=args.nscales)
+        else:
+            RCMSE_temp = msen.rcmse(signal, args.m, 0.15 * np.std(signal), args.nscales)
 
-            RCMSE_temp = RCMSE_temp[np.isfinite(RCMSE_temp)]
-            RCMSE[subno, j, :] = RCMSE_temp #/ np.linalg.norm(RCMSE_temp)
-            # for k in range(0, len(RCMSE_temp)):
-            #     RCMSE[subno, k] += RCMSE_temp[k
-            # print(mse, RCMSE_temp)
-            # pdb.set_trace()
+        max_len = -1
+        for k in range(nsub):
+            finite_mse = RCMSE_temp[k, np.isfinite(RCMSE_temp[k])]
+            this_len = finite_mse.shape[0]
+            RCMSE[k, j, :this_len] = finite_mse
+            if this_len > max_len:
+                max_len = this_len
 
-        # mean of the n_signal RCMSE
-    return np.mean(RCMSE, axis=1), np.std(RCMSE, axis=1), RCMSE
+        # pdb.set_trace()
+        #/ np.linalg.norm(RCMSE_temp)
+        # for k in range(0, len(RCMSE_temp)):
+        #     RCMSE[subno, k] += RCMSE_temp[k
+        # print(mse, RCMSE_temp)
+    # pdb.set_trace()
+    # mean of the n_signal RCMSE
+    # trim the zero values after calculating mean.
+    return np.mean(RCMSE, axis=1)[:, :max_len], np.std(RCMSE, axis=1), RCMSE
+
 
 f = np.load(root_path + args.npz_name)
 time_series = f['time_series']
@@ -188,7 +196,6 @@ for i in range(iteration_num):
     auc_sum [i]= np.mean(auc)
     # print('AUC after CV for i=%dgamma=%s is %g' %
     #     (i, best_gamma, np.mean(auc)))
-
 
 print('Average AUC=%g , Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)))
 

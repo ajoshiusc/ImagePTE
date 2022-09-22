@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+from time import time
 
 import numpy as np
 from math import factorial
-
+import pdb
 
 def _embed(x, order=3, delay=1):
     """Time-delay embedding.
@@ -64,9 +65,10 @@ def util_granulate_time_series(time_series, scale):
     Returns:
         Vector of coarse-grained time series with given scale factor
     """
-    n = len(time_series)
+    n = time_series.shape[-1]
+    nsub = time_series.shape[0]
     b = int(np.fix(n / scale))
-    temp = np.reshape(time_series[0:b * scale], (b, scale))
+    temp = np.reshape(time_series[:, 0:b * scale], (nsub, b, scale))
     cts = np.mean(temp, axis=1)
     return cts
 
@@ -104,8 +106,9 @@ def shannon_entropy(time_series):
 def sample_entropy(time_series, sample_length, tolerance=None):
     """Calculates the sample entropy of degree m of a time_series.
     This method uses chebychev norm.
-    It is quite fast for random data, but can be slower is there is
+    It is quite fast for random data, but can be slower if there is
     structure in the input time series.
+
     Args:
         time_series: numpy array of time series
         sample_length: length of longest template vector
@@ -116,37 +119,48 @@ def sample_entropy(time_series, sample_length, tolerance=None):
             where #templates of length 0" = n*(n - 1) / 2, by definition
     Note:
         The parameter 'sample_length' is equal to m + 1 in Ref[1].
+        It actually only deals with the case when m=1
     References:
         [1] http://en.wikipedia.org/wiki/Sample_Entropy
         [2] http://physionet.incor.usp.br/physiotools/sampen/
         [3] Madalena Costa, Ary Goldberger, CK Peng. Multiscale entropy analysis
             of biological signals
+
     """
     # The code below follows the sample length convention of Ref [1] so:
     M = sample_length - 1
 
     time_series = np.array(time_series)
     if tolerance is None:
-        tolerance = 0.1 * np.std(time_series)
+        tolerance = 0.15 * np.std(time_series, axis=1)
 
-    n = len(time_series)
+    n = time_series.shape[-1]
 
     # Ntemp is a vector that holds the number of matches. N[k] holds matches templates of length k
-    Ntemp = np.zeros(M + 2)
+    Ntemp = np.zeros((time_series.shape[0], M + 2))
     # Templates of length 0 matches by definition:
-    Ntemp[0] = n * (n - 1) / 2
-
-    for i in range(n - M - 1):
-        template = time_series[i:(i + M + 1)]  # We have 'M+1' elements in the template
-        rem_time_series = time_series[i + 1:]
-
-        search_list = np.arange(len(rem_time_series) - M, dtype=np.int32)
-        for length in range(1, len(template) + 1):
-            hit_list = np.abs(rem_time_series[search_list] - template[length - 1]) < tolerance
-            Ntemp[length] += np.sum(hit_list)
-            search_list = search_list[hit_list] + 1
-
-    sampen = -np.log(Ntemp[1:] / Ntemp[:-1])
+    Ntemp[:, 0] = n * (n - 1) / 2
+    Nm = np.zeros(time_series.shape[0])
+    Nm1 = np.zeros(time_series.shape[0])
+    for i in range(n - M - 2):
+        template = time_series[:, i:(i + M + 1)]  # We have 'M+1' elements in the template
+        template_m1 = time_series[:, i:(i + M + 2)]
+        for j in range(i + 1, n - M - 2):
+            rem_time_series = time_series[:, j:(j + M + 1)]
+            rem_time_series_m1 = time_series[:, j:(j + M + 2)]
+            Nm += np.linalg.norm(abs(template-rem_time_series), axis=1) < tolerance
+            Nm1 += np.linalg.norm(abs(template_m1-rem_time_series_m1), axis=1) < tolerance
+        # search_list = np.array([np.arange(rem_time_series.shape[-1] - M, dtype=np.int32)]*time_series.shape[0])
+        # for length in range(1, template.shape[-1] + 1):
+        #     hit_list = np.abs(rem_time_series[search_list].squeeze() - template[:, length - 1]) < tolerance
+            # pdb.set_trace()
+        #     Ntemp[:, length] += np.sum(hit_list)
+            
+        #     search_list = search_list[hit_list] + 1 #?
+    
+    # sampen = -np.log(Ntemp[:, 1:] / Ntemp[:, :-1])
+    sampen = np.array(-np.log(Nm1 / Nm))
+    # pdb.set_trace()
     return sampen
 
 
@@ -163,18 +177,18 @@ def multiscale_entropy(time_series, sample_length, tolerance=None, maxscale=None
         [1] http://en.pudn.com/downloads149/sourcecode/math/detail646216_en.html
     """
 
-    if tolerance is None:
-        # We need to fix the tolerance at this level
-        # If it remains 'None' it will be changed in call to sample_entropy()
-        tolerance = 0.15 * np.std(time_series)
+    # if tolerance is None:
+    #     # We need to fix the tolerance at this level
+    #     # If it remains 'None' it will be changed in call to sample_entropy()
+    #     tolerance = 0.15 * np.std(time_series)
     if maxscale is None:
-        maxscale = len(time_series)
+        maxscale = time_series.shape[-1]
 
-    mse = np.zeros(maxscale)
+    mse = np.zeros((time_series.shape[0], maxscale))
 
     for i in range(maxscale):
         temp = util_granulate_time_series(time_series, i + 1)
-        mse[i] = sample_entropy(temp, sample_length, tolerance)[-1]
+        mse[:, i] = sample_entropy(temp, sample_length, tolerance)
     return mse
 
 
