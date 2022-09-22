@@ -41,7 +41,7 @@ def regparfun(subid):
     os.system(
         'flirt -in ' + t1bse + ' -out ' + t1mni +
         ' -ref ${FSLDIR}/data/standard/MNI152_T1_1mm_brain.nii.gz -omat ' +
-        t1mnimat + ' -dof 6 -cost normmi')
+        t1mnimat + ' -dof 6 -cost corratio -searchrx -30 30 -searchry -30 30 -searchrz -30 30')
 
     print(subid)
 
@@ -73,15 +73,15 @@ def main():
 
     pool = Pool(processes=4)
 
-    for j in range(10):
-        regparfun(sub_list[j])
+    #for j in range(10):
+    #    regparfun(sub_list[j])
 
-    '''print('++++++++++++++')
+    print('++++++++++++++')
     pool.map(regparfun, sub_list)
     print('++++SUBMITTED++++++')
-    '''
-    # pool.close()
-    # pool.join()
+    
+    #pool.close()
+    #pool.join()
 
 
 if __name__ == "__main__":
