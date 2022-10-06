@@ -98,7 +98,7 @@ support = np.zeros(n_iter)
 
 my_metric = 'roc_auc'
 # best_com = 120
-best_com = 50#
+best_com = 100#
 best_C= .1
 #y = np.random.permutation(y)
 
@@ -151,28 +151,29 @@ print('AUC on testing data:gamma=%s, auc=%g' % (mygamma, np.mean(auc)))
 ## Following part of the code do a grid search to find best number of PCA component
 ## the metric for comparing the performance is AUC
 ####################################################
-best_com=0
-max_AUC=0
-max_component=min((X.shape[0]-1),X.shape[1])
-for nf in range(1, max_component):
-    pipe = Pipeline([('pca_apply', PCA(n_components=nf, whiten=True)),
-                        ('svc', SVC(kernel='rbf', C=best_C,gamma=best_gamma, tol=1e-9))])
-    kfold = StratifiedKFold(n_splits=args.num_cv, shuffle=True,random_state=1211)
-    auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
+# best_com=0
+# max_AUC=0
+# max_component=min((X.shape[0]-1),X.shape[1])
+# for nf in range(1, max_component):
+#     pipe = Pipeline([('pca_apply', PCA(n_components=nf, whiten=True)),
+#                         ('svc', SVC(kernel='rbf', C=best_C,gamma=best_gamma, tol=1e-9))])
+#     kfold = StratifiedKFold(n_splits=args.num_cv, shuffle=True,random_state=1211)
+#     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
 
-    # print('AUC after CV for nf=%dgamma=%s is %g' %
-    #         (nf, best_gamma, np.mean(auc)))
-    if np.mean(auc)>= max_AUC:
-        max_AUC=np.mean(auc)
-        best_com=nf
+#     # print('AUC after CV for nf=%dgamma=%s is %g' %
+#     #         (nf, best_gamma, np.mean(auc)))
+#     if np.mean(auc)>= max_AUC:
+#         max_AUC=np.mean(auc)
+#         best_com=nf
 
-print('n_components=%d is' %(best_com))
+# print('n_components=%d is' %(best_com))
 
 # #######################selecting gamma################
 # ## Random permutation of pairs of training subject for 1000 iterations
 # ####################################################
-iteration_num=100
+iteration_num=10
 res_sum = np.zeros((iteration_num, len(args.metric)))
+best_com=100
 for i in range(iteration_num):
 # y = np.random.permutation(y)
     pipe = Pipeline([('pca_apply', PCA(n_components=best_com, whiten=True)),

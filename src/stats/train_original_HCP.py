@@ -134,7 +134,6 @@ for i in range(iteration_num):
     #print('AUC after CV for i=%dgamma=%s is %g' %
         #(i, best_gamma, np.mean(auc)))
 
-
 print('Average AUC=%g , Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)))
 
 

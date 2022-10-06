@@ -92,7 +92,8 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
     
     # nsub = epi_data.shape[2]
     #==============================================================
-    nsub = min(epi_data.shape[2], nonepi_data.shape[2])
+    # nsub = min(epi_data.shape[2], nonepi_data.shape[2])
+    nsub = epi_data.shape[2]
     epiIds = epiIds[:nsub]
     nonepiIds = nonepiIds[:nsub]
     #===============================================================
@@ -108,25 +109,25 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
                             label_ids=label_ids)
 
 
-    for subno in range(nsub): # num of subjects
-        conn_mat[subno, :, :], time_series = get_connectivity(epi_data[:, :, subno],
-                                                 labels=gord_labels,
-                                                 label_ids=label_ids)
+    # for subno in range(nsub): # num of subjects
+    #     conn_mat[subno, :, :], time_series = get_connectivity(epi_data[:, :, subno],
+    #                                              labels=gord_labels,
+    #                                              label_ids=label_ids)
 
-        #G = nx.convert_matrix.from_numpy_array(np.abs(conn_mat[subno, :, :]))
-        #cent = nx.eigenvector_centrality(G, weight='weight')
-        #cent_mat[subno, :] = np.array(list(cent.items()))[:,1]
-        # print(ref_sub.shape, time_series.shape)
-        input_feat[subno, :, :] = np.transpose(brainSync(ref_sub.T, time_series.T)[0])
+    #     #G = nx.convert_matrix.from_numpy_array(np.abs(conn_mat[subno, :, :]))
+    #     #cent = nx.eigenvector_centrality(G, weight='weight')
+    #     #cent_mat[subno, :] = np.array(list(cent.items()))[:,1]
+    #     # print(ref_sub.shape, time_series.shape)
+    #     input_feat[subno, :, :] = np.transpose(brainSync(ref_sub.T, time_series.T)[0])
 
-    np.savez('PTE_graphs_gcn_BCI-DNI.npz',
-             conn_mat=conn_mat,
-             features=input_feat, # 36x16x171
-             label_ids=label_ids,
-             cent_mat=cent_mat)
+    # np.savez('PTE_graphs_gcn_BCI-DNI.npz',
+    #          conn_mat=conn_mat,
+    #          features=input_feat, # 36x16x171
+    #          label_ids=label_ids,
+    #          cent_mat=cent_mat)
 ##============================================================================
     print("non_epi")
-    # nsub = nonepi_data.shape[2]
+    nsub = nonepi_data.shape[2]
 
     conn_mat = np.zeros((nsub, len(label_ids), len(label_ids)))
     cent_mat = np.zeros((nsub, len(label_ids)))
@@ -142,7 +143,7 @@ def load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, 
        # cent_mat[subno, :] = np.array(list(cent.items()))[:,1]
         input_feat[subno, :, :] = np.transpose(brainSync(ref_sub.T, time_series.T)[0])
 
-    np.savez('NONPTE_graphs_gcn_BCI-DNI.npz',
+    np.savez('NONPTE_graphs_gcn_Lobes_all.npz',
              conn_mat=conn_mat, # n_subjects*16*16
              features=input_feat, # n_subjects * 16 x 171
              label_ids=label_ids,
@@ -157,12 +158,12 @@ if __name__ == "__main__":
 
     # epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy.txt'
     test_epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_test.txt'
-    # nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
+    nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs.txt'
     test_nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_test.txt'
     epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
-    nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
+    # nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
     # atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCBrain_grayordinate_labels.mat'
-    # atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
-    atlas_labels = '../BCI-DNI_brain_grayordinate_labels.mat'
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
+    # atlas_labels = '../BCI-DNI_brain_grayordinate_labels.mat'
     load_all_data(studydir, epi_txt, test_epi_txt, nonepi_txt, test_nonepi_txt, atlas_labels)
     input('press any key')

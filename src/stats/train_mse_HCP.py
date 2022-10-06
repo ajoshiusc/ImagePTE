@@ -13,7 +13,7 @@ import argparse
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--npz_name', type=str, default='hcp_1200_roi22.npz')
-parser.add_argument('--nscales', type=int, default=50)
+parser.add_argument('--nscales', type=int, default=20)
 parser.add_argument('--m', type=int, default=1)
 parser.add_argument('--use_rcmse', type=bool, default=False)
 parser.add_argument('--use_all', type=bool, default=False)
@@ -84,6 +84,7 @@ if args.use_all:
         (epi_lesion_vols, .3*mse_feat), axis=1)
 
 X = epi_measures
+print(X.shape)
 y = f['labels']
 
 # Permute the labels to check if AUC becomes 0.5. This check is to make sure that we are not overfitting
@@ -97,7 +98,7 @@ support = np.zeros(n_iter)
 
 
 my_metric = 'roc_auc'
-best_com = 50#
+best_com = X.shape[-1]#
 best_C= .1
 #y = np.random.permutation(y)
 
@@ -145,7 +146,7 @@ if args.use_pca:
     auc = cross_val_score(clf, X, y, cv=kfold, scoring=my_metric)
     print('AUC on testing data:gamma=%s, auc=%g' % (mygamma, np.mean(auc)))
     '''
-    #######################selecting gamma################
+    #######################selecting PCA component################
     ## Following part of the code do a grid search to find best number of PCA component
     ## the metric for comparing the performance is AUC
     ####################################################
@@ -186,7 +187,8 @@ if args.use_pca:
     print('Average AUC with PCA=%g , Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)))
 
 iteration_num = 100
-best_gamma = 0.075
+best_gamma = 0.01
+best_C = 0.1
 auc_sum = np.zeros((iteration_num))
 for i in range(iteration_num):
 # y = np.random.permutation(y)
