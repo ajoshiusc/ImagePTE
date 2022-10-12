@@ -22,10 +22,10 @@ parser.add_argument('--epochs', type=int, default=16, help='number of epochs dur
 parser.add_argument('--atlas', type=str, default="Brain", help='name of atlas to use.')
 parser.add_argument('--model', type=str, default="BoostNE", help='Method used to generate node embeddings')
 parser.add_argument('--use_all', type=bool, default=False, help='Whether to use all three features or not.')
-parser.add_argument('--npz_name', type=str, default='_ts_Brain')
-parser.add_argument('--metric', type=list, default=['roc_auc'], help='name of evaluation metric: f1, f1_micro, f1_weighted, balanced_accuracy')
+parser.add_argument('--npz_name', type=str, default='hcp_1200_roi22')
+parser.add_argument('--metric', type=list, default=['roc_auc', 'balanced_accuracy'], help='name of evaluation metric: f1, f1_micro, f1_weighted, balanced_accuracy')
 
-parser.add_argument('--num_cv', type=int, default=36, help='number of epochs during optimization in word2vec function')
+parser.add_argument('--num_cv', type=int, default=5, help='number of epochs during optimization in word2vec function')
 parser.add_argument('--rmv_reg', type=bool, default=False, help='Whether to remove some regions or not.')
 args = parser.parse_args()
 
@@ -56,29 +56,10 @@ def deepwalk(conn):
     return embedding
 
 
-def calc_mean_lesion():
-    atlas_labels = '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCBrain_grayordinate_labels.mat'
-    atlas = spio.loadmat(atlas_labels)
-    gord_labels = atlas['labels'].squeeze()
-    label_ids = np.unique(gord_labels)  # unique label ids
-    # remove WM label from connectivity analysis
-    label_ids = np.setdiff1d(label_ids, (2000, 0))
+def get_features():
 
-    num_voxels = []
-    for i, tid in enumerate(label_ids):
-        idx = gord_labels == tid
-        num_voxels.append(np.sum(idx))
-    return np.array(num_voxels)
-
-
-def get_features(fname='ADHD'):
-    # f = np.load(args.root_path + fname + '_fmridiff_USCBrain.npz')
-    # sub_ids = f['sub_ids']
-    # label_ids = f['label_ids']
-    # brainsync = f['fdiff_sub'].T
-
-    f = np.load(args.npz_root_path + fname + args.npz_name + '.npz')
-    conn_mat = f['conn_mat']
+    f = np.load(args.npz_root_path + args.npz_name + '.npz')
+    conn_mat = abs(f['conn_mat'])
     print(conn_mat.shape)
     
     # n_rois = conn_mat.shape[0]
@@ -101,14 +82,9 @@ def get_features(fname='ADHD'):
     else:
         measures = deepwalk_feat.reshape((nsub, -1))
 
-    return measures
+    return measures, f['labels']
 
-epi_measures = get_features(fname='ADHD')
-nonepi_measures = get_features(fname='TDC')
-
-X = np.vstack((epi_measures, nonepi_measures))
-y = np.hstack(
-    (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
+X, y = get_features()
 
 # Permute the labels to check if AUC becomes 0.5. This check is to make sure that we are not overfitting
 
@@ -121,48 +97,47 @@ support = np.zeros(n_iter)
 
 
 my_metric = 'roc_auc'
-best_com = 120
-# best gamma=0.075 is
-# best C=1 is
-# best_C= .1
+# best_com = 120
+best_com = 100#
+best_C= .1
 #y = np.random.permutation(y)
 
 #######################selecting gamma################
 ## Following part of the code do a grid search to find best value of gamma using a one fold cross validation
 ## the metric for comparing the performance is AUC
 ####################################################
-# max_AUC=0
-# gamma_range=[1, 0.001, 0.05, 0.075, .1, .13, .15, .17, 0.2, 0.3, .5, 1, 5, 10, 100]
-# for current_gamma in gamma_range:
-#     pipe = Pipeline([('pca_apply', PCA(n_components=best_com, whiten=True)),
-#                     ('svc', SVC(kernel='rbf',C=best_C, gamma=current_gamma, tol=1e-9))])
-#     my_metric = 'roc_auc'
-#     #auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
-#     kfold = StratifiedKFold(n_splits=args.num_cv, shuffle=True,random_state=1211)
-#     # print(X.shape)
-#     # pdb.set_trace()
-#     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
-#     #print('AUC on testing data:gamma=%g, auc=%g' % (current_gamma, np.mean(auc)))
-#     if np.mean(auc)>= max_AUC:
-#         max_AUC=np.mean(auc)
-#         best_gamma=current_gamma
+max_AUC=0
+gamma_range=[1, 0.001, 0.05, 0.075, .1, .13, .15, .17, 0.2, 0.3, .5, 1, 5, 10, 100]
+for current_gamma in gamma_range:
+    pipe = Pipeline([('pca_apply', PCA(n_components=best_com, whiten=True)),
+                    ('svc', SVC(kernel='rbf',C=best_C, gamma=current_gamma, tol=1e-9))])
+    my_metric = 'roc_auc'
+    #auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
+    kfold = StratifiedKFold(n_splits=args.num_cv, shuffle=True,random_state=1211)
+    # print(X.shape)
+    # pdb.set_trace()
+    auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
+    #print('AUC on testing data:gamma=%g, auc=%g' % (current_gamma, np.mean(auc)))
+    if np.mean(auc)>= max_AUC:
+        max_AUC=np.mean(auc)
+        best_gamma=current_gamma
 
-# print('best gamma=%g is' %(best_gamma))
+print('best gamma=%g is' %(best_gamma))
 
-# C_range=[0.0001, 0.001, 0.01, .1, .3, .6, 0.7,0.9, 1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 100]  
-# for current_C in C_range:
-#     pipe = Pipeline([('pca_apply', PCA(n_components=best_com, whiten=True)),
-#                     ('svc', SVC(kernel='rbf',C=current_C, gamma=best_gamma, tol=1e-9))])
-#     my_metric = 'roc_auc'
-#     #auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
-#     kfold = StratifiedKFold(n_splits=args.num_cv, shuffle=True,random_state=1211)
-#     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
-#     #print('AUC on testing data:gamma=%g, auc=%g' % (current_gamma, np.mean(auc)))
-#     if np.mean(auc)>= max_AUC:
-#         max_AUC=np.mean(auc)
-#         best_C=current_C
+C_range=[0.0001, 0.001, 0.01, .1, .3, .6, 0.7,0.9, 1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 100]  
+for current_C in C_range:
+    pipe = Pipeline([('pca_apply', PCA(n_components=best_com, whiten=True)),
+                    ('svc', SVC(kernel='rbf',C=current_C, gamma=best_gamma, tol=1e-9))])
+    my_metric = 'roc_auc'
+    #auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
+    kfold = StratifiedKFold(n_splits=args.num_cv, shuffle=True,random_state=1211)
+    auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
+    #print('AUC on testing data:gamma=%g, auc=%g' % (current_gamma, np.mean(auc)))
+    if np.mean(auc)>= max_AUC:
+        max_AUC=np.mean(auc)
+        best_C=current_C
 
-# print('best C=%g is' %(best_C))
+print('best C=%g is' %(best_C))
 
 '''
 for mygamma in ['auto', 'scale']:
@@ -193,14 +168,12 @@ print('AUC on testing data:gamma=%s, auc=%g' % (mygamma, np.mean(auc)))
 
 # print('n_components=%d is' %(best_com))
 
-best_com=120
-best_gamma=0.075
-best_C=1
 # #######################selecting gamma################
 # ## Random permutation of pairs of training subject for 1000 iterations
 # ####################################################
-iteration_num=100
+iteration_num=10
 res_sum = np.zeros((iteration_num, len(args.metric)))
+best_com=100
 for i in range(iteration_num):
 # y = np.random.permutation(y)
     pipe = Pipeline([('pca_apply', PCA(n_components=best_com, whiten=True)),
