@@ -23,7 +23,7 @@ import sys
 
 # Input data variables
 code_folder = os.getcwd()
-root_folder = '/home/azureuser/projects/BrainGNN/data/'
+root_folder = '/home/wenhuicu/ImagePTE/pte_gcn/BrainGNN/data/'
 data_folder = os.path.join(root_folder, 'ABIDE_pcp/cpac/filt_noglobal/')
 if not os.path.exists(data_folder):
     os.makedirs(data_folder)
@@ -45,7 +45,7 @@ def main():
     parser.add_argument('--pipeline', default='cpac', type=str,
                         help='Pipeline to preprocess ABIDE data. Available options are ccs, cpac, dparsf and niak.'
                              ' default: cpac.')
-    parser.add_argument('--atlas', default='cc200',
+    parser.add_argument('--atlas', default='aal',
                         help='Brain parcellation atlas. Options: ho, cc200 and cc400, default: cc200.')
     parser.add_argument('--download', default=True, type=str2bool,
                         help='Dowload data or just compute functional connectivity. default: True')
