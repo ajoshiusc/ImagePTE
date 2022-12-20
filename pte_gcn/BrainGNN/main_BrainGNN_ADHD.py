@@ -27,7 +27,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--epoch', type=int, default=0, help='starting epoch')
 parser.add_argument('--n_epochs', type=int, default=13, help='number of epochs of training')
 parser.add_argument('--batchSize', type=int, default=30, help='size of the batches')
-parser.add_argument('--dataroot', type=str, default='../../../data_ADHD/noaug/', help='root directory of the dataset')
+parser.add_argument('--dataroot', type=str, default='/home/wenhuicu/data_ADHD/noaug/', help='root directory of the dataset')
 parser.add_argument('--fold', type=int, default=0, help='training which fold')
 parser.add_argument('--lr', type = float, default=0.01, help='learning rate')
 parser.add_argument('--stepsize', type=int, default=30, help='scheduler step size')
@@ -180,8 +180,8 @@ writer = SummaryWriter(os.path.join('./log', str(fold)))
 # writer = SummaryWriter(os.path.join('./log/{}_fold{}_consis{}'.format(opt.net, opt.fold, opt.lamb5)))
 
 ############# Define Dataloader -- need costumize#####################
-file_pos = "/home/wenhuicu/ImagePTE/pte_gcn/PRGNN/ADHD_parPearson_Lobes.npz"
-file_neg = "/home/wenhuicu/ImagePTE/pte_gcn/PRGNN/TDC_parPearson_Lobes.npz"
+file_pos = "/home/wenhuicu/data_npz/ADHD_mmp22.npz"
+file_neg = "/home/wenhuicu/data_npz/TDC_mmp22.npz"
 dataset = ABIDEDataset(path, name)
 dataset.data.y = dataset.data.y.squeeze()
 dataset.data.x[dataset.data.x == float('inf')] = 0
