@@ -267,11 +267,11 @@ def main():
    # for cval in [0.0001, 0.001, 0.01, .1, .3, .6, .9, 1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 100]:
         #    for mygamma in [1, 0.001, 0.05, 0.075, .1, .15, 0.2, 0.3, .5, 1, 5, 10, 100]:
     clf = SVC(kernel='linear', C=cval, tol=1e-9)
-    clf.fit(X,y)
+    clf.fit(normalize(X),y)
 
     features_names = ['301', '300', '401', '400', '101', '100', '201', '200', '501', '500', '900']
 
-    f_importances(clf.coef_.squeeze(), features_names)
+    f_importances((clf.coef_).squeeze(), features_names)
 
     my_metric = 'roc_auc'
     auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
