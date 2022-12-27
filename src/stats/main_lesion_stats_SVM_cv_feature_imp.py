@@ -20,23 +20,47 @@ import matplotlib.pyplot as plt
 import sys
 from sklearn.preprocessing import normalize
 from sklearn.model_selection import cross_val_score, LeaveOneOut
-from connectivity.dfsio import readdfs
+from connectivity.dfsio import readdfs, writedfs
+from surfproc import patch_color_attrib
 
 sm = '.smooth3mm'
 
 
-def f_importances_atlas(coef, roi_ids, atlasbasename):
+def f_importances_atlas(coef, roi_ids, atlasbasename, outbase):
 
     v = ni.load_img(atlasbasename + '.label.nii.gz')
+    vlab = v.get_fdata()
     left = readdfs(atlasbasename + '.left.mid.cortex.dfs')
+    right = readdfs(atlasbasename + '.right.mid.cortex.dfs')
+    left.label = np.mod(left.label,100)
+    right.label = np.mod(right.label,100)
+    vlab = np.mod(vlab,100)
+
+    left.attributes = np.zeros(left.vertices.shape[0])
+    right.attributes = np.zeros(right.vertices.shape[0])
+
+    vimp = np.zeros(vlab.shape)
+    for i, r in enumerate(roi_ids):
+        vimp[vlab==r] = coef[i]
+        left.attributes[left.label==r] = coef[i]
+        right.attributes[right.label==r] = coef[i]
+
+    vi = ni.new_img_like(vlab, np.float32(vimp))
+    vi.to_filename(outbase+'feat_lobes.imp.nii.gz')
+
+    patch_color_attrib(left)
+
+    writedfs(outbase+'.left.lobes.imp.dfs', left)
+    writedfs(outbase+'.right.lobes.imp.dfs', right)
 
 
-def f_importances(coef, names):
+def f_importances(coef, names, outbase):
     imp = coef
     imp, names = zip(*sorted(zip(imp, names)))
     plt.barh(range(len(names)), imp, align='center')
     plt.yticks(range(len(names)), names)
-    plt.show()
+    #plt.show()
+    plt.savefig(outbase+'feat_imp.png')
 
 
 def check_imgs_exist(studydir, sub_ids):
