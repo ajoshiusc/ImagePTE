@@ -32,9 +32,9 @@ def f_importances_atlas(coef, roi_ids, atlasbasename, outbase):
     vlab = v.get_fdata()
     left = readdfs(atlasbasename + '.left.mid.cortex.dfs')
     right = readdfs(atlasbasename + '.right.mid.cortex.dfs')
-    left.label = np.mod(left.label, 100)
-    right.label = np.mod(right.label, 100)
-    vlab = np.mod(vlab, 100)
+    left.labels = np.mod(left.labels, 1000)
+    right.labels = np.mod(right.labels, 1000)
+    vlab = np.mod(vlab, 1000)
 
     left.attributes = np.zeros(left.vertices.shape[0])
     right.attributes = np.zeros(right.vertices.shape[0])
@@ -42,10 +42,10 @@ def f_importances_atlas(coef, roi_ids, atlasbasename, outbase):
     vimp = np.zeros(vlab.shape)
     for i, r in enumerate(roi_ids):
         vimp[vlab == r] = coef[i]
-        left.attributes[left.label == r] = coef[i]
-        right.attributes[right.label == r] = coef[i]
+        left.attributes[left.labels == r] = coef[i]
+        right.attributes[right.labels == r] = coef[i]
 
-    vi = ni.new_img_like(vlab, np.float32(vimp))
+    vi = ni.new_img_like(v, np.float32(vimp))
     vi.to_filename(outbase+'feat_lobes.imp.nii.gz')
 
     patch_color_attrib(left)
