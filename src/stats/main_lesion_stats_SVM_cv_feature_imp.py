@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 import sys
 from sklearn.preprocessing import normalize
 from sklearn.model_selection import cross_val_score, LeaveOneOut
-from connectivity.dfsio import readdfs, writedfs
+from dfsio import readdfs, writedfs
 from surfproc import patch_color_attrib
 
 sm = '.smooth3mm'
