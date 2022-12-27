@@ -32,18 +32,18 @@ def f_importances_atlas(coef, roi_ids, atlasbasename, outbase):
     vlab = v.get_fdata()
     left = readdfs(atlasbasename + '.left.mid.cortex.dfs')
     right = readdfs(atlasbasename + '.right.mid.cortex.dfs')
-    left.label = np.mod(left.label,100)
-    right.label = np.mod(right.label,100)
-    vlab = np.mod(vlab,100)
+    left.label = np.mod(left.label, 100)
+    right.label = np.mod(right.label, 100)
+    vlab = np.mod(vlab, 100)
 
     left.attributes = np.zeros(left.vertices.shape[0])
     right.attributes = np.zeros(right.vertices.shape[0])
 
     vimp = np.zeros(vlab.shape)
     for i, r in enumerate(roi_ids):
-        vimp[vlab==r] = coef[i]
-        left.attributes[left.label==r] = coef[i]
-        right.attributes[right.label==r] = coef[i]
+        vimp[vlab == r] = coef[i]
+        left.attributes[left.label == r] = coef[i]
+        right.attributes[right.label == r] = coef[i]
 
     vi = ni.new_img_like(vlab, np.float32(vimp))
     vi.to_filename(outbase+'feat_lobes.imp.nii.gz')
@@ -59,7 +59,7 @@ def f_importances(coef, names, outbase):
     imp, names = zip(*sorted(zip(imp, names)))
     plt.barh(range(len(names)), imp, align='center')
     plt.yticks(range(len(names)), names)
-    #plt.show()
+    # plt.show()
     plt.savefig(outbase+'feat_imp.png')
 
 
@@ -263,6 +263,7 @@ def main():
 
     epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
     nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
+    outbase = 'lobes_pred'
 
     with open(epi_txt) as f:
         epiIds = f.readlines()
@@ -305,9 +306,12 @@ def main():
         '900'
     ]
 
-    f_importances((clf.coef_).squeeze(), features_names)
+    roi_ids = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
 
-    f_importances_atlas((clf.coef_).squeeze(), features_names)
+    f_importances((clf.coef_).squeeze(), features_names, outbase=outbase)
+
+    f_importances_atlas((clf.coef_).squeeze(), roi_ids=roi_ids,
+                        atlasbasename='/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain', outbase=outbase)
 
     my_metric = 'roc_auc'
     auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
