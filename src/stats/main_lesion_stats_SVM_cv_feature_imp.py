@@ -45,6 +45,7 @@ def f_importances_atlas(coef, roi_ids, atlasbasename, outbase):
         left.attributes[left.labels == r] = coef[i]
         right.attributes[right.labels == r] = coef[i]
 
+    
     vi = ni.new_img_like(v, np.float32(vimp))
     vi.to_filename(outbase+'feat_lobes.imp.nii.gz')
 
