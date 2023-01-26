@@ -5,7 +5,7 @@ chardet==3.0.4
 cloudpickle==0.5.5
 configobj==5.0.6
 cycler==0.10.0
-dask==0.19.1
+dask==2021.10.0
 decorator==4.3.0
 deepdish==0.3.6
 envisage==4.9.0
