@@ -41,7 +41,7 @@ progress==1.4
 protobuf==3.10.0
 pycparser==2.19
 pyface==6.1.2
-Pygments==2.5.2
+Pygments==2.7.4
 pyparsing==2.2.0
 PyQt5==5.14.1
 PyQt5-sip==12.7.1
