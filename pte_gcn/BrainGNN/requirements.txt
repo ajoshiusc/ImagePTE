@@ -5,7 +5,7 @@ anaconda-client==1.7.2
 appdirs==1.4.4
 argh==0.26.2
 # argon2-cffi @ file:///tmp/build/80754af9/argon2-cffi_1613037097816/work
-arrow==0.13.1
+arrow==0.15.1
 ase==3.21.1
 # asn1crypto @ file:///tmp/build/80754af9/asn1crypto_1596577642040/work
 # astroid @ file:///tmp/build/80754af9/astroid_1613500854201/work
