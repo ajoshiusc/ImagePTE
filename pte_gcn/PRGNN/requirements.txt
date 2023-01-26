@@ -14,7 +14,7 @@ googledrivedownloader==0.4
 h5py==2.8.0
 idna==2.8
 isodate==0.6.0
-joblib==0.14.1
+joblib==1.2.0
 jsonpatch==1.24
 jsonpointer==2.0
 kiwisolver==1.0.1
