@@ -42,7 +42,7 @@ def str2bool(v):
 def main():
     parser = argparse.ArgumentParser(description='Classification of the ABIDE dataset using a Ridge classifier. '
                                                  'MIDA is used to minimize the distribution mismatch between ABIDE sites')
-    parser.add_argument('--atlas', default='cc200',
+    parser.add_argument('--atlas', default='aal',
                         help='Atlas for network construction (node definition) options: ho, cc200, cc400, default: cc200.')
     parser.add_argument('--seed', default=123, type=int, help='Seed for random initialisation. default: 1234.')
     parser.add_argument('--nclass', default=2, type=int, help='Number of classes. default:2')
