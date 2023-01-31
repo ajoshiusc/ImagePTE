@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def load_features(root_path):
+def load_features(root_path, opt=0):
 
     f = np.load(root_path + 'PTE_fmridiff_USCLobes.npz')
     conn_pte = f['fdiff_sub']
@@ -25,6 +25,9 @@ def load_features(root_path):
     epi_lesion_vols = np.array([a[k] for k in sub_ids])
     epi_measures = np.concatenate(
         (.3*epi_lesion_vols, epi_connectivity, .3*epi_brainsync), axis=1)
+        
+    if opt == 0:
+        epi_measures = epi_connectivity
 
     f = np.load(root_path + 'NONPTE_fmridiff_USCLobes.npz')
     conn_pte = f['fdiff_sub']
@@ -47,7 +50,8 @@ def load_features(root_path):
     nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
     nonepi_measures = np.concatenate(
         (.3*nonepi_lesion_vols, nonepi_connectivity, .3*nonepi_brainsync), axis=1)
-
+    if opt == 0:
+        nonepi_measures = nonepi_connectivity
 
     X = np.vstack((epi_measures, nonepi_measures))
     y = np.hstack(

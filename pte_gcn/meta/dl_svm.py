@@ -10,10 +10,12 @@ class Model(torch.nn.Module):
             nn.Linear(input_dim, 128),
             nn.ReLU(),
             nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Linear(64, 32),
             nn.ReLU()
         )
 
-        self.top_linear =  nn.Linear(64, num_classes)
+        self.top_linear =  nn.Linear(32, num_classes)
 
     def forward(self, features):
         features = self.projector(features)
