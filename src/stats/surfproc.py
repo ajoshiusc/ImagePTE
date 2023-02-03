@@ -90,7 +90,7 @@ def patch_color_labels(s, freq=[1], cmap='Paired', shuffle=True):
     return s
 
 
-def patch_color_attrib(s, values=[], cmap='jet', clim=[0]):
+def patch_color_attrib(s, values=[], cmap='jet', clim=[0], zerocolor=[.5,.5,.5]):
     ''' color by freq of labels '''
     if len(values) == 0:
         values = s.attributes
@@ -106,6 +106,7 @@ def patch_color_attrib(s, values=[], cmap='jet', clim=[0]):
     scalar_map = cmx.ScalarMappable(norm=color_norm, cmap=cmap)
     s.vColor = scalar_map.to_rgba(values)
     s.vColor = s.vColor[:, :3]
+    s.vColor[values<1e-6,:]=zerocolor
     return s
 
 
