@@ -26,9 +26,11 @@ view_patch_vtk(right, outfile=outbase+'.right.uscbrain.imp_v1.png', show=0)
 view_patch_vtk(right, azimuth=-90, elevation=0, roll=90,
                outfile=outbase+'.right.uscbrain.imp_v2.png', show=0)
 
-plot_stat_map(outbase+'feat_uscbrain.imp.nii.gz',
+stat_img = ni.load_img(outbase+'feat_uscbrain.imp.nii.gz')
+stat_img = ni.new_img_like(stat_img, np.maximum(stat_img.get_fdata(),0))
+
+plot_stat_map(stat_img,
               '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/USCBrain.nii.gz',
-              threshold=0,
               draw_cross=False,
               cut_coords=cut_coords,
               display_mode="ortho",
