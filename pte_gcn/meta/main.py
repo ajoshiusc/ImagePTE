@@ -15,7 +15,7 @@ parser.add_argument('--lr', type=float, default=0.01,
                     help='Initial learning rate.')
 parser.add_argument('--weight_decay', type=float, default=1.0,
                     help='Weight decay (L2 loss on parameters).')
-parser.add_argument('--penalty', type=float, default=0.5,
+parser.add_argument('--penalty', type=float, default=3,
                     help='Initial learning rate.')
 parser.add_argument('--epochs', type=int, default=30,
                     help='Number of epochs to train.')
@@ -59,15 +59,16 @@ def test(X, y, model):
     X_te = torch.from_numpy(X).float().to(device)
     y_te = torch.from_numpy(y).long().to(device)
     outputs = model(X_te)
-    eval(outputs, y_te)
-
+    auc, acc = eval(outputs, y_te)
+    return auc, acc
 
 def cross_val():
     root_path = '/home/wenhuicu/ImagePTE/'
 
     features, labels = load_features(root_path, opt=0)
     # pdb.set_trace()
-    kfold = StratifiedKFold(n_splits=36, shuffle=True, random_state=1211)
+    kfold = StratifiedKFold(n_splits=5, shuffle=True)
+    accs, aucs = [], []
     for train_ind, test_ind in kfold.split(features, labels):
         idx = np.random.permutation(len(train_ind))
         model = Model(features.shape[-1], num_classes=2).to(device)
@@ -77,8 +78,11 @@ def cross_val():
         # pdb.set_trace()
         
         train(fe_train, labels_train, model, optimizer)
-        test(features[test_ind], labels[test_ind], model)
-
-        break
+        test_auc, test_acc = test(features[test_ind], labels[test_ind], model)
+        aucs.append(test_auc)
+        accs.append(test_acc)
+        # break
+    print(np.mean(np.array(aucs)), np.mean(np.array(accs)))
+    pdb.set_trace()
 
 cross_val()

@@ -1,4 +1,5 @@
 import numpy as np
+from mixup import mixup_same_cls
 from sklearn.svm import SVC
 from sklearn.model_selection import cross_val_score
 from sklearn.decomposition import PCA
@@ -32,6 +33,10 @@ epi_lesion_vols = np.array([a[k] for k in sub_ids])
 epi_measures = np.concatenate(
     (.3*epi_lesion_vols, epi_connectivity, .3*epi_brainsync), axis=1)
 
+## add mixup augmentation to features
+alpha=0.5
+mixed_epi = mixup_same_cls(epi_measures, alpha=alpha)
+
 
 f = np.load(root_path + 'NONPTE_fmridiff_USCLobes.npz')
 conn_pte = f['fdiff_sub']
@@ -56,11 +61,13 @@ nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
 nonepi_measures = np.concatenate(
     (.3*nonepi_lesion_vols, nonepi_connectivity, .3*nonepi_brainsync), axis=1)
 
+mixed_nonepi = mixup_same_cls(nonepi_measures, alpha=alpha)
 
-X = np.vstack((epi_measures, nonepi_measures))
+X = np.vstack((epi_measures, mixed_epi, nonepi_measures, mixed_nonepi))
+
 pdb.set_trace()
 y = np.hstack(
-    (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
+    (np.ones(epi_measures.shape[0]*2), np.zeros(nonepi_measures.shape[0]*2)))
 
 # Permute the labels to check if AUC becomes 0.5. This check is to make sure that we are not overfitting
 
