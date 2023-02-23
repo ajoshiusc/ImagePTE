@@ -37,7 +37,7 @@ stat_img = ni.new_img_like(stat_img, np.maximum(stat_img.get_fdata(),0))
 plot_stat_map(stat_img,
               '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/USCBrain.nii.gz',
               draw_cross=False,
-              threshold=.2,
+              threshold=.5,
               cut_coords=cut_coords,
               display_mode="ortho",
               output_file=outbase+'decode.png',
