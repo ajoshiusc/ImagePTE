@@ -8,15 +8,15 @@ from nilearn.plotting import plot_stat_map, show, plot_anat
 
 cut_coords = (100/2, 212-212/2, 104)
 
-outbase = 'brainnetome'
+outbase = 'usclobes_decode_lesion_conn'
 
 left = readdfs(outbase+'.left.decode.dfs')
-left_uscbrain = readdfs('/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/USCBrain.left.mid.cortex.dfs')
-left.vertices = left_uscbrain.vertices
+left_USCLobes = readdfs('/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.left.mid.cortex.dfs')
+left.vertices = left_USCLobes.vertices
 
 right = readdfs(outbase+'.right.decode.dfs')
-right_uscbrain = readdfs('/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/USCBrain.right.mid.cortex.dfs')
-right.vertices = right_uscbrain.vertices
+right_USCLobes = readdfs('/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.right.mid.cortex.dfs')
+right.vertices = right_USCLobes.vertices
 
 
 left.attributes = np.maximum(left.attributes, 0)
@@ -35,7 +35,7 @@ stat_img = ni.load_img(outbase+'.decode.nii.gz')
 stat_img = ni.new_img_like(stat_img, np.maximum(stat_img.get_fdata(),0))
 
 plot_stat_map(stat_img,
-              '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/USCBrain.nii.gz',
+              '/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain.nii.gz',
               draw_cross=False,
               threshold=.05,
               cut_coords=cut_coords,

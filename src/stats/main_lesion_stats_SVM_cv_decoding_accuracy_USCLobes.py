@@ -223,7 +223,7 @@ def pointwise_stats(epi_data, nonepi_data):
 
 
 def decode_accuracy_atlas(coef, roi_ids, atlasbasename, outbase):
-
+    coef = 2.0*(coef - .5)
     v = ni.load_img(atlasbasename + '.label.nii.gz')
     vlab = v.get_fdata()
     left = readdfs(atlasbasename + '.left.mid.cortex.dfs')
@@ -302,7 +302,7 @@ def main():
     
     atlas='/ImagePTE1/ajoshi/code_farm/svreg/USCLobes/BCI-DNI_brain'
 
-    outbase = 'usclobes_decode'
+    outbase = 'usclobes'
 
     decode_accuracy_atlas(roi_auc, roi_ids=roi_list, atlasbasename=atlas, outbase=outbase)
 

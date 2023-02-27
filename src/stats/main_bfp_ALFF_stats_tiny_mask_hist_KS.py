@@ -92,10 +92,6 @@ for i, fname in enumerate(sub_fname_grp2):
     data2[:, i] = spio.loadmat(fname)['dtseries'].squeeze()
 
 
-
-
-
-
 pval = np.zeros(num_bord)
 
 # Ranksum test does not show any significance

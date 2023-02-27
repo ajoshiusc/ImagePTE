@@ -8,7 +8,7 @@ from nilearn.plotting import plot_stat_map, show, plot_anat
 
 cut_coords = (100/2, 212-212/2, 104)
 
-outbase = 'brainnetome'
+outbase = 'usclobes'
 
 left = readdfs(outbase+'.left.decode.dfs')
 left_uscbrain = readdfs('/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/USCBrain.left.mid.cortex.dfs')
@@ -37,7 +37,7 @@ stat_img = ni.new_img_like(stat_img, np.maximum(stat_img.get_fdata(),0))
 plot_stat_map(stat_img,
               '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/USCBrain.nii.gz',
               draw_cross=False,
-              threshold=.05,
+              threshold=.01,
               cut_coords=cut_coords,
               display_mode="ortho",
               output_file=outbase+'decode.png',

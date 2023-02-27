@@ -67,7 +67,7 @@ def readsubs(studydir, sub_ids):
 
 def roiwise_stats(epi_data, nonepi_data):
 
-    atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCBrainMulti/Brainnetome/BCI-Brainnetome.label.nii.gz'
+    atlas_labels = '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/USCBrain.label.nii.gz'
     at_labels = np.asanyarray(ni.load_img(atlas_labels).dataobj)
     # roi_list = [
     #    3, 100, 101, 184, 185, 200, 201, 300, 301, 400, 401, 500, 501, 800,
@@ -237,6 +237,7 @@ def decode_accuracy_atlas(coef, roi_ids, atlasbasename, outbase):
     right.attributes = np.zeros(right.vertices.shape[0])
 
     vimp = np.zeros(vlab.shape)
+    roi_ids = np.setdiff1d(roi_ids,0)
     for i, r in enumerate(roi_ids):
         vimp[vlab == r] = coef[i]
         left.attributes[left.labels == r] = coef[i]
@@ -301,9 +302,9 @@ def main():
 
     print('done')
     
-    atlas = '/ImagePTE1/ajoshi/code_farm/svreg/USCBrainMulti/Brainnetome/BCI-Brainnetome'
+    atlas = '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/USCBrain'
 
-    outbase = 'brainnetome'
+    outbase = 'uscbrain'
 
     decode_accuracy_atlas(roi_auc, roi_ids=roi_list, atlasbasename=atlas, outbase=outbase)
 

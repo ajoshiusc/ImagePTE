@@ -5,7 +5,7 @@ from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import StratifiedKFold
 
-f = np.load('./connectivity/PTE_graphs.npz')
+f = np.load('./PTE_graphs_USCLobes.npz')
 conn_pte = f['conn_mat']
 lab_ids = f['label_ids']
 gordlab = f['labels']
@@ -22,7 +22,7 @@ epi_measures = np.concatenate(
     (epi_connectivity, epi_lesion_vols), axis=1)
 
 
-f = np.load('./connectivity/NONPTE_graphs.npz')
+f = np.load('./NONPTE_graphs_USCLobes.npz')
 conn_nonpte = f['conn_mat']
 lab_ids = f['label_ids']
 gordlab = f['labels']
