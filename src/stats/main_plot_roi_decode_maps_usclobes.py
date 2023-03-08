@@ -20,13 +20,13 @@ right.vertices = right_USCLobes.vertices
 
 
 left.attributes = np.maximum(left.attributes, 0)
-patch_color_attrib(left, cmap='hot', zerocolor=[.5, .5, .5])
+patch_color_attrib(left, cmap='hot', zerocolor=[.5, .5, .5], clim=[0,.4])
 view_patch_vtk(left, outfile=outbase+'.left.decode1.png', show=0)
 view_patch_vtk(left, azimuth=-90, elevation=0, roll=90,
                outfile=outbase+'.left.decode2.png', show=0)
 
 right.attributes = np.maximum(right.attributes, 0)
-patch_color_attrib(right, cmap='hot', zerocolor=[.5, .5, .5])
+patch_color_attrib(right, cmap='hot', zerocolor=[.5, .5, .5], clim=[0,.4])
 view_patch_vtk(right, outfile=outbase+'.right.decode1.png', show=0)
 view_patch_vtk(right, azimuth=-90, elevation=0, roll=90,
                outfile=outbase+'.right.decode2.png', show=0)
@@ -41,4 +41,4 @@ plot_stat_map(stat_img,
               cut_coords=cut_coords,
               display_mode="ortho",
               output_file=outbase+'decode.png',
-              annotate=True)
+              annotate=True,vmax=.4)
