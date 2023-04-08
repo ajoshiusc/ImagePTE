@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class Model(torch.nn.Module):
-    def __init__(self, input_dim, num_classes=2):
+    def __init__(self, input_dim, num_classes=1):
         super().__init__()
         self.projector = torch.nn.Sequential(
             nn.Linear(input_dim, 128),
