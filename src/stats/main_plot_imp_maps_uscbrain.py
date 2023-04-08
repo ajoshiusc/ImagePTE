@@ -26,11 +26,16 @@ view_patch_vtk(right, outfile=outbase+'.right.uscbrain.imp_v1.png', show=0)
 view_patch_vtk(right, azimuth=-90, elevation=0, roll=90,
                outfile=outbase+'.right.uscbrain.imp_v2.png', show=0)
 
-plot_stat_map(outbase+'feat_uscbrain.imp.nii.gz',
-              '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/USCBrain.nii.gz',
-              threshold=0,
+import matplotlib.pyplot as plt
+plot_stat_map(stat_map_img=outbase+'feat_uscbrain.imp.nii.gz',
+              bg_img='/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/USCBrain.nii.gz',
+              threshold=1e-6,
               draw_cross=False,
               cut_coords=cut_coords,
               display_mode="ortho",
               output_file=outbase+'feat_uscbrain.imp.png',
+              symmetric_cbar=False,
               annotate=True)
+
+
+plt.show()
