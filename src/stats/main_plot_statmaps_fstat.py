@@ -2,7 +2,9 @@ from nilearn.plotting import plot_stat_map, show
 import nilearn.image as nl
 from matplotlib import cm
 stat_img = 'pval_fdr_ftest_TBMsmooth3mm.nii.gz'
-stat_img = 'pval_fdr_ftest_lesion0mm.nii.gz'
+pstat_img = 'pval_fdr_ftest_lesion0mm.nii.gz'
+stat_img = 'fval_lesion0mm.nii.gz'
+
 #stat_img = '/ImagePTE1/ajoshi/code_farm/bfp/src/stats/results/pval_fdr_bord_PTE_smooth0.5_2000.nii.gz'
 #stat_img = '/home/ajoshi/projects/bfp/src/stats/results/pval2_fdr_bord_PTE_smooth0.5_sig_temp.nii.gz'
 #stat_img = 'pval_KS_lesion1mm.nii.gz'
@@ -13,6 +15,9 @@ outfile4 = stat_img.replace('.nii.gz','_4.png') #'/home/ajoshi/coding_ground/Ima
 
 img = 0.05 - nl.load_img(stat_img).get_fdata()
 img[img < 0] = 0
+
+msk = nl.load_img(pstat_img).get_fdata() < 0.05
+img = nl.load_img(stat_img).get_fdata() * msk
 
 #img = nl.load_img(stat_img).get_fdata()
 #img[img < 1e-3] = 0
@@ -28,7 +33,7 @@ plot_stat_map(stat_img,
               cut_coords=(40*0.8, 188*0.546875, 240*0.546875),
               display_mode="ortho",
               output_file=outfile1,
-              annotate=True,dim=-0.5)
+              annotate=True,dim=-0.5,vmax=5)
 
 plot_stat_map(stat_img,
               bk_img,
@@ -37,7 +42,7 @@ plot_stat_map(stat_img,
               cut_coords=(35*0.8, 144*0.546875, 210*0.546875),
               display_mode="ortho",
               output_file=outfile2,
-              annotate=True,dim=-0.5)
+              annotate=True,dim=-0.5,vmax=5)
 
 plot_stat_map(stat_img,
               bk_img,
@@ -46,7 +51,7 @@ plot_stat_map(stat_img,
               cut_coords=(30*0.8, 100*0.546875, 180*0.546875),
               display_mode="ortho",
               output_file=outfile3,
-              annotate=True,dim=-0.5)
+              annotate=True,dim=-0.5,vmax=5)
 
 plot_stat_map(stat_img,
               bk_img,
@@ -55,5 +60,5 @@ plot_stat_map(stat_img,
               cut_coords=(25*0.8, 66*0.546875, 150*0.546875),
               display_mode="ortho",
               output_file=outfile4,
-              annotate=True)
+              annotate=True,dim=-0.5,vmax=5)
 
