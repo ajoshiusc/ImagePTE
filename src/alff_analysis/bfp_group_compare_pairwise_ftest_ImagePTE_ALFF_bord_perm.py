@@ -60,7 +60,7 @@ def permutation_Ftest(x, y, nperm=1000):
 
     _, pval_perm_fdr = fdrcorrection(pval_perm)
 
-    return pval_max, pval_perm_fdr, pval_perm
+    return pval_max, pval_perm_fdr, pval_perm, F_orig
 
 
 
@@ -132,7 +132,7 @@ pval[sp.isnan(pval)] = .5
 _, pval_fdr = fdrcorrection(pval)
 
 
-pval_max, pval_fdr, pval = permutation_Ftest(data2.T, data1.T, nperm=1000)
+pval_max, pval_fdr, pval, Fval = permutation_Ftest(data2.T, data1.T, nperm=1000)
 
 
 save2volbord_bci((0.05-pval)*np.float32(pval < 0.05), os.path.join(bfp_path, 'src/stats/results',
@@ -154,14 +154,21 @@ save2volbord_bci(pval, os.path.join(bfp_path, 'src/stats/results',
                  'pval2_alff_bord_PTE_smooth0_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
 save2volbord_bci(pval_fdr, os.path.join(bfp_path, 'src/stats/results',
                  'pval2_fdr_bord_PTE_smooth0_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
+save2volbord_bci(Fval, os.path.join(bfp_path, 'src/stats/results',
+                 'fval2_bord_PTE_smooth0_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
+
 
 save2volbord_bci(pval, os.path.join(bfp_path, 'src/stats/results',
                  'pval2_alff_bord_PTE_smooth0.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=.5)
 save2volbord_bci(pval_fdr, os.path.join(bfp_path, 'src/stats/results',
                  'pval2_fdr_bord_PTE_smooth0.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=.5)
+save2volbord_bci(Fval, os.path.join(bfp_path, 'src/stats/results',
+                 'fval2_bord_PTE_smooth0.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=.5)
 
 
 save2volbord_bci(pval, os.path.join(bfp_path, 'src/stats/results',
                  'pval2_alff_bord_PTE_smooth1.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)
 save2volbord_bci(pval_fdr, os.path.join(bfp_path, 'src/stats/results',
                  'pval2_fdr_bord_PTE_smooth1.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)
+save2volbord_bci(Fval, os.path.join(bfp_path, 'src/stats/results',
+                 'fval2_bord_PTE_smooth1.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)
