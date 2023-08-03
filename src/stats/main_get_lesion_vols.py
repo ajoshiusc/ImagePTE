@@ -15,7 +15,7 @@ from scipy.stats import shapiro
 from sklearn.model_selection import StratifiedKFold
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import plot_roc_curve, roc_curve, auc, roc_auc_score
+#from sklearn.metrics import plot_roc_curve, roc_curve, auc, roc_auc_score
 import matplotlib.pyplot as plt
 import sys
 from sklearn.preprocessing import normalize
