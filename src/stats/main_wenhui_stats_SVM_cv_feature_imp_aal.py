@@ -15,16 +15,56 @@ from scipy.stats import shapiro
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import RocCurveDisplay as plot_roc_curve
-from sklearn.metrics import roc_curve, auc, roc_auc_score
+#from sklearn.metrics import plot_roc_curve, roc_curve, auc, roc_auc_score
 import matplotlib.pyplot as plt
 import sys
 from sklearn.preprocessing import normalize
 from sklearn.model_selection import cross_val_score, LeaveOneOut
 from dfsio import readdfs, writedfs
 from surfproc import patch_color_attrib
+from scipy.io import loadmat
+
 
 sm = '.smooth3mm'
+
+
+def f_importances_atlas(coef, roi_ids, atlasbasename, outbase):
+
+    v = ni.load_img(atlasbasename + '.label.nii.gz')
+    vlab = v.get_fdata()
+    left = readdfs(atlasbasename + '.left.mid.cortex.dfs')
+    right = readdfs(atlasbasename + '.right.mid.cortex.dfs')
+    #left.labels = np.mod(left.labels, 1000)
+    #right.labels = np.mod(right.labels, 1000)
+    #vlab = np.mod(vlab, 1000)
+
+    left.attributes = np.zeros(left.vertices.shape[0])
+    right.attributes = np.zeros(right.vertices.shape[0])
+
+    vimp = np.zeros(vlab.shape)
+    for i, r in enumerate(roi_ids):
+        vimp[vlab == r] = coef[i]
+        left.attributes[left.labels == r] = coef[i]
+        right.attributes[right.labels == r] = coef[i]
+
+    
+    vi = ni.new_img_like(v, np.float32(vimp))
+    vi.to_filename(outbase+'feat_uscbrain.imp.nii.gz')
+
+    patch_color_attrib(left)
+    patch_color_attrib(right)
+
+    writedfs(outbase+'.left.uscbrain.imp.dfs', left)
+    writedfs(outbase+'.right.uscbrain.imp.dfs', right)
+
+
+def f_importances(coef, names, outbase):
+    imp = coef
+    imp, names = zip(*sorted(zip(imp, names)))
+    plt.barh(range(len(names)), imp, align='center')
+    plt.yticks(range(len(names)), names)
+    # plt.show()
+    plt.savefig(outbase+'feat_imp.png')
 
 
 def check_imgs_exist(studydir, sub_ids):
@@ -112,12 +152,12 @@ def roiwise_stats(epi_data, nonepi_data):
     w, s = shapiro(epi_roi_lesion_vols)
 
     print(w, s)
-    return epi_roi_lesion_vols, nonepi_roi_lesion_vols, roi_list
+    return epi_roi_lesion_vols, nonepi_roi_lesion_vols
 
 
 def pointwise_stats(epi_data, nonepi_data):
 
-    atlas = '/home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz'
+    atlas = '/home/ajoshi/BrainSuite19a/svreg/USCBrain_atlas/USCBrain.bfc.nii.gz'
     ati = ni.load_img(atlas)
 
     # Save mean over the epilepsy subjects
@@ -221,42 +261,9 @@ def pointwise_stats(epi_data, nonepi_data):
     fimg.to_filename('pval_fdr_ftest_lesion' + sm + '.nii.gz')
 
 
-
-
-def decode_accuracy_atlas(coef, roi_ids, atlasbasename, outbase):
-
-    coef = 2.0*(coef - .5)
-    v = ni.load_img(atlasbasename + '.label.nii.gz')
-    vlab = v.get_fdata()
-    left = readdfs(atlasbasename + '.left.mid.cortex.dfs')
-    right = readdfs(atlasbasename + '.right.mid.cortex.dfs')
-    left.labels = np.mod(left.labels, 1000)
-    right.labels = np.mod(right.labels, 1000)
-    vlab = np.mod(vlab, 1000)
-
-    left.attributes = np.zeros(left.vertices.shape[0])
-    right.attributes = np.zeros(right.vertices.shape[0])
-
-    vimp = np.zeros(vlab.shape)
-    roi_ids = np.setdiff1d(roi_ids,0)
-    for i, r in enumerate(roi_ids):
-        vimp[vlab == r] = coef[i]
-        left.attributes[left.labels == r] = coef[i]
-        right.attributes[right.labels == r] = coef[i]
-
-    
-    vi = ni.new_img_like(v, np.float32(vimp))
-    vi.to_filename(outbase+'.decode.nii.gz')
-
-    patch_color_attrib(left)
-
-    writedfs(outbase+'.left.decode.dfs', left)
-    writedfs(outbase+'.right.decode.dfs', right)
-
-
 def main():
 
-    studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
+    """     studydir = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1'
 
     epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
     nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
@@ -278,36 +285,62 @@ def main():
     #    pointwise_stats(epi_data, nonepi_data)
 
     # Do ROIwise stats
-    epi_measures, nonepi_measures, roi_list = roiwise_stats(epi_data, nonepi_data)
+    epi_measures, nonepi_measures = roiwise_stats(epi_data, nonepi_data)
+
 
     X = np.vstack((epi_measures, nonepi_measures))
     y = np.hstack(
-        (np.ones(epi_measures.shape[0]), np.zeros(nonepi_measures.shape[0])))
+        (np.ones(epi_measures.shape[0]-1), np.zeros(nonepi_measures.shape[0]-1)))
 
-    X /= 3000
+    """    
+    outbase = 'uscbrain_pred_wenhui'
+
+    X = np.load('/deneb_disk/wenhui_features/pte_zeroshot_features_from_abide.npy')
+
+    X=np.mean(X,axis=2)
+    y = np.hstack(
+        (np.ones(36), np.zeros(36)))
+    #X.reshape((X.shape[0], -1))
+
+    #X /= 3000
     #y = np.random.permutation(y)
     #p = np.random.permutation(len(y))
     #y = y[p]
     #X = X[p, :]
 
-    roi_auc = np.zeros(X.shape[1])
+    cval = 4
 
-    for f in range(X.shape[1]):
+    # for cval in [0.0001, 0.001, 0.01, .1, .3, .6, .9, 1, 1.5, 2, 3, 4, 5, 6, 7, 9, 10, 100]:
+    #    for mygamma in [1, 0.001, 0.05, 0.075, .1, .15, 0.2, 0.3, .5, 1, 5, 10, 100]:
+    clf = SVC(kernel='linear', C=cval, tol=1e-9)
+    clf.fit(normalize(X), y)
 
-        #    for mygamma in [1, 0.001, 0.05, 0.075, .1, .15, 0.2, 0.3, .5, 1, 5, 10, 100]:
-        clf = SVC(kernel='linear', tol=1e-9)
-        my_metric = 'roc_auc'
-        auc = cross_val_score(clf, X[:,[f]], y, cv=37, scoring=my_metric)
 
-        roi_auc[f] = np.mean(auc)
+    roi_ids = np.array([2001, 2002, 2101, 2102, 2111, 2112, 2201, 2202, 2211, 2212, 2301,
+       2302, 2311, 2312, 2321, 2322, 2331, 2332, 2401, 2402, 2501, 2502,
+       2601, 2602, 2611, 2612, 2701, 2702, 3001, 3002, 4001, 4002, 4011,
+       4012, 4021, 4022, 4101, 4102, 4111, 4112, 4201, 4202, 5001, 5002,
+       5011, 5012, 5021, 5022, 5101, 5102, 5201, 5202, 5301, 5302, 5401,
+       5402, 6001, 6002, 6101, 6102, 6201, 6202, 6211, 6212, 6221, 6222,
+       6301, 6302, 6401, 6402, 7001, 7002, 7011, 7012, 7102, 8101, 8102,
+       8111, 8112, 8121, 8122, 8201, 8202, 8211, 8212, 8301, 8302, 9001,
+       9002, 9011, 9012, 9022, 9031, 9032, 9041, 9042, 9052, 9061, 9062,
+       9120], dtype=np.int16)
+    features_names = roi_ids.astype(str)
 
-    print('done')
+    f_importances((clf.coef_).squeeze(), features_names, outbase=outbase)
+
+    f_importances_atlas((clf.coef_).squeeze(), roi_ids=roi_ids,
+                        atlasbasename='/ImagePTE1/ajoshi/code_farm/svreg/USCBrainMulti/AAL/BCI-AAL', outbase=outbase)
+
+    my_metric = 'roc_auc'
+    auc = cross_val_score(clf, X, y, cv=36, scoring=my_metric)
+
+    print('AUC on testing data:', cval, np.mean(auc), np.std(auc))
+    #print('AUC on training data:', cval, np.mean(auc_t), np.std(auc_t))    
     
-    atlas = '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/USCBrain'
-
-    outbase = 'uscbrain'
-
-    decode_accuracy_atlas(roi_auc, roi_ids=roi_list, atlasbasename=atlas, outbase=outbase)
+    print('done')
+    #input("Press Enter to continue...")
 
 
 if __name__ == "__main__":

@@ -15,7 +15,7 @@ from scipy.stats import shapiro
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import plot_roc_curve, roc_curve, auc, roc_auc_score
+#from sklearn.metrics import plot_roc_curve, roc_curve, auc, roc_auc_score
 import matplotlib.pyplot as plt
 import sys
 from sklearn.preprocessing import normalize
@@ -50,6 +50,7 @@ def f_importances_atlas(coef, roi_ids, atlasbasename, outbase):
     vi.to_filename(outbase+'feat_uscbrain.imp.nii.gz')
 
     patch_color_attrib(left)
+    patch_color_attrib(right)
 
     writedfs(outbase+'.left.uscbrain.imp.dfs', left)
     writedfs(outbase+'.right.uscbrain.imp.dfs', right)
