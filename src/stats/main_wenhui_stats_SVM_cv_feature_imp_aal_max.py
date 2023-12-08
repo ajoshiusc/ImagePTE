@@ -28,12 +28,17 @@ from scipy.io import loadmat
 sm = '.smooth3mm'
 
 
-def f_importances_atlas(coef, roi_ids, atlasbasename, outbase):
+def f_importances_atlas(coef, roi_ids, atlasbasename, outbase, uscbrain):
 
     v = ni.load_img(atlasbasename + '.label.nii.gz')
     vlab = v.get_fdata()
     left = readdfs(atlasbasename + '.left.mid.cortex.dfs')
     right = readdfs(atlasbasename + '.right.mid.cortex.dfs')
+
+    left_v = readdfs(uscbrain + '.left.mid.cortex.dfs')
+    right_v = readdfs(uscbrain + '.right.mid.cortex.dfs')
+    left.vertices = left_v.vertices
+    right.vertices = right_v.vertices
     #left.labels = np.mod(left.labels, 1000)
     #right.labels = np.mod(right.labels, 1000)
     #vlab = np.mod(vlab, 1000)
@@ -346,7 +351,7 @@ def main():
     f_importances((clf.coef_).squeeze(), features_names, outbase=outbase)
 
     f_importances_atlas(np.maximum((clf.coef_).squeeze(),0), roi_ids=roi_ids,
-                        atlasbasename='/ImagePTE1/ajoshi/code_farm/svreg/USCBrainMulti/AAL/BCI-AAL', outbase=outbase)
+                        atlasbasename='/ImagePTE1/ajoshi/code_farm/svreg/USCBrainMulti/AAL/BCI-AAL', outbase=outbase, uscbrain='/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/USCBrain')
 
 
     #print('AUC on training data:', cval, np.mean(auc_t), np.std(auc_t))    
