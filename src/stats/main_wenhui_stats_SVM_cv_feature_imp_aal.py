@@ -295,7 +295,7 @@ def main():
     """    
     outbase = 'uscbrain_pred_wenhui'
 
-    X = np.load('/deneb_disk/wenhui_features/pte_zeroshot_features_from_abide.npy')
+    X = np.load('/deneb_disk/wenhui_features/pte_zeroshot_features_from_adhd.npy')
 
     X=np.mean(X,axis=2)
     y = np.hstack(

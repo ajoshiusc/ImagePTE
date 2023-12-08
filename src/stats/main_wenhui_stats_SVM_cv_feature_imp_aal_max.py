@@ -295,7 +295,7 @@ def main():
     """    
     outbase = 'uscbrain_pred_wenhui'
 
-    X_full = np.load('/deneb_disk/wenhui_features/pte_zeroshot_features_from_abide.npy')
+    X_full = np.load('/deneb_disk/wenhui_features/pte_zeroshot_features_from_adhd.npy')
 
     #X=np.mean(X,axis=2)
     y = np.hstack(
@@ -345,7 +345,7 @@ def main():
 
     f_importances((clf.coef_).squeeze(), features_names, outbase=outbase)
 
-    f_importances_atlas((clf.coef_).squeeze(), roi_ids=roi_ids,
+    f_importances_atlas(np.maximum((clf.coef_).squeeze(),0), roi_ids=roi_ids,
                         atlasbasename='/ImagePTE1/ajoshi/code_farm/svreg/USCBrainMulti/AAL/BCI-AAL', outbase=outbase)
 
 
