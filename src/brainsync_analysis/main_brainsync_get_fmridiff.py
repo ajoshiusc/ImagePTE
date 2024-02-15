@@ -17,7 +17,7 @@ nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_
 nonepi_train_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_training.txt'
 
 
-atlas_labels = '/home/ajoshi/projects/bfp/supp_data/USCBrain_grayordinate_labels.mat'
+atlas_labels = '/home/ajoshi/Projects/bfp/supp_data/USCLobes_grayordinate_labels.mat'
 atlas = spio.loadmat(atlas_labels)
 
 gord_labels = atlas['labels'].squeeze()
@@ -116,7 +116,7 @@ for subno in range(nsub_nonepi_train):
         fdiff_sub[i, subno] = data
 
 
-np.savez('NONPTE_TRAINING_fmridiff_USCBrain.npz',
+np.savez('NONPTE_TRAINING_fmridiff_USCLobes.npz',
          fdiff_sub=fdiff_sub,
          label_ids=label_ids,
          labels=gord_labels,
@@ -142,7 +142,7 @@ for subno in range(nsub_epi):
         fdiff_sub[i, subno] = data
         fdiff_sub_z[i, subno] = (data - fdiff_mean[i])/fdiff_std[i]
 
-np.savez('PTE_fmridiff_USCBrain.npz',
+np.savez('PTE_fmridiff_USCLobes.npz',
          fdiff_sub=fdiff_sub,
          fdiff_sub_z=fdiff_sub_z,
          label_ids=label_ids,
@@ -166,7 +166,7 @@ for subno in range(nsub_nonepi):
         fdiff_sub_z[i, subno] = (data - fdiff_mean[i])/fdiff_std[i]
 
 
-np.savez('NONPTE_fmridiff_USCBrain.npz',
+np.savez('NONPTE_fmridiff_USCLobes.npz',
          fdiff_sub=fdiff_sub,
          fdiff_sub_z=fdiff_sub_z,
          label_ids=label_ids,
