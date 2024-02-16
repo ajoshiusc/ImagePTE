@@ -5,6 +5,10 @@ from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import StratifiedKFold
 
+from tqdm import tqdm
+
+np.random.seed(12511)
+
 f = np.load('PTE_fmridiff_USCLobes.npz')
 conn_pte = f['fdiff_sub']
 lab_ids = f['label_ids']
@@ -142,34 +146,116 @@ print('n_components=%d is' %(best_com))
 #######################selecting gamma################
 ## Random permutation of pairs of training subject for 1000 iterations
 ####################################################
-iteration_num=100
+iteration_num=1000
+#iteration_num_null=100
+
 auc_sum = np.zeros((iteration_num))
-for i in range(iteration_num):
-# y = np.random.permutation(y)
+auc_sum_null = np.zeros((iteration_num))
+
+for i in tqdm(range(iteration_num)):
+    y_null = np.random.permutation(y)
     pipe = Pipeline([('pca_apply', PCA(n_components=best_com, whiten=True)),
                     ('svc', SVC(kernel='rbf',C=best_C, gamma=best_gamma, tol=1e-9))])
     kfold = StratifiedKFold(n_splits=36, shuffle=True)
     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
     auc_sum [i]= np.mean(auc)
-    print('AUC after CV for i=%dgamma=%s number of components=%d is %g' % (i, best_gamma,best_com, np.mean(auc)))
+
+    auc_null = cross_val_score(pipe, X, y_null, cv=kfold, scoring=my_metric)
+    auc_sum_null[i]= np.mean(auc_null)
+
+    #print('AUC after CV for i=%dgamma=%s number of components=%d is %g' % (i, best_gamma,best_com, np.mean(auc)))
 
 
-print('Average AUC with PCA=%g , Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)))
+pval_auc = np.sum(auc_sum_null>=auc_sum)/iteration_num
+print('pval_auc=%g ' % (pval_auc))
+
+print('Average AUC=%g, Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)))
+print('Average AUC Null=%g, Std AUC=%g' % (np.mean(auc_sum_null),np.std(auc_sum_null)))
 
 
+
+
+
+save_file = 'PTE_prediction_KSVM_cv_pca_best_p78_significance.npz'
+np.savez(save_file, auc_sum=auc_sum, auc_sum_null=auc_sum_null, pval_auc=pval_auc, best_gamma=best_gamma, best_C=best_C, best_com=best_com)
+
+print('done')
+
+# Plot histogram of AUC values for null and non-null distributions and save the figure
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set(style="whitegrid")
+plt.figure()
+sns.kdeplot(auc_sum, color="b", label='AUC')
+sns.kdeplot(auc_sum_null, color="r", label='AUC Null')
+
+plt.legend()
+plt.xlabel('AUC')
+plt.ylabel('Frequency')
+plt.title('AUC and AUC Null')
+plt.savefig('AUC_and_AUC_null_ksvm_pca.png')
+plt.show()
+
+# DO rank sum test to check if the AUC is significantly different from null distribution
+from scipy.stats import ranksums
+z_stat, p_val = ranksums(auc_sum, auc_sum_null)
+print('p_val=%g' % (p_val))
+
+
+
+
+iteration_num=1000
+auc_sum_null = np.zeros((iteration_num))
 auc_sum = np.zeros((iteration_num))
-for i in range(iteration_num):
+
+
+for i in tqdm(range(iteration_num)):
 # y = np.random.permutation(y)
+    y_null = np.random.permutation(y)
     pipe = SVC(kernel='rbf', C=best_C,gamma=best_gamma, tol=1e-9)
     kfold = StratifiedKFold(n_splits=36, shuffle=True)
     auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
     auc_sum [i]= np.mean(auc)
+
+    auc_null = cross_val_score(pipe, X, y_null, cv=kfold, scoring=my_metric)
+    auc_sum_null[i]= np.mean(auc_null)
+
+    #print('AUC after CV for i=%dgamma=%s is %g' % (i, best_gamma, np.mean(auc)))
+
+pval_auc = np.sum(auc_sum_null>=auc_sum)/iteration_num
+print('pval_auc=%g ' % (pval_auc))
+
     #print('AUC after CV for i=%dgamma=%s is %g' %
         #(i, best_gamma, np.mean(auc)))
 
 
-print('Average AUC=%g , Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)))
+print('Average AUC=%g, Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)))
+print('Average AUC Null=%g, Std AUC=%g' % (np.mean(auc_sum_null),np.std(auc_sum_null)))
 
 
 
 
+save_file = 'PTE_prediction_KSVM_cv_pca_best_p78_significance.npz'
+np.savez(save_file, auc_sum=auc_sum, auc_sum_null=auc_sum_null, pval_auc=pval_auc, best_gamma=best_gamma, best_C=best_C, best_com=best_com)
+
+
+# Plot histogram of AUC values for null and non-null distributions and save the figure
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set(style="whitegrid")
+plt.figure()
+sns.kdeplot(auc_sum, color="b", label='AUC')
+sns.kdeplot(auc_sum_null, color="r", label='AUC Null')
+#sns.histplot(auc_sum, kde=True, color="b", label='AUC')
+#sns.histplot(auc_sum_null, kde=True, color="r", label='AUC Null')
+plt.legend()
+plt.xlabel('AUC')
+plt.ylabel('Frequency')
+plt.title('AUC and AUC Null')
+plt.savefig('AUC_and_AUC_null_ksvm.png')
+plt.show()
+
+# DO rank sum test to check if the AUC is significantly different from null distribution
+from scipy.stats import ranksums
+z_stat, p_val = ranksums(auc_sum, auc_sum_null)
+print('p_val=%g' % (p_val))
