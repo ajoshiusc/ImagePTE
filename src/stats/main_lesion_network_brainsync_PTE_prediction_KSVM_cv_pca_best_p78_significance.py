@@ -4,6 +4,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import StratifiedKFold
+from scipy.stats import ranksums
 
 from tqdm import tqdm
 
@@ -166,8 +167,12 @@ for i in tqdm(range(iteration_num)):
     #print('AUC after CV for i=%dgamma=%s number of components=%d is %g' % (i, best_gamma,best_com, np.mean(auc)))
 
 
-pval_auc = np.sum(auc_sum_null>=auc_sum)/iteration_num
-print('pval_auc=%g ' % (pval_auc))
+#pval_auc = np.sum(auc_sum_null>=auc_sum)/iteration_num
+#print('pval_auc=%g ' % (pval_auc))
+
+# DO rank sum test to check if the AUC is significantly different from null distribution
+z_stat, pval_auc = ranksums(auc_sum, auc_sum_null)
+print('p_val=%g' % (pval_auc))
 
 print('Average AUC=%g, Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)))
 print('Average AUC Null=%g, Std AUC=%g' % (np.mean(auc_sum_null),np.std(auc_sum_null)))
@@ -184,6 +189,7 @@ print('done')
 # Plot histogram of AUC values for null and non-null distributions and save the figure
 import matplotlib.pyplot as plt
 import seaborn as sns
+
 sns.set(style="whitegrid")
 plt.figure()
 sns.kdeplot(auc_sum, color="b", label='AUC')
@@ -196,10 +202,6 @@ plt.title('AUC and AUC Null')
 plt.savefig('AUC_and_AUC_null_ksvm_pca.png')
 plt.show()
 
-# DO rank sum test to check if the AUC is significantly different from null distribution
-from scipy.stats import ranksums
-z_stat, p_val = ranksums(auc_sum, auc_sum_null)
-print('p_val=%g' % (p_val))
 
 
 
@@ -222,8 +224,9 @@ for i in tqdm(range(iteration_num)):
 
     #print('AUC after CV for i=%dgamma=%s is %g' % (i, best_gamma, np.mean(auc)))
 
-pval_auc = np.sum(auc_sum_null>=auc_sum)/iteration_num
-print('pval_auc=%g ' % (pval_auc))
+# DO rank sum test to check if the AUC is significantly different from null distribution
+z_stat, pval_auc = ranksums(auc_sum, auc_sum_null)
+print('p_val=%g' % (pval_auc))
 
     #print('AUC after CV for i=%dgamma=%s is %g' %
         #(i, best_gamma, np.mean(auc)))
@@ -231,6 +234,7 @@ print('pval_auc=%g ' % (pval_auc))
 
 print('Average AUC=%g, Std AUC=%g' % (np.mean(auc_sum),np.std(auc_sum)))
 print('Average AUC Null=%g, Std AUC=%g' % (np.mean(auc_sum_null),np.std(auc_sum_null)))
+
 
 
 
@@ -255,7 +259,3 @@ plt.title('AUC and AUC Null')
 plt.savefig('AUC_and_AUC_null_ksvm.png')
 plt.show()
 
-# DO rank sum test to check if the AUC is significantly different from null distribution
-from scipy.stats import ranksums
-z_stat, p_val = ranksums(auc_sum, auc_sum_null)
-print('p_val=%g' % (p_val))

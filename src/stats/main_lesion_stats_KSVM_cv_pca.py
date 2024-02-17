@@ -13,10 +13,69 @@ from sklearn.svm import SVC
 from sklearn.model_selection import cross_val_score
 from sklearn.pipeline import Pipeline
 from sklearn.decomposition import PCA
+from tqdm import tqdm
+from scipy.stats import ranksums
+
 
 def main():
 
-    #######################load data################
+
+    np.random.seed(12511)
+
+    f = np.load('PTE_fmridiff_USCLobes.npz')
+    conn_pte = f['fdiff_sub']
+    lab_ids = f['label_ids']
+    gordlab = f['labels']
+    sub_ids = f['sub_ids']
+    n_rois = conn_pte.shape[0]
+    epi_brainsync = conn_pte.T
+
+    f = np.load('PTE_graphs_USCLobes.npz')
+    conn_pte = f['conn_mat']
+    lab_ids = f['label_ids']
+    gordlab = f['labels']
+    sub_ids2 = f['sub_ids']
+    cent_mat = f['cent_mat']
+    n_rois = conn_pte.shape[0]
+    ind = np.tril_indices(n_rois, k=1)
+    epi_connectivity = conn_pte[ind[0], ind[1], :].T
+
+    a = np.load('PTE_lesion_vols_USCLobes.npz', allow_pickle=True)
+    a = a['lesion_vols'].item()
+    epi_lesion_vols = np.array([a[k] for k in sub_ids])
+    #epi_measures = np.concatenate(
+    #    (.3*epi_lesion_vols,epi_connectivity,.3*epi_brainsync), axis=1)
+
+    epi_measures = epi_lesion_vols
+
+
+    f = np.load('NONPTE_fmridiff_USCLobes.npz')
+    conn_pte = f['fdiff_sub']
+    lab_ids = f['label_ids']
+    gordlab = f['labels']
+    sub_ids = f['sub_ids']
+    n_rois = conn_pte.shape[0]
+    nonepi_brainsync = conn_pte.T
+
+    f = np.load('NONPTE_graphs_USCLobes.npz')
+    conn_nonpte = f['conn_mat']
+    lab_ids = f['label_ids']
+    gordlab = f['labels']
+    sub_ids = f['sub_ids']
+    cent_mat = f['cent_mat']
+
+    nonepi_connectivity = conn_nonpte[ind[0], ind[1], :].T
+
+    a = np.load('NONPTE_lesion_vols_USCLobes.npz', allow_pickle=True)
+    a = a['lesion_vols'].item()
+    nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
+    nonepi_measures = nonepi_lesion_vols
+    #np.concatenate(
+    #    (.3*nonepi_lesion_vols,nonepi_connectivity,.3*nonepi_brainsync), axis=1)
+
+
+    
+    """     #######################load data################
     f = np.load('../connectivity/PTE_graphs.npz')
     conn_pte = f['conn_mat']
     lab_ids = f['label_ids']
@@ -26,6 +85,7 @@ def main():
     n_rois = conn_pte.shape[0]
     ind = np.tril_indices(n_rois, k=1)
   
+
 
     a = np.load('PTE_lesion_vols_USCBrain.npz', allow_pickle=True)
     a = a['lesion_vols'].item()
@@ -40,16 +100,11 @@ def main():
     sub_ids = f['sub_ids']
 
 
-
-
-
-
-
     a = np.load('NONPTE_lesion_vols_USCBrain.npz', allow_pickle=True)
     a = a['lesion_vols'].item()
     nonepi_lesion_vols = np.array([a[k] for k in sub_ids])
     nonepi_measures = nonepi_lesion_vols
-
+    """
 
     X = np.vstack((epi_measures, nonepi_measures))
     y = np.hstack(
@@ -130,8 +185,10 @@ def main():
 ####################################################
     iteration_num=1000
     auc_sum = np.zeros((iteration_num))
-    for i in range(iteration_num):
-    # y = np.random.permutation(y)
+    auc_sum_null = np.zeros((iteration_num))
+
+    for i in tqdm(range(iteration_num)):
+        y_null = np.random.permutation(y)
         pipe = Pipeline([('pca_apply', PCA(n_components=best_com, whiten=True)),
                      ('svc', SVC(kernel='rbf',C=best_gamma, gamma=best_gamma, tol=1e-9))])
         kfold = StratifiedKFold(n_splits=36, shuffle=True)
@@ -139,22 +196,35 @@ def main():
         auc_sum [i]= np.mean(auc)
         #print('AUC after CV for i=%dgamma=%s number of components=%d is %g' %
             #(i, best_gamma,best_com, np.mean(auc)))
+        auc_null = cross_val_score(pipe, X, y_null, cv=kfold, scoring=my_metric)
+        auc_sum_null[i]= np.mean(auc_null)
 
 
     print('Average AUC with PCA=%g , Std AUC=%g' % (np.mean(auc_sum), np.std(auc_sum)))
+    print('Average AUC Null PCA=%g, Std AUC=%g' % (np.mean(auc_sum_null),np.std(auc_sum_null)))
+    z_stat, p_val = ranksums(auc_sum, auc_sum_null)
+    print('p_val=%g' % (p_val))
+
+
 
     auc_sum = np.zeros((iteration_num))
-    for i in range(iteration_num):
-    # y = np.random.permutation(y)
+    auc_sum_null = np.zeros((iteration_num))
+
+    for i in tqdm(range(iteration_num)):
+        y_null = np.random.permutation(y)
         pipe = SVC(kernel='rbf', C=best_gamma,gamma=best_gamma, tol=1e-9)
         kfold = StratifiedKFold(n_splits=36, shuffle=True)
         auc = cross_val_score(pipe, X, y, cv=kfold, scoring=my_metric)
         auc_sum [i]= np.mean(auc)
         #print('AUC after CV for i=%dgamma=%s is %g' %
             #(i, best_gamma, np.mean(auc)))
-
+        auc_null = cross_val_score(pipe, X, y_null, cv=kfold, scoring=my_metric)
+        auc_sum_null[i]= np.mean(auc_null)
 
     print('Average AUC=%g , Std AUC=%g' % (np.mean(auc_sum), np.std(auc_sum)))
+    print('Average AUC Null=%g, Std AUC=%g' % (np.mean(auc_sum_null),np.std(auc_sum_null)))
+    z_stat, p_val = ranksums(auc_sum, auc_sum_null)
+    print('p_val=%g' % (p_val))
 
 
 if __name__ == "__main__":
