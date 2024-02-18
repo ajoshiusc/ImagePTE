@@ -199,7 +199,7 @@ plt.legend()
 plt.xlabel('AUC')
 plt.ylabel('Frequency')
 plt.title('AUC and AUC Null')
-plt.savefig('AUC_and_AUC_null_ksvm_pca.png')
+plt.savefig('AUC_and_AUC_null_ksvm_pca.pdf')
 plt.show()
 
 
@@ -256,6 +256,6 @@ plt.legend()
 plt.xlabel('AUC')
 plt.ylabel('Frequency')
 plt.title('AUC and AUC Null')
-plt.savefig('AUC_and_AUC_null_ksvm.png')
+plt.savefig('AUC_and_AUC_null_ksvm.pdf')
 plt.show()
 
