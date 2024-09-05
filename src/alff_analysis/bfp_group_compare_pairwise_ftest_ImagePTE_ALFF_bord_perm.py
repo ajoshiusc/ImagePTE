@@ -13,8 +13,8 @@ from scipy.stats import ranksums
 from numpy.random import shuffle
 from tqdm import tqdm
 
-config_file = '/home/ajoshi/projects/ImagePTE/src/stats/sample_config_stats_Maryland_ALFF.ini'
-BFPPATH = '/home/ajoshi/projects/bfp'
+config_file = '/home/ajoshi/Projects/ImagePTE/src/stats/sample_config_stats_Maryland_ALFF_hbm2024.ini'
+BFPPATH = '/home/ajoshi/Projects/bfp'
 # %%#%%
 # Import the required librariesimport configparser
 
@@ -128,47 +128,33 @@ F = S2 / (S1 + 1e-16)
 pval = 1 - ss.f.cdf(F, n2 - 1, n1 - 1)
 
 # %%
-pval[sp.isnan(pval)] = .5
+pval[np.isnan(pval)] = .5
 _, pval_fdr = fdrcorrection(pval)
 
 
 pval_max, pval_fdr, pval, Fval = permutation_Ftest(data2.T, data1.T, nperm=1000)
 
+outpath = '/home/ajoshi/Projects/ImagePTE/src/alff_analysis'
 
-save2volbord_bci((0.05-pval)*np.float32(pval < 0.05), os.path.join(bfp_path, 'src/stats/results',
-                 'pval_alff_bord_PTE_smooth0_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
-save2volbord_bci((0.05-pval_fdr)*np.float32(pval_fdr < 0.05), os.path.join(bfp_path,
-                 'src/stats/results', 'pval_fdr_bord_PTE_smooth0_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
+save2volbord_bci((0.05-pval)*np.float32(pval < 0.05), os.path.join(outpath,'pval_alff_bord_PTE_smooth0_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
+save2volbord_bci((0.05-pval_fdr)*np.float32(pval_fdr < 0.05), os.path.join(outpath, 'pval_fdr_bord_PTE_smooth0_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
 
-save2volbord_bci((0.05-pval)*np.float32(pval < 0.05), os.path.join(bfp_path, 'src/stats/results',
-                 'pval_alff_bord_PTE_smooth0.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=.5)
-save2volbord_bci((0.05-pval_fdr)*np.float32(pval_fdr < 0.05), os.path.join(bfp_path,
-                 'src/stats/results', 'pval_fdr_bord_PTE_smooth0.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=.5)
+save2volbord_bci((0.05-pval)*np.float32(pval < 0.05), os.path.join(outpath,'pval_alff_bord_PTE_smooth0.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=.5)
+save2volbord_bci((0.05-pval_fdr)*np.float32(pval_fdr < 0.05), os.path.join(outpath, 'pval_fdr_bord_PTE_smooth0.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=.5)
 
-save2volbord_bci((0.05-pval)*np.float32(pval < 0.05), os.path.join(bfp_path, 'src/stats/results',
-                 'pval_alff_bord_PTE_smooth1_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=1)
-save2volbord_bci((0.05-pval_fdr)*np.float32(pval_fdr < 0.05), os.path.join(bfp_path,
-                 'src/stats/results', 'pval_fdr_bord_PTE_smooth1_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=1)
+save2volbord_bci((0.05-pval)*np.float32(pval < 0.05), os.path.join(outpath,'pval_alff_bord_PTE_smooth1_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=1)
+save2volbord_bci((0.05-pval_fdr)*np.float32(pval_fdr < 0.05), os.path.join(outpath, 'pval_fdr_bord_PTE_smooth1_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=1)
 
-save2volbord_bci(pval, os.path.join(bfp_path, 'src/stats/results',
-                 'pval2_alff_bord_PTE_smooth0_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
-save2volbord_bci(pval_fdr, os.path.join(bfp_path, 'src/stats/results',
-                 'pval2_fdr_bord_PTE_smooth0_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
-save2volbord_bci(Fval, os.path.join(bfp_path, 'src/stats/results',
-                 'fval2_bord_PTE_smooth0_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
+save2volbord_bci(pval, os.path.join(outpath,'pval2_alff_bord_PTE_smooth0_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
+save2volbord_bci(pval_fdr, os.path.join(outpath,'pval2_fdr_bord_PTE_smooth0_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
+save2volbord_bci(Fval, os.path.join(outpath, 'fval2_bord_PTE_smooth0_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=0)
 
 
-save2volbord_bci(pval, os.path.join(bfp_path, 'src/stats/results',
-                 'pval2_alff_bord_PTE_smooth0.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=.5)
-save2volbord_bci(pval_fdr, os.path.join(bfp_path, 'src/stats/results',
-                 'pval2_fdr_bord_PTE_smooth0.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=.5)
-save2volbord_bci(Fval, os.path.join(bfp_path, 'src/stats/results',
-                 'fval2_bord_PTE_smooth0.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=.5)
+save2volbord_bci(pval, os.path.join(outpath,'pval2_alff_bord_PTE_smooth0.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=.5)
+save2volbord_bci(pval_fdr, os.path.join(outpath,'pval2_fdr_bord_PTE_smooth0.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=.5)
+save2volbord_bci(Fval, os.path.join(outpath, 'fval2_bord_PTE_smooth0.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=.5)
 
 
-save2volbord_bci(pval, os.path.join(bfp_path, 'src/stats/results',
-                 'pval2_alff_bord_PTE_smooth1.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)
-save2volbord_bci(pval_fdr, os.path.join(bfp_path, 'src/stats/results',
-                 'pval2_fdr_bord_PTE_smooth1.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)
-save2volbord_bci(Fval, os.path.join(bfp_path, 'src/stats/results',
-                 'fval2_bord_PTE_smooth1.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)
+save2volbord_bci(pval, os.path.join(outpath,'pval2_alff_bord_PTE_smooth1.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)
+save2volbord_bci(pval_fdr, os.path.join(outpath,'pval2_fdr_bord_PTE_smooth1.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)
+save2volbord_bci(Fval, os.path.join(outpath,'fval2_bord_PTE_smooth1.5_sig_perm.nii.gz'), bfp_path=BFPPATH, smooth_std=1.5)
