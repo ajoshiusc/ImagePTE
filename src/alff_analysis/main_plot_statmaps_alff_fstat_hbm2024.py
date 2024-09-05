@@ -40,7 +40,7 @@ plot_stat_map(stat_img,
               cut_coords=(124, 104, 128),
               display_mode="ortho",
               output_file=outfile1,symmetric_cbar=False,cmap='hot',
-              annotate=True, dim=-0.5, vmax=5,vmin=1.6)
+              annotate=True, dim=-0.5, vmax=5)
 
 plot_stat_map(stat_img,
               bk_img,
@@ -49,7 +49,7 @@ plot_stat_map(stat_img,
               cut_coords=(107, 57, 137),
               display_mode="ortho",
               output_file=outfile2,symmetric_cbar=False,cmap='hot',
-              annotate=True, dim=-0.5, vmax=5,vmin=1.6)
+              annotate=True, dim=-0.5, vmax=5)
 
 plot_stat_map(stat_img,
               bk_img,
@@ -58,4 +58,4 @@ plot_stat_map(stat_img,
               cut_coords=(81, 59, 113),
               display_mode="ortho",
               output_file=outfile3,symmetric_cbar=False,cmap='hot',
-              annotate=True, dim=-0.5, vmax=5,vmin=1.6)
+              annotate=True, dim=-0.5, vmax=5)
