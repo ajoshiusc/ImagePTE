@@ -7,7 +7,6 @@ from nilearn import plotting
 stat_img = 'pval_fdr_ftest_TBMsmooth3mm.nii.gz'
 pstat_img = '/home/ajoshi/Desktop/ImagePTE/src/stats/pval_fdr_ftest_lesion0mm.nii.gz'
 stat_img = '/home/ajoshi/Desktop/ImagePTE/src/stats/fval_lesion0mm.nii.gz'
-stat_img = '/home/ajoshi/projects/bfp/src/stats/results/fval2_bord_PTE_smooth0.5_sig_perm.nii.gz'
 
 stat_img_mni = '/home/ajoshi/Desktop/fval_lesion0mm_mni.nii.gz'
 
@@ -30,3 +29,17 @@ os.system(cmd)
 plotting.plot_glass_brain(stat_img_mni, threshold=3)
 plotting.show()
 
+
+
+plotting.plot_glass_brain(
+    stat_img_mni,
+    threshold=0,
+    vmax=5,
+    display_mode="lyrz",
+    cmap="hot",
+    colorbar=True,
+    plot_abs=False,
+    title="Lesion Glass Brain",
+    output_file="/home/ajoshi/Desktop/lesion_glassbrain_hbm2024.png",
+)
+plotting.show()
