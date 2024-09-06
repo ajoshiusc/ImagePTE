@@ -15,6 +15,8 @@ outfile2 = stat_img_fname.replace('.nii.gz', '_2.png')
 outfile3 = stat_img_fname.replace('.nii.gz', '_3.png')
 # '/home/ajoshi/coding_ground/ImagePTE/src/stats/pval_hotelling.smooth3mm.png'
 outfile4 = stat_img_fname.replace('.nii.gz', '_4.png')
+outfile5 = stat_img_fname.replace('.nii.gz', '_5.png')
+outfile6 = stat_img_fname.replace('.nii.gz', '_6.png')
 
 img = nl.load_img(stat_img_fname).get_fdata()
 
@@ -58,4 +60,34 @@ plot_stat_map(stat_img,
               cut_coords=(81, 59, 113),
               display_mode="ortho",
               output_file=outfile3,symmetric_cbar=False,cmap='hot',
+              annotate=True, dim=-0.5, vmax=5)
+
+
+# plot unthresholded f-stat map
+
+plot_stat_map(stat_img_fname,
+              bk_img,
+              threshold=0.,
+              draw_cross=False,
+              cut_coords=(124, 104, 128),
+              display_mode="ortho",
+              output_file=outfile4,symmetric_cbar=False,cmap='hot',
+              annotate=True, dim=-0.5, vmax=5)
+
+plot_stat_map(stat_img_fname,
+              bk_img,
+              threshold=0,
+              draw_cross=False,
+              cut_coords=(107, 57, 137),
+              display_mode="ortho",
+              output_file=outfile5,symmetric_cbar=False,cmap='hot',
+              annotate=True, dim=-0.5, vmax=5)
+
+plot_stat_map(stat_img_fname,
+              bk_img,
+              threshold=0,
+              draw_cross=False,
+              cut_coords=(81, 59, 113),
+              display_mode="ortho",
+              output_file=outfile6,symmetric_cbar=False,cmap='hot',
               annotate=True, dim=-0.5, vmax=5)
