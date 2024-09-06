@@ -18,7 +18,7 @@ outfile4 = stat_img_fname.replace('.nii.gz', '_4.png')
 
 img = nl.load_img(stat_img_fname).get_fdata()
 
-pimg = 0.2 - nl.load_img(pstat_img).get_fdata()
+pimg = 0.1 - nl.load_img(pstat_img).get_fdata()
 img[pimg <= 0] = 0
 
 #img = nl.load_img(stat_img).get_fdata()
