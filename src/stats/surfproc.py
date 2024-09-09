@@ -76,17 +76,17 @@ def surf_weight(surf1):
 
 def patch_color_labels(s, freq=[1], cmap='Paired', shuffle=True):
     ''' color by freq of labels '''
-    s.vColor = sp.zeros(s.vertices.shape)
-    _, labels = sp.unique(s.labels, return_inverse=True)
+    s.vColor = np.zeros(s.vertices.shape)
+    _, labels = np.unique(s.labels, return_inverse=True)
     labels += 1
-    colr = get_cmap(sp.amax(labels) + 1, cmap=cmap)
+    colr = get_cmap(np.amax(labels) + 1, cmap=cmap)
     s.vColor = s.vColor + 1
-    perm1 = sp.mod(3511 * sp.arange(sp.amax(labels) + 1), sp.amax(labels) + 1)
-    freq = sp.reshape(freq, (len(freq), 1))
+    perm1 = np.mod(3511 * np.arange(np.amax(labels) + 1), np.amax(labels) + 1)
+    freq = np.reshape(freq, (len(freq), 1))
     if shuffle == True:
-        s.vColor = (1 - freq) + freq * sp.array(colr(perm1[labels])[:, :3])
+        s.vColor = (1 - freq) + freq * np.array(colr(perm1[labels])[:, :3])
     else:
-        s.vColor = (1 - freq) + freq * sp.array(colr(labels)[:, :3])
+        s.vColor = (1 - freq) + freq * np.array(colr(labels)[:, :3])
     return s
 
 
@@ -95,13 +95,13 @@ def patch_color_attrib(s, values=[], cmap='jet', clim=[0], zerocolor=[.5,.5,.5])
     if len(values) == 0:
         values = s.attributes
     if len(clim) == 1:
-        vmin = sp.amin(values)
-        vmax = sp.amax(values)
+        vmin = np.amin(values)
+        vmax = np.amax(values)
     else:
         vmin = clim[0]
         vmax = clim[1]
 
-    s.vColor = sp.zeros(s.vertices.shape)
+    s.vColor = np.zeros(s.vertices.shape)
     color_norm = colors.Normalize(vmin=vmin, vmax=vmax)
     scalar_map = cmx.ScalarMappable(norm=color_norm, cmap=cmap)
     s.vColor = scalar_map.to_rgba(values)
@@ -126,7 +126,7 @@ def face_areas(s):
     r12 = s.vertices[s.faces[:, 0], :]
     r13 = s.vertices[s.faces[:, 2], :] - r12
     r12 = s.vertices[s.faces[:, 1], :] - r12
-    area1 = sp.sqrt(sp.sum(sp.cross(r12, r13)**2, axis=1)) / 2.0
+    area1 = np.sqrt(np.sum(np.cross(r12, r13)**2, axis=1)) / 2.0
     return area1
 
 

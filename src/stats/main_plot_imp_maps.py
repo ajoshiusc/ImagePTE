@@ -30,7 +30,7 @@ stat_img = ni.load_img(outbase+'feat_lobes.imp.nii.gz')
 stat_img = ni.new_img_like(stat_img, np.maximum(stat_img.get_fdata(),0))
 
 plot_stat_map(stat_img,
-                '/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/BCI-DNI_brain.nii.gz',
+                '/home/ajoshi/Software/BrainSuite23a/USCBrain/BCI-DNI_brain.nii.gz',
                 draw_cross=False,
                 cut_coords=cut_coords,
                 display_mode="ortho",

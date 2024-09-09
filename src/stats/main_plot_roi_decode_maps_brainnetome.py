@@ -8,7 +8,7 @@ from nilearn.plotting import plot_stat_map, show, plot_anat
 
 cut_coords = (100/2, 212-212/2, 104)
 
-outbase = 'brainnetome'
+outbase = '/home/ajoshi/Desktop/ImagePTE/src/brainnetome'
 
 left = readdfs(outbase+'.left.decode.dfs')
 left_uscbrain = readdfs('/ImagePTE1/ajoshi/code_farm/svreg/USCBrain/USCBrain.left.mid.cortex.dfs')

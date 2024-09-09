@@ -47,12 +47,12 @@ def f_importances_atlas(coef, roi_ids, atlasbasename, outbase):
 
     
     vi = ni.new_img_like(v, np.float32(vimp))
-    vi.to_filename(outbase+'feat_lobes.imp.nii.gz')
+    vi.to_filename(outbase+'feat_USCBrain.imp.nii.gz')
 
     patch_color_attrib(left)
 
-    writedfs(outbase+'.left.lobes.imp.dfs', left)
-    writedfs(outbase+'.right.lobes.imp.dfs', right)
+    writedfs(outbase+'.left.USCBrain.imp.dfs', left)
+    writedfs(outbase+'.right.USCBrain.imp.dfs', right)
 
 
 def f_importances(coef, names, outbase):
@@ -105,15 +105,15 @@ def readsubs(studydir, sub_ids):
 
 def roiwise_stats(epi_data, nonepi_data):
 
-    atlas_labels = '/home/ajoshi/Software/BrainSuite23a/svreg/USCLobes/BCI-DNI_brain.label.nii.gz'
+    atlas_labels = '/home/ajoshi/Software/BrainSuite23a/svreg/USCBrain/USCBrain.label.nii.gz'
     at_labels = np.asanyarray(ni.load_img(atlas_labels).dataobj)
     # roi_list = [
     #    3, 100, 101, 184, 185, 200, 201, 300, 301, 400, 401, 500, 501, 800,
     #    850, 900, 950
     # ]
-    roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
+    #roi_list = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
     #roi_list = [300,301]
-    #roi_list = np.unique(at_labels.flatten())
+    roi_list = np.unique(at_labels.flatten())
 
     epi_roi_lesion_vols = np.zeros((37, len(roi_list)))
     nonepi_roi_lesion_vols = np.zeros((37, len(roi_list)))
@@ -264,7 +264,7 @@ def main():
 
     epi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_epilepsy_imgs.txt'
     nonepi_txt = '/ImagePTE1/ajoshi/fitbir/preproc/maryland_rao_v1_nonepilepsy_imgs_37.txt'
-    outbase = 'lobes_pred'
+    outbase = 'USCBrain_imp'
 
     with open(epi_txt) as f:
         epiIds = f.readlines()
@@ -309,10 +309,13 @@ def main():
 
     roi_ids = [301, 300, 401, 400, 101, 100, 201, 200, 501, 500, 900]
 
+    roi_ids = ni.load_img('/home/ajoshi/Software/BrainSuite23a/svreg/USCBrain/USCBrain.label.nii.gz').get_fdata()
+    roi_ids = np.unique(roi_ids.flatten())
+
     f_importances((clf.coef_).squeeze(), features_names, outbase=outbase)
 
     f_importances_atlas((clf.coef_).squeeze(), roi_ids=roi_ids,
-                        atlasbasename='/home/ajoshi/Software/BrainSuite23a/svreg/USCLobes/BCI-DNI_brain', outbase=outbase)
+                        atlasbasename='/home/ajoshi/Software/BrainSuite23a/svreg/USCBrain/USCBrain', outbase=outbase)
 
     my_metric = 'roc_auc'
     auc = cross_val_score(clf, X, y, cv=37, scoring=my_metric)
