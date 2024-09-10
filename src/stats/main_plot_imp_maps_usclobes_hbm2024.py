@@ -52,7 +52,6 @@ plot_stat_map(
     annotate=True,
     cmap="hot",
     vmin=0,
-    vmax=3,
     dim=-0.5,
 )
 
