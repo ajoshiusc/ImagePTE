@@ -2,7 +2,7 @@ import pandas as pd
 import glob
 import os
 import shutil
-from fitbirpre import zip2nii, reg2mni_re, name2modality
+#from fitbirpre import zip2nii, reg2mni_re, name2modality
 from multiprocessing import Pool
 from itertools import product, repeat
 import numpy as np

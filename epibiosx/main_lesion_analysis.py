@@ -13,6 +13,18 @@ epibiosx_path = '/deneb_disk/ifs/loni/faculty/dduncan/rgarner/shared/epibios'
 lesion_seg_path = os.path.join(epibiosx_path, 'human/data/lesion_segmentations_box/total_lesion_masks/second_review')
 
 
+
+pte_xlsx = os.path.join('spreadsheets/short PTE.xlsx')
+
+
+# read the spreadsheet with the PTE data, and extract the subject IDs and PTE status
+pte_data = pd.read_excel(pte_xlsx)
+pte_data = pte_data[['Study ID', 'PTE']]
+pte_data = pte_data.dropna(subset=['Study ID'])
+
+
+
+
 # Load the lesion segmentation data and calculate the average map of the lesion
 
 lesion_seg_files = glob.glob(os.path.join(lesion_seg_path, '*.nii.gz'))
