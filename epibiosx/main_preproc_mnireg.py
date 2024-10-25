@@ -48,19 +48,35 @@ def regparfun(subid):
 
     t1 = os.path.join(subdir, 'T1.nii.gz')
     t2 = os.path.join(subdir, 'T2.nii.gz')
-    os.system('cp ' + t1_img[0] + ' ' + t1)
-    os.system('cp ' + t2_img[0] + ' ' + t2)
+
+    # resample the T1 image to 1mm isotropic resolution using flirt
+    os.system('flirt -in ' + t1_img[0] + ' -ref ' + t1_img[0] + ' -out ' + t1 + ' -applyisoxfm 1 -nosearch')
+    os.system('flirt -in ' + t2_img[0] + ' -ref ' + t1_img[0] + ' -out ' + t2 + ' -applyisoxfm 1 -nosearch')
+
+    #os.system('cp ' + t1_img[0] + ' ' + t1)
+    #os.system('cp ' + t2_img[0] + ' ' + t2)
 
     t1bse = os.path.join(subdir, 'T1.bse.nii.gz')
     t1bfc = os.path.join(subdir, 'T1.bfc.nii.gz')
+    t1mask = os.path.join(subdir, 'T1.bse_mask.nii.gz')
 
     if not os.path.isfile(t1bse):
-        os.system('bet ' + t1 + ' ' + t1bse + ' -f .3 -A2 ' + t2)
+        os.system('bet ' + t1 + ' ' + t1bse + ' -A2 ' + t2 + ' -m')
+
+    t2bse = os.path.join(subdir, 'T2.bse.nii.gz')
+
+    # apply mask to T2 image
+    if not os.path.isfile(t2bse):
+        os.system('fslmaths ' + t2 + ' -mas ' + t1mask + ' ' + t2bse)
+
 
     # apply bias field correction using bfc from BrainSuite
     if not os.path.isfile(t1bfc):
         os.system('/home/ajoshi/Software/BrainSuite23a/bin/bfc -i ' + t1bse + ' -o ' + t1bfc)
 
+    t12pvc = os.path.join(subdir, 'T12pvc.nii.gz')
+    # use fast to segment the bias field corrected image, use both T1 and T2 images
+    os.system('fast -S 2 -o ' +t12pvc +' ' + t1bse + ' ' + t2bse)
 
     # use the bias field corrected image for registration to mni space
     t1mnir = os.path.join(subdir, 'T1mni.nii.gz')
@@ -69,7 +85,7 @@ def regparfun(subid):
 
 
     if not os.path.isfile(t1mnir):
-        os.system('flirt -in ' + t1bfc + ' -ref ${FSLDIR}/data/standard/MNI152_T1_1mm_brain.nii.gz -out ' + t1mnir + ' -omat ' + t1mnimat + ' -dof 6 -cost normmi')
+        os.system('flirt -in ' + t1bfc + ' -ref ${FSLDIR}/data/standard/MNI152_T1_1mm_brain.nii.gz -out ' + t1mnir + ' -omat ' + t1mnimat + ' -dof 6') # -cost normmi')
         os.system('fslmaths ' + t1mnir + ' -bin ' + t1mnimask)
 
 
