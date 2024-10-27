@@ -29,21 +29,21 @@ def regparfun(subid):
     
     if len(t1_img) == 0:
         print('T1 does not exist for ' + subid)
-        return
+        #return
     
     if len(t1_img) > 1:
         print('Multiple T1 images found for ' + subid)
-        return
+        #return
 
     t2_img = glob.glob(os.path.join('/deneb_disk/ifs/loni/faculty/dduncan/rgarner/shared/epibios/human/data/t2/', subid + '*t2.nii.gz'))
     
     if len(t2_img) == 0:
         print('T2 does not exist for ' + subid)
-        return
+        #return
     
     if len(t2_img) > 1:
         print('Multiple T2 images found for ' + subid)
-        return
+        #return
 
 
     t1 = os.path.join(subdir, 'T1.nii.gz')
@@ -79,71 +79,30 @@ def regparfun(subid):
     os.system('fast -S 2 -o ' +t12pvc +' ' + t1bse + ' ' + t2bse)
 
     # use the bias field corrected image for registration to mni space
-    t1mnir = os.path.join(subdir, 'T1mni.nii.gz')
+    t1mnibse = os.path.join(subdir, 'T1mni.bse.nii.gz')
+    t1mni = os.path.join(subdir, 'T1mni.nii.gz')
     t1mnimat = os.path.join(subdir, 'T1mni.mat')
     t1mnimask = os.path.join(subdir, 'T1mni.mask.nii.gz')
 
-
-    if not os.path.isfile(t1mnir):
-        os.system('flirt -in ' + t1bfc + ' -ref ${FSLDIR}/data/standard/MNI152_T1_1mm_brain.nii.gz -out ' + t1mnir + ' -omat ' + t1mnimat + ' -dof 6') # -cost normmi')
-        os.system('fslmaths ' + t1mnir + ' -bin ' + t1mnimask)
+    t2mni = os.path.join(subdir, 'T2mni.nii.gz')
+    t2mnibse = os.path.join(subdir, 'T2mni.bse.nii.gz')
 
 
+    if not os.path.isfile(t1mnibse):
+        os.system('flirt -in ' + t1bfc + ' -ref ${FSLDIR}/data/standard/MNI152_T1_1mm_brain.nii.gz -out ' + t1mnibse + ' -omat ' + t1mnimat + ' -dof 6') # -cost normmi')
+        os.system('fslmaths ' + t1mnibse + ' -bin ' + t1mnimask)
+
+    # apply the transform to t1 and t2 images
+    if not os.path.isfile(t1mni):
+        os.system('flirt -in ' + t1 + ' -ref ${FSLDIR}/data/standard/MNI152_T1_1mm_brain.nii.gz -out ' + t1mni + ' -applyxfm -init ' + t1mnimat)
+        os.system('flirt -in ' + t2 + ' -ref ${FSLDIR}/data/standard/MNI152_T1_1mm_brain.nii.gz -out ' + t2mni + ' -applyxfm -init ' + t1mnimat)
+        os.system('fslmaths ' + t2mni + ' -mas ' + t1mnimask + ' ' + t2mnibse)
 
 
 
     
     if not os.path.isfile(t1bfc):
         os.system('fast -t 1 -n 3 -H 0.1 -I 4 -l 20.0 -o ' + t1bfc + ' ' + t1bse)
-
-    '''t1mnir = os.path.join(subdir, 'T1mni.nii.gz')
-    t1mnimask = os.path.join(subdir, 'T1mni.mask.nii.gz')
-    #    t1bfc = os.path.join(subdir, 'T1.bfc.nii.gz')
-
-    os.system('bet ' + t1_img + ' ' + t1bse + ' -f .3')
-    os.system('fast -t 1 -n 3 -H 0.1 -I 4 -l 20.0 -o ' + t1bfc + ' ' + t1bse)
-    os.system('flirt -in ' + t1bfc + ' -ref ${FSLDIR}/data/standard/MNI152_T1_1mm_brain.nii.gz -out ' + t1mnir + ' -omat ' + t1mnimat + ' -dof 6 -cost normmi')
-    os.system('fslmaths ' + t1mnir + ' -bin ' + t1mnimask)
-
-    t1mnimat = os.path.join(subdir, 'T1mni.mat')
-    print(subid)
-
-    if not os.path.isfile(t1):
-        print('T1 does not exist for ' + subid + t1)
-        return
-
-    # register T1 image to MNI space
-
-    os.system('flirt -in ' + t1 + ' -out ' + t1mnir +
-              ' -ref ${FSLDIR}/data/standard/MNI152_T1_1mm_brain.nii.gz -omat '
-              + t1mnimat + ' -dof 6 -cost normmi')
-
-    
-    t1mni = os.path.join(subdir, 'T1mni.nii.gz')
-
-    if os.path.isfile(t1):
-        # Create mask
-        os.system('fslmaths ' + t1mni + ' -bin ' + t1mnimask)
-        # Apply the same transform (T1->MNI)
-
-        t2 = os.path.join(subdir, 'T2r.nii.gz')
-        t2mni = os.path.join(subdir, 'T2mni.nii.gz')
-    if os.path.isfile(t2):
-        # Apply the same transform (T1->MNI) to registered T2
-        os.system('flirt -in ' + t2 + ' -ref ' + t1mnir + ' -out ' + t2mni +
-                  ' -applyxfm -init ' + t1mnimat)
-        os.system('fslmaths ' + t2mni + ' -mul ' + t1mnimask + ' ' + t2mni)
-
-    flair = os.path.join(subdir, 'FLAIRr.nii.gz')
-    flairmni = os.path.join(subdir, 'FLAIRmni.nii.gz')
-    if os.path.isfile(flair):
-        # Apply the same transform (T1->MNI) to registered FLAIR
-        os.system('flirt -in ' + flair + ' -ref ' + t1mnir + ' -out ' +
-                  flairmni + ' -applyxfm -init ' + t1mnimat)
-        os.system('fslmaths ' + flairmni + ' -mul ' + t1mnimask + ' ' +
-                  flairmni)
-
-    '''
 
 
 def main():
