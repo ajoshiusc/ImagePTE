@@ -257,17 +257,19 @@ def main():
     print(subIds)
     subsnotdone = [x for x in subIds if x not in doneIds]
 
+    '''
     for sub in subsnotdone:
         t1_proc(sub)
         t2_proc(sub)
+    '''
 
-    """print('++++++++++++++')
+    print('++++++++++++++')
     pool.map(t1_proc, subsnotdone)
     pool.map(t2_proc, subsnotdone)
 
     pool.close()
     pool.join()
-    """
+    
 
 
 if __name__ == "__main__":
