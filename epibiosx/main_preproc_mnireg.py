@@ -234,6 +234,13 @@ def t2_proc(subid):
         os.system("fslmaths " + t2mni + " -mas " + t1mnimask + " " + t2mnibse)
 
 
+def process_sub(subid):
+    ''' Process a single subject '''
+    t1_proc(subid)
+    t2_proc(subid)
+
+
+
 def main():
 
     pte_xlsx = os.path.join("spreadsheets/short PTE.xlsx")
@@ -264,8 +271,7 @@ def main():
     '''
 
     print('++++++++++++++')
-    pool.map(t1_proc, subsnotdone)
-    pool.map(t2_proc, subsnotdone)
+    pool.map(process_sub, subsnotdone)
 
     pool.close()
     pool.join()
