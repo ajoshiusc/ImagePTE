@@ -33,7 +33,7 @@ numba==0.47.0
 numexpr==2.6.8
 numpy==1.15.4
 olefile==0.46
-opencv-python==3.4.3.18
+opencv-python==4.2.0.32
 pandas==0.23.4
 Pillow==5.2.0
 plyfile==0.7.1
